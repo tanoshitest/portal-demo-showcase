@@ -15,6 +15,8 @@ import {
 import { solutions } from "@/data/mock";
 import { useStore } from "@/context/store";
 
+type FormErrors = { name?: string; phone?: string; email?: string; need?: string };
+
 export function ConsultForm({
   source = "Trang chủ",
   defaultSolution,
@@ -32,13 +34,13 @@ export function ConsultForm({
     need: defaultSolution ?? "",
     content: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const next: Record<string, string> = {};
+    const next: FormErrors = {};
     if (form.name.trim().length < 2) next.name = "Vui lòng nhập họ tên.";
     if (!/^0\d{8,10}$/.test(form.phone.replace(/\s/g, "")))
       next.phone = "Số điện thoại không hợp lệ (VD: 0901234567).";
