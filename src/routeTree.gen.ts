@@ -10,33 +10,80 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GiaiPhapIndexRouteImport } from './routes/giai-phap.index'
+import { Route as GiaiPhapSlugRouteImport } from './routes/giai-phap.$slug'
+import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
+import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GiaiPhapIndexRoute = GiaiPhapIndexRouteImport.update({
+  id: '/giai-phap/',
+  path: '/giai-phap/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GiaiPhapSlugRoute = GiaiPhapSlugRouteImport.update({
+  id: '/giai-phap/$slug',
+  path: '/giai-phap/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SanPhamIndexRoute = SanPhamIndexRouteImport.update({
+  id: '/san-pham/',
+  path: '/san-pham/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
+  id: '/san-pham/$slug',
+  path: '/san-pham/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/giai-phap/': typeof GiaiPhapIndexRoute
+  '/san-pham/': typeof SanPhamIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/giai-phap': typeof GiaiPhapIndexRoute
+  '/san-pham': typeof SanPhamIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/giai-phap/': typeof GiaiPhapIndexRoute
+  '/san-pham/': typeof SanPhamIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/giai-phap/$slug' | '/san-pham/$slug' | '/giai-phap/' | '/san-pham/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/giai-phap/$slug' | '/san-pham/$slug' | '/giai-phap' | '/san-pham'
+  id:
+    | '__root__'
+    | '/'
+    | '/giai-phap/$slug'
+    | '/san-pham/$slug'
+    | '/giai-phap/'
+    | '/san-pham/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GiaiPhapSlugRoute: typeof GiaiPhapSlugRoute
+  SanPhamSlugRoute: typeof SanPhamSlugRoute
+  GiaiPhapIndexRoute: typeof GiaiPhapIndexRoute
+  SanPhamIndexRoute: typeof SanPhamIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +95,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/giai-phap/': {
+      id: '/giai-phap/'
+      path: '/giai-phap'
+      fullPath: '/giai-phap/'
+      preLoaderRoute: typeof GiaiPhapIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/giai-phap/$slug': {
+      id: '/giai-phap/$slug'
+      path: '/giai-phap/$slug'
+      fullPath: '/giai-phap/$slug'
+      preLoaderRoute: typeof GiaiPhapSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/san-pham/': {
+      id: '/san-pham/'
+      path: '/san-pham'
+      fullPath: '/san-pham/'
+      preLoaderRoute: typeof SanPhamIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/san-pham/$slug': {
+      id: '/san-pham/$slug'
+      path: '/san-pham/$slug'
+      fullPath: '/san-pham/$slug'
+      preLoaderRoute: typeof SanPhamSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GiaiPhapSlugRoute: GiaiPhapSlugRoute,
+  SanPhamSlugRoute: SanPhamSlugRoute,
+  GiaiPhapIndexRoute: GiaiPhapIndexRoute,
+  SanPhamIndexRoute: SanPhamIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

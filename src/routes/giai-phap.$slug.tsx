@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { ProductCard } from "@/components/product-card";
 import { ConsultForm } from "@/components/consult-form";
-import { getSolution, products, projects } from "@/data/mock";
+import { getSolution, products, projects, type Solution } from "@/data/mock";
 
 export const Route = createFileRoute("/giai-phap/$slug")({
   loader: ({ params }) => {
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/giai-phap/$slug")({
 });
 
 function SolutionDetail() {
-  const { solution } = Route.useLoaderData();
+  const { solution } = Route.useLoaderData() as { solution: Solution };
   const solutionProducts = products.filter((p) => solution.productSlugs.includes(p.slug));
   const relatedProjects = projects.filter((p) => p.solutionSlug === solution.slug);
 

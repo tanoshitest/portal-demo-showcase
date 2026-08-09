@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product-card";
-import { brands, getProduct, products } from "@/data/mock";
+import { brands, getProduct, products, type Product } from "@/data/mock";
 import { formatVnd, stockLabel } from "@/lib/format";
 import { useStore } from "@/context/store";
 
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
 });
 
 function ProductDetail() {
-  const { product } = Route.useLoaderData();
+  const { product } = Route.useLoaderData() as { product: Product };
   const { addToCart } = useStore();
   const brand = brands.find((b) => b.slug === product.brandSlug);
   const [variant, setVariant] = useState(product.variants[0]!);
