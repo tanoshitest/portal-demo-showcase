@@ -12,13 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GioHangRouteImport } from './routes/gio-hang'
 import { Route as LienHeRouteImport } from './routes/lien-he'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as ThanhToanRouteImport } from './routes/thanh-toan'
 import { Route as CongTrinhIndexRouteImport } from './routes/cong-trinh.index'
 import { Route as CongTrinhSlugRouteImport } from './routes/cong-trinh.$slug'
 import { Route as GiaiPhapIndexRouteImport } from './routes/giai-phap.index'
 import { Route as GiaiPhapSlugRouteImport } from './routes/giai-phap.$slug'
+import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
+import { Route as PortalQuenMatKhauRouteImport } from './routes/portal.quen-mat-khau'
+import { Route as PortalTaiKhoanRouteImport } from './routes/portal.tai-khoan'
 import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
+import { Route as PortalHangSlugRouteImport } from './routes/portal.hang.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,6 +39,11 @@ const GioHangRoute = GioHangRouteImport.update({
 const LienHeRoute = LienHeRouteImport.update({
   id: '/lien-he',
   path: '/lien-he',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ThanhToanRoute = ThanhToanRouteImport.update({
@@ -60,6 +71,26 @@ const GiaiPhapSlugRoute = GiaiPhapSlugRouteImport.update({
   path: '/giai-phap/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDashboardRoute = PortalDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalQuenMatKhauRoute = PortalQuenMatKhauRouteImport.update({
+  id: '/quen-mat-khau',
+  path: '/quen-mat-khau',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalTaiKhoanRoute = PortalTaiKhoanRouteImport.update({
+  id: '/tai-khoan',
+  path: '/tai-khoan',
+  getParentRoute: () => PortalRoute,
+} as any)
 const SanPhamIndexRoute = SanPhamIndexRouteImport.update({
   id: '/san-pham/',
   path: '/san-pham/',
@@ -70,18 +101,29 @@ const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
   path: '/san-pham/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalHangSlugRoute = PortalHangSlugRouteImport.update({
+  id: '/hang/$slug',
+  path: '/hang/$slug',
+  getParentRoute: () => PortalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gio-hang': typeof GioHangRoute
   '/lien-he': typeof LienHeRoute
+  '/portal': typeof PortalRouteWithChildren
   '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
+  '/portal/tai-khoan': typeof PortalTaiKhoanRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cong-trinh/': typeof CongTrinhIndexRoute
   '/giai-phap/': typeof GiaiPhapIndexRoute
+  '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
+  '/portal/hang/$slug': typeof PortalHangSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,23 +132,34 @@ export interface FileRoutesByTo {
   '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
+  '/portal/tai-khoan': typeof PortalTaiKhoanRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cong-trinh': typeof CongTrinhIndexRoute
   '/giai-phap': typeof GiaiPhapIndexRoute
+  '/portal': typeof PortalIndexRoute
   '/san-pham': typeof SanPhamIndexRoute
+  '/portal/hang/$slug': typeof PortalHangSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gio-hang': typeof GioHangRoute
   '/lien-he': typeof LienHeRoute
+  '/portal': typeof PortalRouteWithChildren
   '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
+  '/portal/tai-khoan': typeof PortalTaiKhoanRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cong-trinh/': typeof CongTrinhIndexRoute
   '/giai-phap/': typeof GiaiPhapIndexRoute
+  '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
+  '/portal/hang/$slug': typeof PortalHangSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,13 +167,19 @@ export interface FileRouteTypes {
     | '/'
     | '/gio-hang'
     | '/lien-he'
+    | '/portal'
     | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
+    | '/portal/dashboard'
+    | '/portal/quen-mat-khau'
+    | '/portal/tai-khoan'
     | '/san-pham/$slug'
     | '/cong-trinh/'
     | '/giai-phap/'
+    | '/portal/'
     | '/san-pham/'
+    | '/portal/hang/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,28 +188,40 @@ export interface FileRouteTypes {
     | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
+    | '/portal/dashboard'
+    | '/portal/quen-mat-khau'
+    | '/portal/tai-khoan'
     | '/san-pham/$slug'
     | '/cong-trinh'
     | '/giai-phap'
+    | '/portal'
     | '/san-pham'
+    | '/portal/hang/$slug'
   id:
     | '__root__'
     | '/'
     | '/gio-hang'
     | '/lien-he'
+    | '/portal'
     | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
+    | '/portal/dashboard'
+    | '/portal/quen-mat-khau'
+    | '/portal/tai-khoan'
     | '/san-pham/$slug'
     | '/cong-trinh/'
     | '/giai-phap/'
+    | '/portal/'
     | '/san-pham/'
+    | '/portal/hang/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GioHangRoute: typeof GioHangRoute
   LienHeRoute: typeof LienHeRoute
+  PortalRoute: typeof PortalRouteWithChildren
   ThanhToanRoute: typeof ThanhToanRoute
   CongTrinhSlugRoute: typeof CongTrinhSlugRoute
   GiaiPhapSlugRoute: typeof GiaiPhapSlugRoute
@@ -181,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/lien-he'
       fullPath: '/lien-he'
       preLoaderRoute: typeof LienHeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/thanh-toan': {
@@ -218,6 +296,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GiaiPhapSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/': {
+      id: '/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/dashboard': {
+      id: '/portal/dashboard'
+      path: '/dashboard'
+      fullPath: '/portal/dashboard'
+      preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/quen-mat-khau': {
+      id: '/portal/quen-mat-khau'
+      path: '/quen-mat-khau'
+      fullPath: '/portal/quen-mat-khau'
+      preLoaderRoute: typeof PortalQuenMatKhauRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/tai-khoan': {
+      id: '/portal/tai-khoan'
+      path: '/tai-khoan'
+      fullPath: '/portal/tai-khoan'
+      preLoaderRoute: typeof PortalTaiKhoanRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/san-pham/': {
       id: '/san-pham/'
       path: '/san-pham'
@@ -232,13 +338,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SanPhamSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/hang/$slug': {
+      id: '/portal/hang/$slug'
+      path: '/hang/$slug'
+      fullPath: '/portal/hang/$slug'
+      preLoaderRoute: typeof PortalHangSlugRouteImport
+      parentRoute: typeof PortalRoute
+    }
   }
 }
+
+interface PortalRouteChildren {
+  PortalDashboardRoute: typeof PortalDashboardRoute
+  PortalQuenMatKhauRoute: typeof PortalQuenMatKhauRoute
+  PortalTaiKhoanRoute: typeof PortalTaiKhoanRoute
+  PortalIndexRoute: typeof PortalIndexRoute
+  PortalHangSlugRoute: typeof PortalHangSlugRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalDashboardRoute: PortalDashboardRoute,
+  PortalQuenMatKhauRoute: PortalQuenMatKhauRoute,
+  PortalTaiKhoanRoute: PortalTaiKhoanRoute,
+  PortalIndexRoute: PortalIndexRoute,
+  PortalHangSlugRoute: PortalHangSlugRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GioHangRoute: GioHangRoute,
   LienHeRoute: LienHeRoute,
+  PortalRoute: PortalRouteWithChildren,
   ThanhToanRoute: ThanhToanRoute,
   CongTrinhSlugRoute: CongTrinhSlugRoute,
   GiaiPhapSlugRoute: GiaiPhapSlugRoute,
