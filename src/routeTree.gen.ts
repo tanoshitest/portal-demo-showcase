@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LienHeRouteImport } from './routes/lien-he'
+import { Route as CongTrinhIndexRouteImport } from './routes/cong-trinh.index'
+import { Route as CongTrinhSlugRouteImport } from './routes/cong-trinh.$slug'
 import { Route as GiaiPhapIndexRouteImport } from './routes/giai-phap.index'
 import { Route as GiaiPhapSlugRouteImport } from './routes/giai-phap.$slug'
 import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
@@ -18,6 +21,21 @@ import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LienHeRoute = LienHeRouteImport.update({
+  id: '/lien-he',
+  path: '/lien-he',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CongTrinhIndexRoute = CongTrinhIndexRouteImport.update({
+  id: '/cong-trinh/',
+  path: '/cong-trinh/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CongTrinhSlugRoute = CongTrinhSlugRouteImport.update({
+  id: '/cong-trinh/$slug',
+  path: '/cong-trinh/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GiaiPhapIndexRoute = GiaiPhapIndexRouteImport.update({
@@ -43,45 +61,75 @@ const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/lien-he': typeof LienHeRoute
+  '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/cong-trinh/': typeof CongTrinhIndexRoute
   '/giai-phap/': typeof GiaiPhapIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/lien-he': typeof LienHeRoute
+  '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/cong-trinh': typeof CongTrinhIndexRoute
   '/giai-phap': typeof GiaiPhapIndexRoute
   '/san-pham': typeof SanPhamIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/lien-he': typeof LienHeRoute
+  '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/cong-trinh/': typeof CongTrinhIndexRoute
   '/giai-phap/': typeof GiaiPhapIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/giai-phap/$slug' | '/san-pham/$slug' | '/giai-phap/' | '/san-pham/'
+    | '/'
+    | '/lien-he'
+    | '/cong-trinh/$slug'
+    | '/giai-phap/$slug'
+    | '/san-pham/$slug'
+    | '/cong-trinh/'
+    | '/giai-phap/'
+    | '/san-pham/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/giai-phap/$slug' | '/san-pham/$slug' | '/giai-phap' | '/san-pham'
+  to:
+    | '/'
+    | '/lien-he'
+    | '/cong-trinh/$slug'
+    | '/giai-phap/$slug'
+    | '/san-pham/$slug'
+    | '/cong-trinh'
+    | '/giai-phap'
+    | '/san-pham'
   id:
     | '__root__'
     | '/'
+    | '/lien-he'
+    | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/san-pham/$slug'
+    | '/cong-trinh/'
     | '/giai-phap/'
     | '/san-pham/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LienHeRoute: typeof LienHeRoute
+  CongTrinhSlugRoute: typeof CongTrinhSlugRoute
   GiaiPhapSlugRoute: typeof GiaiPhapSlugRoute
   SanPhamSlugRoute: typeof SanPhamSlugRoute
+  CongTrinhIndexRoute: typeof CongTrinhIndexRoute
   GiaiPhapIndexRoute: typeof GiaiPhapIndexRoute
   SanPhamIndexRoute: typeof SanPhamIndexRoute
 }
@@ -93,6 +141,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lien-he': {
+      id: '/lien-he'
+      path: '/lien-he'
+      fullPath: '/lien-he'
+      preLoaderRoute: typeof LienHeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cong-trinh/': {
+      id: '/cong-trinh/'
+      path: '/cong-trinh'
+      fullPath: '/cong-trinh/'
+      preLoaderRoute: typeof CongTrinhIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cong-trinh/$slug': {
+      id: '/cong-trinh/$slug'
+      path: '/cong-trinh/$slug'
+      fullPath: '/cong-trinh/$slug'
+      preLoaderRoute: typeof CongTrinhSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/giai-phap/': {
@@ -128,8 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LienHeRoute: LienHeRoute,
+  CongTrinhSlugRoute: CongTrinhSlugRoute,
   GiaiPhapSlugRoute: GiaiPhapSlugRoute,
   SanPhamSlugRoute: SanPhamSlugRoute,
+  CongTrinhIndexRoute: CongTrinhIndexRoute,
   GiaiPhapIndexRoute: GiaiPhapIndexRoute,
   SanPhamIndexRoute: SanPhamIndexRoute,
 }

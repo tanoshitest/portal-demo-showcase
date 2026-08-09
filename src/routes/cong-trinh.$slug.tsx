@@ -123,7 +123,7 @@ function ProjectDetail() {
         <div className="mt-6">
           <ConsultForm
             source={`Công trình: ${project.name}`}
-            defaultSolution={solution?.name}
+            defaultSolution={solution ? solution.name : ""}
           />
         </div>
       </section>
