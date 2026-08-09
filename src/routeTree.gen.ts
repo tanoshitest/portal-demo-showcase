@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GioHangRouteImport } from './routes/gio-hang'
 import { Route as LienHeRouteImport } from './routes/lien-he'
+import { Route as ThanhToanRouteImport } from './routes/thanh-toan'
 import { Route as CongTrinhIndexRouteImport } from './routes/cong-trinh.index'
 import { Route as CongTrinhSlugRouteImport } from './routes/cong-trinh.$slug'
 import { Route as GiaiPhapIndexRouteImport } from './routes/giai-phap.index'
@@ -23,9 +25,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GioHangRoute = GioHangRouteImport.update({
+  id: '/gio-hang',
+  path: '/gio-hang',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LienHeRoute = LienHeRouteImport.update({
   id: '/lien-he',
   path: '/lien-he',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThanhToanRoute = ThanhToanRouteImport.update({
+  id: '/thanh-toan',
+  path: '/thanh-toan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CongTrinhIndexRoute = CongTrinhIndexRouteImport.update({
@@ -61,7 +73,9 @@ const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gio-hang': typeof GioHangRoute
   '/lien-he': typeof LienHeRoute
+  '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
@@ -71,7 +85,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gio-hang': typeof GioHangRoute
   '/lien-he': typeof LienHeRoute
+  '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
@@ -82,7 +98,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/gio-hang': typeof GioHangRoute
   '/lien-he': typeof LienHeRoute
+  '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
@@ -94,7 +112,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/gio-hang'
     | '/lien-he'
+    | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/san-pham/$slug'
@@ -104,7 +124,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/gio-hang'
     | '/lien-he'
+    | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/san-pham/$slug'
@@ -114,7 +136,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/gio-hang'
     | '/lien-he'
+    | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/san-pham/$slug'
@@ -125,7 +149,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GioHangRoute: typeof GioHangRoute
   LienHeRoute: typeof LienHeRoute
+  ThanhToanRoute: typeof ThanhToanRoute
   CongTrinhSlugRoute: typeof CongTrinhSlugRoute
   GiaiPhapSlugRoute: typeof GiaiPhapSlugRoute
   SanPhamSlugRoute: typeof SanPhamSlugRoute
@@ -143,11 +169,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gio-hang': {
+      id: '/gio-hang'
+      path: '/gio-hang'
+      fullPath: '/gio-hang'
+      preLoaderRoute: typeof GioHangRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lien-he': {
       id: '/lien-he'
       path: '/lien-he'
       fullPath: '/lien-he'
       preLoaderRoute: typeof LienHeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/thanh-toan': {
+      id: '/thanh-toan'
+      path: '/thanh-toan'
+      fullPath: '/thanh-toan'
+      preLoaderRoute: typeof ThanhToanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cong-trinh/': {
@@ -197,7 +237,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GioHangRoute: GioHangRoute,
   LienHeRoute: LienHeRoute,
+  ThanhToanRoute: ThanhToanRoute,
   CongTrinhSlugRoute: CongTrinhSlugRoute,
   GiaiPhapSlugRoute: GiaiPhapSlugRoute,
   SanPhamSlugRoute: SanPhamSlugRoute,
