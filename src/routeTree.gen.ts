@@ -25,6 +25,7 @@ import { Route as PortalTaiKhoanRouteImport } from './routes/portal.tai-khoan'
 import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
 import { Route as PortalHangSlugRouteImport } from './routes/portal.hang.$slug'
+import { Route as PortalSolarIndexRouteImport } from './routes/portal.solar.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +107,11 @@ const PortalHangSlugRoute = PortalHangSlugRouteImport.update({
   path: '/hang/$slug',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalSolarIndexRoute = PortalSolarIndexRouteImport.update({
+  id: '/solar/',
+  path: '/solar/',
+  getParentRoute: () => PortalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/solar/': typeof PortalSolarIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalIndexRoute
   '/san-pham': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/solar': typeof PortalSolarIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/solar/': typeof PortalSolarIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/san-pham/'
     | '/portal/hang/$slug'
+    | '/portal/solar/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/san-pham'
     | '/portal/hang/$slug'
+    | '/portal/solar'
   id:
     | '__root__'
     | '/'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/san-pham/'
     | '/portal/hang/$slug'
+    | '/portal/solar/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -345,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalHangSlugRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/solar/': {
+      id: '/portal/solar/'
+      path: '/solar'
+      fullPath: '/portal/solar/'
+      preLoaderRoute: typeof PortalSolarIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
   }
 }
 
@@ -354,6 +373,7 @@ interface PortalRouteChildren {
   PortalTaiKhoanRoute: typeof PortalTaiKhoanRoute
   PortalIndexRoute: typeof PortalIndexRoute
   PortalHangSlugRoute: typeof PortalHangSlugRoute
+  PortalSolarIndexRoute: typeof PortalSolarIndexRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
@@ -362,6 +382,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalTaiKhoanRoute: PortalTaiKhoanRoute,
   PortalIndexRoute: PortalIndexRoute,
   PortalHangSlugRoute: PortalHangSlugRoute,
+  PortalSolarIndexRoute: PortalSolarIndexRoute,
 }
 
 const PortalRouteWithChildren =
