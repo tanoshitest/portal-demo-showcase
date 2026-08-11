@@ -224,10 +224,10 @@ export const defaultSolarProducts: SolarProduct[] = [
   {
     id: "p-cable",
     sku: "ACC-CABLE-PV",
-    name: "Dây DC solar 1x4mm² + đầu MC4 (mét)",
+    name: "Cuộn dây DC solar 1x4mm² 100m + đầu MC4",
     category: "accessory",
-    unit: "mét",
-    costPrice: 32000,
+    unit: "cuộn",
+    costPrice: 3200000,
     specs: { "Tiết diện": "4 mm²", "Chuẩn": "TÜV H1Z2Z2-K", "Chịu nhiệt": "-40°C ~ 120°C" },
     warrantyInfo: "Bảo hành vật tư 12 tháng.",
     image: IMG_ACC,
