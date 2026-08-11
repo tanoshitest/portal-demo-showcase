@@ -26,6 +26,7 @@ import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
 import { Route as PortalHangSlugRouteImport } from './routes/portal.hang.$slug'
 import { Route as PortalSolarIndexRouteImport } from './routes/portal.solar.index'
+import { Route as PortalSolarBaoGiaMoiRouteImport } from './routes/portal.solar.bao-gia-moi'
 import { Route as PortalSolarCauHinhRouteImport } from './routes/portal.solar.cau-hinh'
 
 const IndexRoute = IndexRouteImport.update({
@@ -113,6 +114,11 @@ const PortalSolarIndexRoute = PortalSolarIndexRouteImport.update({
   path: '/solar/',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalSolarBaoGiaMoiRoute = PortalSolarBaoGiaMoiRouteImport.update({
+  id: '/solar/bao-gia-moi',
+  path: '/solar/bao-gia-moi',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalSolarCauHinhRoute = PortalSolarCauHinhRouteImport.update({
   id: '/solar/cau-hinh',
   path: '/solar/cau-hinh',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar/': typeof PortalSolarIndexRoute
 }
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalIndexRoute
   '/san-pham': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar': typeof PortalSolarIndexRoute
 }
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar/': typeof PortalSolarIndexRoute
 }
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/san-pham/'
     | '/portal/hang/$slug'
+    | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar/'
   fileRoutesByTo: FileRoutesByTo
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/san-pham'
     | '/portal/hang/$slug'
+    | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar'
   id:
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/san-pham/'
     | '/portal/hang/$slug'
+    | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar/'
   fileRoutesById: FileRoutesById
@@ -376,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalSolarIndexRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/solar/bao-gia-moi': {
+      id: '/portal/solar/bao-gia-moi'
+      path: '/solar/bao-gia-moi'
+      fullPath: '/portal/solar/bao-gia-moi'
+      preLoaderRoute: typeof PortalSolarBaoGiaMoiRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/solar/cau-hinh': {
       id: '/portal/solar/cau-hinh'
       path: '/solar/cau-hinh'
@@ -392,6 +411,7 @@ interface PortalRouteChildren {
   PortalTaiKhoanRoute: typeof PortalTaiKhoanRoute
   PortalIndexRoute: typeof PortalIndexRoute
   PortalHangSlugRoute: typeof PortalHangSlugRoute
+  PortalSolarBaoGiaMoiRoute: typeof PortalSolarBaoGiaMoiRoute
   PortalSolarCauHinhRoute: typeof PortalSolarCauHinhRoute
   PortalSolarIndexRoute: typeof PortalSolarIndexRoute
 }
@@ -402,6 +422,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalTaiKhoanRoute: PortalTaiKhoanRoute,
   PortalIndexRoute: PortalIndexRoute,
   PortalHangSlugRoute: PortalHangSlugRoute,
+  PortalSolarBaoGiaMoiRoute: PortalSolarBaoGiaMoiRoute,
   PortalSolarCauHinhRoute: PortalSolarCauHinhRoute,
   PortalSolarIndexRoute: PortalSolarIndexRoute,
 }

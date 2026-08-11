@@ -341,7 +341,7 @@ function QuoteWizard() {
                     {numberFmt.format(auto.yieldResult.monthlyPvKwh)} kWh/tháng
                   </Row>
                   <Row label="Số tấm pin">
-                    {auto.yieldResult.panelCount(panelWatt(panels[0] ?? products[0]))} tấm
+                    {panels[0] ? auto.yieldResult.panelCount(panelWatt(panels[0])) : 0} tấm
                   </Row>
                 </div>
                 <div className="mt-4 rounded-lg border border-border bg-card p-4">
