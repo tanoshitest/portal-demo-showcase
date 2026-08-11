@@ -50,6 +50,9 @@ function PortalDashboard() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button asChild size="sm">
+            <Link to="/portal/solar">Báo giá điện mặt trời</Link>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link to="/portal/tai-khoan">Tài khoản</Link>
           </Button>
