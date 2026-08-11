@@ -28,6 +28,7 @@ import { Route as PortalHangSlugRouteImport } from './routes/portal.hang.$slug'
 import { Route as PortalSolarIndexRouteImport } from './routes/portal.solar.index'
 import { Route as PortalSolarBaoGiaMoiRouteImport } from './routes/portal.solar.bao-gia-moi'
 import { Route as PortalSolarCauHinhRouteImport } from './routes/portal.solar.cau-hinh'
+import { Route as PortalSolarBaoGiaIdRouteImport } from './routes/portal.solar.bao-gia.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -124,6 +125,11 @@ const PortalSolarCauHinhRoute = PortalSolarCauHinhRouteImport.update({
   path: '/solar/cau-hinh',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalSolarBaoGiaIdRoute = PortalSolarBaoGiaIdRouteImport.update({
+  id: '/solar/bao-gia/$id',
+  path: '/solar/bao-gia/$id',
+  getParentRoute: () => PortalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar/': typeof PortalSolarIndexRoute
+  '/portal/solar/bao-gia/$id': typeof PortalSolarBaoGiaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar': typeof PortalSolarIndexRoute
+  '/portal/solar/bao-gia/$id': typeof PortalSolarBaoGiaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar/': typeof PortalSolarIndexRoute
+  '/portal/solar/bao-gia/$id': typeof PortalSolarBaoGiaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar/'
+    | '/portal/solar/bao-gia/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar'
+    | '/portal/solar/bao-gia/$id'
   id:
     | '__root__'
     | '/'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar/'
+    | '/portal/solar/bao-gia/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -402,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalSolarCauHinhRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/solar/bao-gia/$id': {
+      id: '/portal/solar/bao-gia/$id'
+      path: '/solar/bao-gia/$id'
+      fullPath: '/portal/solar/bao-gia/$id'
+      preLoaderRoute: typeof PortalSolarBaoGiaIdRouteImport
+      parentRoute: typeof PortalRoute
+    }
   }
 }
 
@@ -414,6 +433,7 @@ interface PortalRouteChildren {
   PortalSolarBaoGiaMoiRoute: typeof PortalSolarBaoGiaMoiRoute
   PortalSolarCauHinhRoute: typeof PortalSolarCauHinhRoute
   PortalSolarIndexRoute: typeof PortalSolarIndexRoute
+  PortalSolarBaoGiaIdRoute: typeof PortalSolarBaoGiaIdRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
@@ -425,6 +445,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalSolarBaoGiaMoiRoute: PortalSolarBaoGiaMoiRoute,
   PortalSolarCauHinhRoute: PortalSolarCauHinhRoute,
   PortalSolarIndexRoute: PortalSolarIndexRoute,
+  PortalSolarBaoGiaIdRoute: PortalSolarBaoGiaIdRoute,
 }
 
 const PortalRouteWithChildren =
