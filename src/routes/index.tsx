@@ -126,12 +126,12 @@ function Home() {
             to="/giai-phap"
           />
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {solutions.map((s) => (
+            {solutions.slice(0, 4).map((s) => (
               <Link
                 key={s.slug}
                 to="/giai-phap/$slug"
                 params={{ slug: s.slug }}
-                className="card-hover group overflow-hidden rounded-xl border border-border bg-card shadow-card"
+                className="card-hover group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card"
               >
                 <img
                   src={s.image}
@@ -141,13 +141,13 @@ function Home() {
                   height={900}
                   className="h-36 w-full object-cover"
                 />
-                <div className="p-4">
+                <div className="flex flex-1 flex-col p-4">
                   <span className="text-xs font-semibold uppercase text-highlight-foreground">
                     {s.group}
                   </span>
-                  <h3 className="mt-1 font-bold leading-snug group-hover:text-brand">{s.name}</h3>
+                  <h3 className="mt-1 line-clamp-2 font-bold leading-snug group-hover:text-brand">{s.name}</h3>
                   <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.short}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand">
+                  <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-brand">
                     Xem chi tiết <ArrowRight className="h-4 w-4" />
                   </span>
                 </div>
@@ -180,7 +180,7 @@ function Home() {
             </Button>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {projects.map((p) => (
+            {projects.slice(0, 4).map((p) => (
               <Link
                 key={p.slug}
                 to="/cong-trinh/$slug"

@@ -74,8 +74,8 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link to="/portal" className="hover:underline">
-                Portal tài liệu hãng
+              <Link to="/portal/dashboard" search={{}} className="hover:underline">
+                Portal
               </Link>
             </li>
             <li>
@@ -87,7 +87,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-brand-foreground/15 py-4 text-center text-xs opacity-70">
-        © 2026 Công ty TNHH Hoàng Vĩnh VKT. Website demo – dữ liệu minh họa.
+        © 2026 Công ty TNHH Hoàng Vĩnh VKT. Built with Tanoshi Vietnam.
       </div>
     </footer>
   );

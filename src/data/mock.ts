@@ -65,7 +65,7 @@ export type Product = {
   salePrice?: number;
   rating: number;
   reviewCount: number;
-  stock: "in_stock" | "low_stock" | "out_of_stock";
+  stock: number;
   warranty: string;
   image: string;
   highlights: string[];
@@ -84,7 +84,7 @@ export const products: Product[] = [
   {
     id: "p1", slug: "mccb-3p-250a-schneider", name: "MCCB 3P 250A Schneider EasyPact CVS", sku: "SCH-CVS250-3P",
     brandSlug: "schneider", categorySlug: "thiet-bi-dong-cat", price: 8450000, salePrice: 7590000,
-    rating: 4.8, reviewCount: 36, stock: "in_stock", warranty: "12 tháng chính hãng", image: product1,
+    rating: 4.8, reviewCount: 36, stock: 24, warranty: "12 tháng chính hãng", image: product1,
     highlights: ["Dòng cắt 36kA", "Bảo vệ quá tải & ngắn mạch", "Hàng chính hãng, đầy đủ CO/CQ"],
     description: "MCCB 3 pha 250A dòng EasyPact CVS phù hợp cho tủ phân phối tổng của nhà xưởng, tòa nhà thương mại. Thiết kế compact, dễ lắp đặt trong tủ tiêu chuẩn, hỗ trợ phụ kiện mở rộng như cuộn shunt trip, tiếp điểm phụ.",
     specs: [
@@ -102,7 +102,7 @@ export const products: Product[] = [
   {
     id: "p2", slug: "bien-tan-abb-acs580-15kw", name: "Biến tần ABB ACS580 15kW 3P 380V", sku: "ABB-ACS580-15",
     brandSlug: "abb", categorySlug: "bien-tan-khoi-dong-mem", price: 24500000, salePrice: 22900000,
-    rating: 4.9, reviewCount: 21, stock: "in_stock", warranty: "18 tháng", image: product2,
+    rating: 4.9, reviewCount: 21, stock: 18, warranty: "18 tháng", image: product2,
     highlights: ["Tiết kiệm 20–35% điện năng", "Tích hợp PID, Modbus RTU", "Cài đặt nhanh bằng trợ lý"],
     description: "Biến tần ABB ACS580 dành cho bơm, quạt, máy nén trong nhà máy. Tích hợp sẵn bộ lọc EMC và điện kháng DC, giúp giảm sóng hài và bảo vệ lưới điện.",
     specs: [
@@ -120,7 +120,7 @@ export const products: Product[] = [
   {
     id: "p3", slug: "plc-mitsubishi-fx5u-32mt", name: "PLC Mitsubishi FX5U-32MT/ES", sku: "MIT-FX5U-32MT",
     brandSlug: "mitsubishi", categorySlug: "plc-hmi", price: 13500000,
-    rating: 4.7, reviewCount: 14, stock: "low_stock", warranty: "12 tháng", image: product3,
+    rating: 4.7, reviewCount: 14, stock: 3, warranty: "12 tháng", image: product3,
     highlights: ["32 I/O, ngõ ra transistor", "Tích hợp Ethernet & RS485", "Lập trình GX Works3"],
     description: "PLC iQ-F FX5U là dòng điều khiển compact mạnh mẽ cho máy đóng gói, dây chuyền lắp ráp. Hỗ trợ điều khiển vị trí 4 trục, tích hợp analog và Ethernet.",
     specs: [
@@ -137,7 +137,7 @@ export const products: Product[] = [
   {
     id: "p4", slug: "contactor-ls-mc-40a", name: "Contactor LS MC-40a 3P 40A 220V", sku: "LS-MC40A",
     brandSlug: "ls-electric", categorySlug: "thiet-bi-dong-cat", price: 1250000, salePrice: 1090000,
-    rating: 4.5, reviewCount: 52, stock: "in_stock", warranty: "12 tháng", image: product1,
+    rating: 4.5, reviewCount: 52, stock: 42, warranty: "12 tháng", image: product1,
     highlights: ["Tiếp điểm bạc hợp kim bền", "Tuổi thọ cơ 10 triệu lần", "Kèm 1NO + 1NC"],
     description: "Contactor LS MC-40a dùng đóng cắt động cơ đến 18.5kW, phổ biến trong tủ điều khiển bơm, quạt, băng tải.",
     specs: [
@@ -155,7 +155,7 @@ export const products: Product[] = [
   {
     id: "p5", slug: "dong-ho-da-nang-schneider-pm2130", name: "Đồng hồ đa năng Schneider PM2130", sku: "SCH-PM2130",
     brandSlug: "schneider", categorySlug: "thiet-bi-do-luong", price: 6900000,
-    rating: 4.6, reviewCount: 9, stock: "in_stock", warranty: "24 tháng", image: product3,
+    rating: 4.6, reviewCount: 9, stock: 12, warranty: "24 tháng", image: product3,
     highlights: ["Đo đa thông số 3 pha", "Modbus RTU", "Cấp chính xác 0.5S"],
     description: "Đồng hồ đo điện năng đa năng PM2130 hiển thị điện áp, dòng, công suất, hệ số công suất và sóng hài cơ bản, phù hợp hệ thống giám sát năng lượng.",
     specs: [
@@ -169,7 +169,7 @@ export const products: Product[] = [
   {
     id: "p6", slug: "den-highbay-led-150w", name: "Đèn Highbay LED nhà xưởng 150W IP65", sku: "HV-HB150",
     brandSlug: "panasonic", categorySlug: "chieu-sang-cong-nghiep", price: 2450000, salePrice: 2190000,
-    rating: 4.4, reviewCount: 63, stock: "in_stock", warranty: "36 tháng", image: product2,
+    rating: 4.4, reviewCount: 63, stock: 36, warranty: "36 tháng", image: product2,
     highlights: ["Hiệu suất 130lm/W", "Chống bụi nước IP65", "Tản nhiệt nhôm đúc"],
     description: "Đèn LED highbay 150W cho nhà xưởng trần cao 6–10m, ánh sáng trắng trung tính, tiết kiệm đến 60% so với đèn cao áp.",
     specs: [
@@ -187,7 +187,7 @@ export const products: Product[] = [
   {
     id: "p7", slug: "khoi-dong-mem-abb-psr", name: "Khởi động mềm ABB PSR30-600-70 15kW", sku: "ABB-PSR30",
     brandSlug: "abb", categorySlug: "bien-tan-khoi-dong-mem", price: 9800000,
-    rating: 4.6, reviewCount: 11, stock: "in_stock", warranty: "12 tháng", image: product2,
+    rating: 4.6, reviewCount: 11, stock: 15, warranty: "12 tháng", image: product2,
     highlights: ["Giảm dòng khởi động", "Bảo vệ động cơ", "Kích thước nhỏ gọn"],
     description: "Khởi động mềm PSR giúp giảm sốc cơ khí và dòng khởi động cho động cơ bơm, quạt, máy nén khí.",
     specs: [
@@ -201,7 +201,7 @@ export const products: Product[] = [
   {
     id: "p8", slug: "vo-tu-dien-ip54-800x600", name: "Vỏ tủ điện sơn tĩnh điện IP54 800x600x250", sku: "HV-TD8060",
     brandSlug: "siemens", categorySlug: "tu-dien-phu-kien", price: 3200000, salePrice: 2950000,
-    rating: 4.3, reviewCount: 27, stock: "in_stock", warranty: "12 tháng", image: product1,
+    rating: 4.3, reviewCount: 27, stock: 8, warranty: "12 tháng", image: product1,
     highlights: ["Tôn 1.2mm sơn tĩnh điện", "Gioăng chống nước", "Kèm tấm montage"],
     description: "Vỏ tủ điện trong nhà, phù hợp tủ điều khiển và tủ phân phối tầng. Có thể gia công theo kích thước yêu cầu.",
     specs: [
@@ -232,6 +232,13 @@ export type Solution = {
   process: { step: string; desc: string }[];
   faq: { q: string; a: string }[];
 };
+
+export const SOLUTION_GROUPS = [
+  "Điện công nghiệp",
+  "Tự động hóa",
+  "Năng lượng",
+  "Quản lý năng lượng",
+] as const;
 
 export const solutions: Solution[] = [
   {
@@ -266,7 +273,7 @@ export const solutions: Solution[] = [
   {
     id: "s2", slug: "tu-dong-hoa-day-chuyen", name: "Tự động hóa dây chuyền sản xuất", group: "Tự động hóa",
     short: "Nâng cấp dây chuyền với PLC, HMI, biến tần và SCADA để tăng năng suất, giảm phụ thuộc thao tác tay.",
-    image: solution1,
+    image: project1,
     benefits: [
       { title: "Tăng năng suất 15–30%", desc: "Chuẩn hóa chu trình, giảm thời gian chờ và lỗi thao tác." },
       { title: "Dữ liệu sản xuất realtime", desc: "Theo dõi sản lượng, downtime và cảnh báo tức thời." },
@@ -318,7 +325,7 @@ export const solutions: Solution[] = [
   {
     id: "s4", slug: "giam-sat-nang-luong", name: "Giám sát năng lượng nhà máy", group: "Quản lý năng lượng",
     short: "Đo đếm và phân tích tiêu thụ điện theo khu vực, phát hiện lãng phí và lập báo cáo tiết kiệm.",
-    image: solution2,
+    image: project2,
     benefits: [
       { title: "Biết điện đi đâu", desc: "Phân bổ chi phí điện theo dây chuyền, ca sản xuất." },
       { title: "Cảnh báo bất thường", desc: "Phát hiện quá tải, lệch pha, hệ số công suất thấp." },
@@ -338,6 +345,57 @@ export const solutions: Solution[] = [
       { step: "Đào tạo & bàn giao", desc: "Hướng dẫn đọc số liệu và ra quyết định." },
     ],
     faq: [{ q: "Có tích hợp với hệ thống có sẵn không?", a: "Có, hỗ trợ Modbus RTU/TCP và xuất dữ liệu ra Excel." }],
+  },
+  {
+    id: "s5", slug: "tu-dien-msb-ats", name: "Tủ điện MSB & chuyển nguồn ATS", group: "Điện công nghiệp",
+    short: "Tủ tổng, tủ phân phối và hệ ATS dự phòng cho nhà máy, tòa nhà – vận hành liên tục khi mất điện lưới.",
+    image: hero,
+    benefits: [
+      { title: "Không gián đoạn sản xuất", desc: "Chuyển nguồn tự động dưới 10 giây khi mất điện." },
+      { title: "Bảo vệ phân cấp", desc: "MCCB chọn lọc, hạn chế sự cố lan rộng." },
+      { title: "Dễ bảo trì", desc: "Bố trí thiết bị theo tiêu chuẩn, có sơ đồ và nhãn rõ." },
+    ],
+    audience: ["Nhà máy cần nguồn dự phòng", "Tòa nhà thương mại, bệnh viện", "Kho lạnh vận hành 24/7"],
+    systems: ["Tủ MSB", "Tủ ATS 2 nguồn", "Tủ DB khu vực", "Hệ tiếp địa"],
+    packages: [
+      { id: "pk1", name: "MSB 630A", desc: "Cho tải trung bình, một nguồn lưới.", price: "Từ 210.000.000đ", items: ["Tủ MSB 630A", "2 tủ DB", "Hồ sơ nghiệm thu"] },
+      { id: "pk2", name: "MSB + ATS", desc: "Hai nguồn lưới / máy phát.", price: "Từ 420.000.000đ", items: ["Tủ MSB 1000A", "ATS 800A", "Giám sát trạng thái nguồn"] },
+      { id: "pk3", name: "Gói tòa nhà", desc: "Nhiều tầng, nhiều khách thuê.", price: "Liên hệ báo giá", items: ["MSB + ATS", "Tủ tầng", "Đo đếm từng khu"] },
+    ],
+    productSlugs: ["mccb-3p-250a-schneider", "vo-tu-dien-ip54-800x600", "dong-ho-da-nang-schneider-pm2130"],
+    process: [
+      { step: "Khảo sát phụ tải", desc: "Xác định công suất, nguồn lưới và máy phát." },
+      { step: "Thiết kế tủ", desc: "Nguyên lý, mặt dựng, chọn thiết bị." },
+      { step: "Gia công & FAT", desc: "Lắp tủ tại xưởng, chạy thử trước khi giao." },
+      { step: "Lắp đặt hiện trường", desc: "Kéo cáp, đấu nối, hiệu chỉnh ATS." },
+      { step: "Nghiệm thu", desc: "Đo kiểm, bàn giao hồ sơ hoàn công." },
+    ],
+    faq: [{ q: "Thời gian gia công tủ bao lâu?", a: "Thường 2–4 tuần tùy số ngăn và thiết bị đặt hàng." }],
+  },
+  {
+    id: "s6", slug: "chieu-sang-nha-xuong", name: "Chiếu sáng nhà xưởng", group: "Điện công nghiệp",
+    short: "Thiết kế lux theo tiêu chuẩn, đèn highbay LED tiết kiệm điện, ít bảo trì cho nhà máy và kho.",
+    image: product3,
+    benefits: [
+      { title: "Đủ sáng – đúng lux", desc: "Tính toán theo TCVN, tránh chói và vùng tối." },
+      { title: "Giảm 40–60% điện chiếu sáng", desc: "Thay đèn HID/metal halide bằng LED." },
+      { title: "Tuổi thọ cao", desc: "Giảm số lần thay đèn trên cao, an toàn hơn." },
+    ],
+    audience: ["Nhà xưởng sản xuất", "Kho logistics cao tầng", "Xưởng cơ khí, may mặc"],
+    systems: ["Đèn highbay LED", "Cảm biến hiện diện / ánh sáng", "Tủ chiếu sáng khu vực"],
+    packages: [
+      { id: "pk1", name: "1.000 m²", desc: "Xưởng nhỏ, trần 8–10m.", price: "Từ 85.000.000đ", items: ["40 bộ highbay 150W", "Tủ chiếu sáng", "Lắp đặt"] },
+      { id: "pk2", name: "5.000 m²", desc: "Nhà máy trung bình.", price: "Từ 360.000.000đ", items: ["Highbay + cảm biến", "Phân khu theo ca", "Bảo hành 3 năm"] },
+      { id: "pk3", name: "Kho cao tầng", desc: "Trần trên 12m, kệ cao.", price: "Liên hệ báo giá", items: ["Đèn hẹp góc", "Cảm biến lối đi", "Giám sát"] },
+    ],
+    productSlugs: ["den-highbay-led-150w", "vo-tu-dien-ip54-800x600"],
+    process: [
+      { step: "Đo lux hiện trạng", desc: "Khảo sát trần, kệ và yêu cầu công việc." },
+      { step: "Mô phỏng chiếu sáng", desc: "Bố trí đèn, tính hoàn vốn." },
+      { step: "Thi công", desc: "Lắp đặt an toàn trên cao." },
+      { step: "Đo nghiệm thu", desc: "Xác nhận lux tại mặt làm việc." },
+    ],
+    faq: [{ q: "Có giữ lại máng đèn cũ không?", a: "Được nếu kết cấu còn tốt; chúng tôi chỉ thay bộ đèn và chấn lưu." }],
   },
 ];
 
@@ -362,38 +420,56 @@ export const projects: Project[] = [
   {
     id: "pr1", slug: "nha-may-thuc-pham-long-an", name: "Nhà máy thực phẩm An Phát – Long An",
     type: "Nhà máy sản xuất", location: "Bến Lức, Long An", year: "2025", scale: "6.000 m² – 800kVA",
-    image: project1, gallery: [project1, solution1, project2], solutionSlug: "he-thong-dien-nha-xuong",
+    image: project1, gallery: [project1, solution1, project2, product1], solutionSlug: "he-thong-dien-nha-xuong",
     problem: "Nhà máy mở rộng dây chuyền nhưng hệ thống điện cũ quá tải, thường xuyên nhảy aptomat và sụt áp vào giờ cao điểm.",
     solutionDesc: "Thiết kế lại hệ phân phối với tủ MSB 1000A, 6 tủ DB theo khu vực, bổ sung tủ bù công suất và hệ giám sát điện năng cho từng dây chuyền.",
     result: ["Không còn sự cố dừng máy do điện trong 12 tháng", "Hệ số công suất tăng từ 0.78 lên 0.96", "Giảm 11% chi phí điện hàng tháng"],
-    productSlugs: ["mccb-3p-250a-schneider", "contactor-ls-mc-40a", "dong-ho-da-nang-schneider-pm2130"],
+    productSlugs: ["mccb-3p-250a-schneider", "contactor-ls-mc-40a", "dong-ho-da-nang-schneider-pm2130", "vo-tu-dien-ip54-800x600"],
   },
   {
     id: "pr2", slug: "toa-nha-van-phong-sunrise", name: "Tòa nhà văn phòng Sunrise Tower – TP.HCM",
     type: "Tòa nhà thương mại", location: "Quận 7, TP. Hồ Chí Minh", year: "2025", scale: "18 tầng – 1.250kVA",
-    image: project2, gallery: [project2, solution1, project1], solutionSlug: "giam-sat-nang-luong",
+    image: project2, gallery: [project2, solution1, project1, product2], solutionSlug: "giam-sat-nang-luong",
     problem: "Ban quản lý không phân bổ được chi phí điện cho từng khách thuê và không phát hiện được thiết bị tiêu thụ bất thường.",
     solutionDesc: "Lắp đặt 42 điểm đo tại tủ tầng và tủ khu vực, kết nối về phần mềm giám sát tập trung với báo cáo tự động theo tháng.",
     result: ["Phân bổ chi phí điện chính xác cho 36 khách thuê", "Phát hiện và xử lý 3 điểm rò rỉ tải ban đêm", "Giảm 8% điện năng khu vực dùng chung"],
-    productSlugs: ["dong-ho-da-nang-schneider-pm2130", "vo-tu-dien-ip54-800x600"],
+    productSlugs: ["dong-ho-da-nang-schneider-pm2130", "vo-tu-dien-ip54-800x600", "mccb-3p-250a-schneider", "den-highbay-led-150w"],
   },
   {
     id: "pr3", slug: "day-chuyen-bao-bi-binh-duong", name: "Dây chuyền bao bì Tân Tiến – Bình Dương",
     type: "Tự động hóa", location: "Thuận An, Bình Dương", year: "2024", scale: "3 trạm PLC – 12 động cơ",
-    image: project1, gallery: [project1, project2], solutionSlug: "tu-dong-hoa-day-chuyen",
+    image: solution1, gallery: [solution1, project1, project2, product3], solutionSlug: "tu-dong-hoa-day-chuyen",
     problem: "Dây chuyền vận hành thủ công, tốc độ không đồng bộ giữa các công đoạn khiến tỉ lệ phế phẩm cao.",
     solutionDesc: "Triển khai 3 trạm PLC Mitsubishi kết nối Ethernet, điều khiển 12 động cơ bằng biến tần ABB và HMI vận hành tại từng công đoạn.",
     result: ["Năng suất tăng 22%", "Tỉ lệ phế phẩm giảm từ 4.1% xuống 1.3%", "Thời gian đổi sản phẩm giảm còn 15 phút"],
-    productSlugs: ["plc-mitsubishi-fx5u-32mt", "bien-tan-abb-acs580-15kw"],
+    productSlugs: ["plc-mitsubishi-fx5u-32mt", "bien-tan-abb-acs580-15kw", "khoi-dong-mem-abb-psr", "contactor-ls-mc-40a"],
   },
   {
     id: "pr4", slug: "dien-mat-troi-kho-lanh-dong-nai", name: "Điện mặt trời kho lạnh Đại Phong – Đồng Nai",
     type: "Năng lượng", location: "Trảng Bom, Đồng Nai", year: "2024", scale: "320 kWp áp mái",
-    image: project2, gallery: [solution2, project2], solutionSlug: "dien-mat-troi-ap-mai",
+    image: solution2, gallery: [solution2, project2, hero, product1], solutionSlug: "dien-mat-troi-ap-mai",
     problem: "Kho lạnh vận hành liên tục, chi phí điện chiếm hơn 35% chi phí vận hành hàng tháng.",
     solutionDesc: "Lắp đặt hệ điện mặt trời áp mái 320 kWp tự dùng, kèm hệ giám sát sản lượng và cảnh báo suy giảm hiệu suất.",
     result: ["Sản lượng trung bình 38.000 kWh/tháng", "Giảm 27% hóa đơn điện", "Dự kiến hoàn vốn sau 4,8 năm"],
-    productSlugs: ["mccb-3p-250a-schneider", "dong-ho-da-nang-schneider-pm2130"],
+    productSlugs: ["mccb-3p-250a-schneider", "dong-ho-da-nang-schneider-pm2130", "vo-tu-dien-ip54-800x600", "den-highbay-led-150w"],
+  },
+  {
+    id: "pr5", slug: "nha-may-duoc-pham-binh-duong", name: "Nhà máy dược phẩm Mekophar – Bình Dương",
+    type: "Nhà máy sản xuất", location: "Bến Cát, Bình Dương", year: "2025", scale: "9.500 m² – 1.000kVA",
+    image: hero, gallery: [hero, project1, solution1, product2], solutionSlug: "tu-dien-msb-ats",
+    problem: "Dây chuyền GMP yêu cầu nguồn điện ổn định; mất điện vài giây cũng làm hỏng mẻ sản xuất và phải vệ sinh lại phòng sạch.",
+    solutionDesc: "Lắp tủ MSB 1000A, ATS 2 nguồn lưới/máy phát và giám sát trạng thái nguồn realtime cho khu sản xuất, kho lạnh nguyên liệu.",
+    result: ["Thời gian chuyển nguồn ATS dưới 8 giây", "Không gián đoạn mẻ sản xuất trong 9 tháng", "Hồ sơ điện đạt yêu cầu audit GMP"],
+    productSlugs: ["mccb-3p-250a-schneider", "vo-tu-dien-ip54-800x600", "dong-ho-da-nang-schneider-pm2130", "khoi-dong-mem-abb-psr"],
+  },
+  {
+    id: "pr6", slug: "khach-san-marina-nha-trang", name: "Khách sạn Marina Nha Trang",
+    type: "Tòa nhà thương mại", location: "Nha Trang, Khánh Hòa", year: "2024", scale: "22 tầng – 2.000kVA",
+    image: product1, gallery: [product1, project2, solution2, hero], solutionSlug: "chieu-sang-nha-xuong",
+    problem: "Hệ chiếu sáng và điều hòa chiếm phần lớn hóa đơn điện; ban quản lý không tách được tiêu thụ theo khu vực (phòng, F&B, kỹ thuật).",
+    solutionDesc: "Thay đèn LED khu vực công cộng, lắp điểm đo theo tầng và tối ưu lịch vận hành điều hòa theo công suất phòng.",
+    result: ["Giảm 18% điện khu vực dùng chung", "Lux sảnh/hành lang đạt tiêu chuẩn khách sạn 4 sao", "Báo cáo điện tự động gửi ban quản lý mỗi tháng"],
+    productSlugs: ["den-highbay-led-150w", "dong-ho-da-nang-schneider-pm2130", "mccb-3p-250a-schneider", "vo-tu-dien-ip54-800x600"],
   },
 ];
 
@@ -405,30 +481,32 @@ export type PortalDoc = {
   version: string;
   size: string;
   updatedAt: string;
-  roles: ("admin" | "partner" | "technician")[];
+  roles: ("admin" | "sale")[];
+  fileUrl?: string;
+  fileName?: string;
 };
 
 export const documents: PortalDoc[] = [
-  { id: "d1", brandSlug: "schneider", name: "Catalogue EasyPact CVS 2026", type: "Catalogue", version: "v3.2", size: "12.4 MB", updatedAt: "05/02/2026", roles: ["admin", "partner", "technician"] },
-  { id: "d2", brandSlug: "schneider", name: "Datasheet PM2130 – Đồng hồ đa năng", type: "Datasheet", version: "v1.8", size: "2.1 MB", updatedAt: "18/01/2026", roles: ["admin", "partner", "technician"] },
-  { id: "d3", brandSlug: "schneider", name: "Bảng giá đại lý Quý I/2026", type: "Catalogue", version: "v1.0", size: "980 KB", updatedAt: "02/01/2026", roles: ["admin", "partner"] },
-  { id: "d4", brandSlug: "abb", name: "Hướng dẫn cài đặt biến tần ACS580", type: "Hướng dẫn", version: "v4.0", size: "8.7 MB", updatedAt: "22/02/2026", roles: ["admin", "technician"] },
-  { id: "d5", brandSlug: "abb", name: "Phần mềm Drive Composer Entry", type: "Phần mềm", version: "v2.9", size: "145 MB", updatedAt: "11/12/2025", roles: ["admin", "technician"] },
-  { id: "d6", brandSlug: "abb", name: "Catalogue khởi động mềm PSR/PSE", type: "Catalogue", version: "v2.3", size: "6.3 MB", updatedAt: "30/11/2025", roles: ["admin", "partner", "technician"] },
-  { id: "d7", brandSlug: "mitsubishi", name: "Sổ tay lập trình GX Works3", type: "Hướng dẫn", version: "v5.1", size: "23.6 MB", updatedAt: "14/02/2026", roles: ["admin", "technician"] },
-  { id: "d8", brandSlug: "mitsubishi", name: "Datasheet iQ-F FX5U series", type: "Datasheet", version: "v2.0", size: "4.8 MB", updatedAt: "07/01/2026", roles: ["admin", "partner", "technician"] },
-  { id: "d9", brandSlug: "siemens", name: "Chứng chỉ CO/CQ thiết bị hạ thế 2026", type: "Chứng chỉ", version: "v1.0", size: "1.2 MB", updatedAt: "20/02/2026", roles: ["admin", "partner"] },
-  { id: "d10", brandSlug: "siemens", name: "Catalogue SIMATIC S7-1200", type: "Catalogue", version: "v6.4", size: "15.9 MB", updatedAt: "03/02/2026", roles: ["admin", "partner", "technician"] },
-  { id: "d11", brandSlug: "panasonic", name: "Catalogue chiếu sáng công nghiệp", type: "Catalogue", version: "v1.5", size: "9.2 MB", updatedAt: "25/01/2026", roles: ["admin", "partner", "technician"] },
-  { id: "d12", brandSlug: "ls-electric", name: "Datasheet contactor MC series", type: "Datasheet", version: "v3.0", size: "3.4 MB", updatedAt: "09/02/2026", roles: ["admin", "partner", "technician"] },
-  { id: "d13", brandSlug: "ls-electric", name: "Hướng dẫn bảo trì MCCB LS", type: "Hướng dẫn", version: "v1.2", size: "2.8 MB", updatedAt: "16/12/2025", roles: ["admin", "technician"] },
+  { id: "d1", brandSlug: "schneider", name: "Catalogue EasyPact CVS 2026", type: "Catalogue", version: "v3.2", size: "12.4 MB", updatedAt: "05/02/2026", roles: ["admin", "sale"] },
+  { id: "d2", brandSlug: "schneider", name: "Datasheet PM2130 – Đồng hồ đa năng", type: "Datasheet", version: "v1.8", size: "2.1 MB", updatedAt: "18/01/2026", roles: ["admin", "sale"] },
+  { id: "d3", brandSlug: "schneider", name: "Bảng giá đại lý Quý I/2026", type: "Catalogue", version: "v1.0", size: "980 KB", updatedAt: "02/01/2026", roles: ["admin", "sale"] },
+  { id: "d4", brandSlug: "abb", name: "Hướng dẫn cài đặt biến tần ACS580", type: "Hướng dẫn", version: "v4.0", size: "8.7 MB", updatedAt: "22/02/2026", roles: ["admin", "sale"] },
+  { id: "d5", brandSlug: "abb", name: "Phần mềm Drive Composer Entry", type: "Phần mềm", version: "v2.9", size: "145 MB", updatedAt: "11/12/2025", roles: ["admin", "sale"] },
+  { id: "d6", brandSlug: "abb", name: "Catalogue khởi động mềm PSR/PSE", type: "Catalogue", version: "v2.3", size: "6.3 MB", updatedAt: "30/11/2025", roles: ["admin", "sale"] },
+  { id: "d7", brandSlug: "mitsubishi", name: "Sổ tay lập trình GX Works3", type: "Hướng dẫn", version: "v5.1", size: "23.6 MB", updatedAt: "14/02/2026", roles: ["admin", "sale"] },
+  { id: "d8", brandSlug: "mitsubishi", name: "Datasheet iQ-F FX5U series", type: "Datasheet", version: "v2.0", size: "4.8 MB", updatedAt: "07/01/2026", roles: ["admin", "sale"] },
+  { id: "d9", brandSlug: "siemens", name: "Chứng chỉ CO/CQ thiết bị hạ thế 2026", type: "Chứng chỉ", version: "v1.0", size: "1.2 MB", updatedAt: "20/02/2026", roles: ["admin", "sale"] },
+  { id: "d10", brandSlug: "siemens", name: "Catalogue SIMATIC S7-1200", type: "Catalogue", version: "v6.4", size: "15.9 MB", updatedAt: "03/02/2026", roles: ["admin", "sale"] },
+  { id: "d11", brandSlug: "panasonic", name: "Catalogue chiếu sáng công nghiệp", type: "Catalogue", version: "v1.5", size: "9.2 MB", updatedAt: "25/01/2026", roles: ["admin", "sale"] },
+  { id: "d12", brandSlug: "ls-electric", name: "Datasheet contactor MC series", type: "Datasheet", version: "v3.0", size: "3.4 MB", updatedAt: "09/02/2026", roles: ["admin", "sale"] },
+  { id: "d13", brandSlug: "ls-electric", name: "Hướng dẫn bảo trì MCCB LS", type: "Hướng dẫn", version: "v1.2", size: "2.8 MB", updatedAt: "16/12/2025", roles: ["admin", "sale"] },
 ];
 
 export type PortalUser = {
   email: string;
   password: string;
   name: string;
-  role: "admin" | "partner" | "technician";
+  role: "admin" | "sale";
   roleLabel: string;
   company: string;
   phone: string;
@@ -437,18 +515,13 @@ export type PortalUser = {
 
 export const portalUsers: PortalUser[] = [
   {
-    email: "partner@hoangvinhvkt.vn", password: "123456", name: "Nguyễn Thị Mai Anh", role: "partner",
-    roleLabel: "Đại lý / Partner", company: "Công ty TNHH Thiết bị điện Mai Anh", phone: "0908 111 222",
-    brandSlugs: ["schneider", "abb", "ls-electric"],
-  },
-  {
-    email: "kythuat@hoangvinhvkt.vn", password: "123456", name: "Trần Quốc Bảo", role: "technician",
-    roleLabel: "Kỹ thuật viên", company: "Hoàng Vĩnh VKT – Phòng Kỹ thuật", phone: "0912 333 444",
-    brandSlugs: ["abb", "mitsubishi", "siemens", "ls-electric"],
-  },
-  {
     email: "admin@hoangvinhvkt.vn", password: "123456", name: "Lê Hoàng Vĩnh", role: "admin",
-    roleLabel: "Quản trị viên", company: "Hoàng Vĩnh VKT", phone: "0901 234 567",
+    roleLabel: "Admin", company: "Hoàng Vĩnh VKT", phone: "0901 234 567",
+    brandSlugs: "all",
+  },
+  {
+    email: "sale@hoangvinhvkt.vn", password: "123456", name: "Nguyễn Thị Mai Anh", role: "sale",
+    roleLabel: "Sale", company: "Hoàng Vĩnh VKT – Phòng Kinh doanh", phone: "0908 111 222",
     brandSlugs: "all",
   },
 ];

@@ -1,20 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Download, Eye, FileText, Search, ShieldAlert } from "lucide-react";
-import { toast } from "sonner";
+import { Download, Eye, Plus, Search, ShieldAlert } from "lucide-react";
+import { PortalGate } from "@/components/portal-gate";
+import { AddDocumentSheet } from "@/components/add-document-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useStore } from "@/context/store";
-import { documents, getBrand, type Brand } from "@/data/mock";
-import { PortalGate } from "./portal.dashboard";
+import { getBrand, type Brand, type PortalDoc } from "@/data/mock";
+import { downloadDocument, loadAdminDocuments, viewDocument } from "@/data/documents-store";
 
 export const Route = createFileRoute("/portal/hang/$slug")({
   loader: ({ params }) => {
@@ -34,7 +35,10 @@ export const Route = createFileRoute("/portal/hang/$slug")({
         content: "Danh sách tài liệu kỹ thuật của hãng dành cho tài khoản Portal được cấp quyền.",
       },
       { property: "og:title", content: "Tài liệu hãng – Portal Hoàng Vĩnh VKT" },
-      { property: "og:description", content: "Catalogue, datasheet và hướng dẫn kỹ thuật theo hãng." },
+      {
+        property: "og:description",
+        content: "Catalogue, datasheet và hướng dẫn kỹ thuật theo hãng.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -44,32 +48,41 @@ export const Route = createFileRoute("/portal/hang/$slug")({
 function BrandDocuments() {
   const { brand } = Route.useLoaderData() as { brand: Brand };
   const { user } = useStore();
+  const [docs, setDocs] = useState<PortalDoc[]>([]);
   const [keyword, setKeyword] = useState("");
-  const [type, setType] = useState("all");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setDocs(loadAdminDocuments());
+  }, []);
 
   if (!user) return <PortalGate />;
 
+  const isAdmin = user.role === "admin";
   const hasBrandAccess = user.brandSlugs === "all" || user.brandSlugs.includes(brand.slug);
-  const brandDocs = documents.filter((d) => d.brandSlug === brand.slug);
+  const brandDocs = docs.filter((d) => d.brandSlug === brand.slug);
   const visible = brandDocs.filter(
-    (d) =>
-      d.roles.includes(user.role) &&
-      (type === "all" || d.type === type) &&
-      d.name.toLowerCase().includes(keyword.toLowerCase()),
+    (d) => d.roles.includes(user.role) && d.name.toLowerCase().includes(keyword.toLowerCase()),
   );
-  const restricted = brandDocs.length - brandDocs.filter((d) => d.roles.includes(user.role)).length;
 
   return (
-    <div className="container-page py-6 lg:py-10">
+    <div className="box-border h-full w-full max-w-none overflow-y-auto px-6 py-6 lg:px-8">
       <nav className="text-xs text-muted-foreground">
-        <Link to="/portal/dashboard" className="hover:text-brand">
-          Portal
+        <Link to="/portal/tai-lieu" className="hover:text-brand">
+          Tài liệu hãng
         </Link>
         <span className="mx-1">/</span>
         <span className="text-foreground">{brand.name}</span>
       </nav>
-      <h1 className="mt-2 text-2xl font-black sm:text-3xl">Tài liệu {brand.name}</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{brand.description}</p>
+
+      <div className="mt-2 flex w-full flex-wrap items-start justify-between gap-4">
+        <h1 className="text-2xl font-black sm:text-3xl">{brand.name}</h1>
+        {isAdmin && hasBrandAccess ? (
+          <Button onClick={() => setOpen(true)}>
+            <Plus /> Thêm tài liệu
+          </Button>
+        ) : null}
+      </div>
 
       {!hasBrandAccess ? (
         <div className="mt-8 rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm">
@@ -91,71 +104,63 @@ function BrandDocuments() {
                 className="pl-9"
               />
             </div>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả loại</SelectItem>
-                <SelectItem value="Catalogue">Catalogue</SelectItem>
-                <SelectItem value="Datasheet">Datasheet</SelectItem>
-                <SelectItem value="Hướng dẫn">Hướng dẫn</SelectItem>
-                <SelectItem value="Phần mềm">Phần mềm</SelectItem>
-                <SelectItem value="Chứng chỉ">Chứng chỉ</SelectItem>
-              </SelectContent>
-            </Select>
             <span className="ml-auto text-sm text-muted-foreground">{visible.length} tài liệu</span>
           </div>
 
-          {restricted > 0 && (
-            <p className="mt-3 rounded-lg border border-highlight/40 bg-accent px-3 py-2 text-xs text-accent-foreground">
-              Có {restricted} tài liệu bị giới hạn với vai trò {user.roleLabel}.
-            </p>
-          )}
-
-          {visible.length === 0 ? (
-            <p className="mt-8 rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              Không có tài liệu phù hợp.
-            </p>
-          ) : (
-            <div className="mt-5 grid gap-3 lg:grid-cols-2">
-              {visible.map((d) => (
-                <div key={d.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
-                  <div className="flex items-start gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
-                      <FileText className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold leading-snug">{d.name}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {d.version} · {d.size} · Cập nhật {d.updatedAt}
-                      </p>
-                      <Badge variant="outline" className="mt-2">
-                        {d.type}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toast.info("Đang mở bản xem trước (demo)", { description: d.name })}
-                    >
-                      <Eye className="h-4 w-4" /> Xem
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => toast.success("Bắt đầu tải tài liệu (demo)", { description: d.name })}
-                    >
-                      <Download className="h-4 w-4" /> Tải về
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <section className="mt-4 w-full overflow-hidden rounded-xl border border-border bg-card shadow-card">
+            {visible.length === 0 ? (
+              <p className="p-10 text-center text-sm text-muted-foreground">
+                Không có tài liệu phù hợp.
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Loại</TableHead>
+                    <TableHead>Phiên bản</TableHead>
+                    <TableHead>Dung lượng</TableHead>
+                    <TableHead>Ngày</TableHead>
+                    <TableHead className="text-right"> </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visible.map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell className="max-w-[280px] font-medium">
+                        <span className="line-clamp-2">{d.name}</span>
+                      </TableCell>
+                      <TableCell>{d.type}</TableCell>
+                      <TableCell>{d.version}</TableCell>
+                      <TableCell className="whitespace-nowrap">{d.size}</TableCell>
+                      <TableCell className="whitespace-nowrap">{d.updatedAt}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => viewDocument(d)}>
+                            <Eye className="h-4 w-4" /> Xem
+                          </Button>
+                          <Button size="sm" onClick={() => downloadDocument(d)}>
+                            <Download className="h-4 w-4" /> Tải về
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </section>
         </>
       )}
+
+      {isAdmin ? (
+        <AddDocumentSheet
+          open={open}
+          onOpenChange={setOpen}
+          onAdded={setDocs}
+          defaultBrandSlug={brand.slug}
+        />
+      ) : null}
     </div>
   );
 }

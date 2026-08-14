@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { brands, type Product } from "@/data/mock";
-import { formatVnd, stockLabel } from "@/lib/format";
+import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 import { toast } from "sonner";
 
@@ -47,19 +46,9 @@ export function ProductCard({ product }: { product: Product }) {
         >
           {product.name}
         </Link>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Star className="h-3.5 w-3.5 fill-highlight text-highlight" />
-          <span className="font-medium text-foreground">{product.rating}</span>
-          <span>({product.reviewCount})</span>
-          <Badge
-            variant="outline"
-            className={
-              product.stock === "in_stock"
-                ? "ml-auto border-success/40 text-success"
-                : "ml-auto border-highlight/50 text-highlight-foreground"
-            }
-          >
-            {stockLabel[product.stock]}
+        <div className="flex items-center">
+          <Badge variant="outline" className={stockBadgeClass(product.stock)}>
+            {formatStock(product.stock)}
           </Badge>
         </div>
         <div className="mt-auto">

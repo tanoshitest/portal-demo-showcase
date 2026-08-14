@@ -19,9 +19,18 @@ import { Route as CongTrinhSlugRouteImport } from './routes/cong-trinh.$slug'
 import { Route as GiaiPhapIndexRouteImport } from './routes/giai-phap.index'
 import { Route as GiaiPhapSlugRouteImport } from './routes/giai-phap.$slug'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as PortalCongCuRouteImport } from './routes/portal.cong-cu'
+import { Route as PortalCongTrinhQlRouteImport } from './routes/portal.cong-trinh-ql'
+import { Route as PortalDanhMucVatTuRouteImport } from './routes/portal.danh-muc-vat-tu'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
+import { Route as PortalDonHangRouteImport } from './routes/portal.don-hang'
+import { Route as PortalGiaiPhapQlRouteImport } from './routes/portal.giai-phap-ql'
+import { Route as PortalLienHeQlRouteImport } from './routes/portal.lien-he-ql'
+import { Route as PortalNguoiDungRouteImport } from './routes/portal.nguoi-dung'
 import { Route as PortalQuenMatKhauRouteImport } from './routes/portal.quen-mat-khau'
+import { Route as PortalSanPhamRouteImport } from './routes/portal.san-pham'
 import { Route as PortalTaiKhoanRouteImport } from './routes/portal.tai-khoan'
+import { Route as PortalTaiLieuRouteImport } from './routes/portal.tai-lieu'
 import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
 import { Route as PortalHangSlugRouteImport } from './routes/portal.hang.$slug'
@@ -76,9 +85,44 @@ const PortalIndexRoute = PortalIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalCongCuRoute = PortalCongCuRouteImport.update({
+  id: '/cong-cu',
+  path: '/cong-cu',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalCongTrinhQlRoute = PortalCongTrinhQlRouteImport.update({
+  id: '/cong-trinh-ql',
+  path: '/cong-trinh-ql',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDanhMucVatTuRoute = PortalDanhMucVatTuRouteImport.update({
+  id: '/danh-muc-vat-tu',
+  path: '/danh-muc-vat-tu',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalDashboardRoute = PortalDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDonHangRoute = PortalDonHangRouteImport.update({
+  id: '/don-hang',
+  path: '/don-hang',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalGiaiPhapQlRoute = PortalGiaiPhapQlRouteImport.update({
+  id: '/giai-phap-ql',
+  path: '/giai-phap-ql',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalLienHeQlRoute = PortalLienHeQlRouteImport.update({
+  id: '/lien-he-ql',
+  path: '/lien-he-ql',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalNguoiDungRoute = PortalNguoiDungRouteImport.update({
+  id: '/nguoi-dung',
+  path: '/nguoi-dung',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalQuenMatKhauRoute = PortalQuenMatKhauRouteImport.update({
@@ -86,9 +130,19 @@ const PortalQuenMatKhauRoute = PortalQuenMatKhauRouteImport.update({
   path: '/quen-mat-khau',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalSanPhamRoute = PortalSanPhamRouteImport.update({
+  id: '/san-pham',
+  path: '/san-pham',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalTaiKhoanRoute = PortalTaiKhoanRouteImport.update({
   id: '/tai-khoan',
   path: '/tai-khoan',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalTaiLieuRoute = PortalTaiLieuRouteImport.update({
+  id: '/tai-lieu',
+  path: '/tai-lieu',
   getParentRoute: () => PortalRoute,
 } as any)
 const SanPhamIndexRoute = SanPhamIndexRouteImport.update({
@@ -115,9 +169,18 @@ export interface FileRoutesByFullPath {
   '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/portal/cong-cu': typeof PortalCongCuRoute
+  '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
+  '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
   '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/don-hang': typeof PortalDonHangRoute
+  '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
+  '/portal/lien-he-ql': typeof PortalLienHeQlRoute
+  '/portal/nguoi-dung': typeof PortalNguoiDungRoute
   '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
+  '/portal/san-pham': typeof PortalSanPhamRoute
   '/portal/tai-khoan': typeof PortalTaiKhoanRoute
+  '/portal/tai-lieu': typeof PortalTaiLieuRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cong-trinh/': typeof CongTrinhIndexRoute
   '/giai-phap/': typeof GiaiPhapIndexRoute
@@ -132,9 +195,18 @@ export interface FileRoutesByTo {
   '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/portal/cong-cu': typeof PortalCongCuRoute
+  '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
+  '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
   '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/don-hang': typeof PortalDonHangRoute
+  '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
+  '/portal/lien-he-ql': typeof PortalLienHeQlRoute
+  '/portal/nguoi-dung': typeof PortalNguoiDungRoute
   '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
+  '/portal/san-pham': typeof PortalSanPhamRoute
   '/portal/tai-khoan': typeof PortalTaiKhoanRoute
+  '/portal/tai-lieu': typeof PortalTaiLieuRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cong-trinh': typeof CongTrinhIndexRoute
   '/giai-phap': typeof GiaiPhapIndexRoute
@@ -151,9 +223,18 @@ export interface FileRoutesById {
   '/thanh-toan': typeof ThanhToanRoute
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
+  '/portal/cong-cu': typeof PortalCongCuRoute
+  '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
+  '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
   '/portal/dashboard': typeof PortalDashboardRoute
+  '/portal/don-hang': typeof PortalDonHangRoute
+  '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
+  '/portal/lien-he-ql': typeof PortalLienHeQlRoute
+  '/portal/nguoi-dung': typeof PortalNguoiDungRoute
   '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
+  '/portal/san-pham': typeof PortalSanPhamRoute
   '/portal/tai-khoan': typeof PortalTaiKhoanRoute
+  '/portal/tai-lieu': typeof PortalTaiLieuRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cong-trinh/': typeof CongTrinhIndexRoute
   '/giai-phap/': typeof GiaiPhapIndexRoute
@@ -171,9 +252,18 @@ export interface FileRouteTypes {
     | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
+    | '/portal/cong-cu'
+    | '/portal/cong-trinh-ql'
+    | '/portal/danh-muc-vat-tu'
     | '/portal/dashboard'
+    | '/portal/don-hang'
+    | '/portal/giai-phap-ql'
+    | '/portal/lien-he-ql'
+    | '/portal/nguoi-dung'
     | '/portal/quen-mat-khau'
+    | '/portal/san-pham'
     | '/portal/tai-khoan'
+    | '/portal/tai-lieu'
     | '/san-pham/$slug'
     | '/cong-trinh/'
     | '/giai-phap/'
@@ -188,9 +278,18 @@ export interface FileRouteTypes {
     | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
+    | '/portal/cong-cu'
+    | '/portal/cong-trinh-ql'
+    | '/portal/danh-muc-vat-tu'
     | '/portal/dashboard'
+    | '/portal/don-hang'
+    | '/portal/giai-phap-ql'
+    | '/portal/lien-he-ql'
+    | '/portal/nguoi-dung'
     | '/portal/quen-mat-khau'
+    | '/portal/san-pham'
     | '/portal/tai-khoan'
+    | '/portal/tai-lieu'
     | '/san-pham/$slug'
     | '/cong-trinh'
     | '/giai-phap'
@@ -206,9 +305,18 @@ export interface FileRouteTypes {
     | '/thanh-toan'
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
+    | '/portal/cong-cu'
+    | '/portal/cong-trinh-ql'
+    | '/portal/danh-muc-vat-tu'
     | '/portal/dashboard'
+    | '/portal/don-hang'
+    | '/portal/giai-phap-ql'
+    | '/portal/lien-he-ql'
+    | '/portal/nguoi-dung'
     | '/portal/quen-mat-khau'
+    | '/portal/san-pham'
     | '/portal/tai-khoan'
+    | '/portal/tai-lieu'
     | '/san-pham/$slug'
     | '/cong-trinh/'
     | '/giai-phap/'
@@ -303,11 +411,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalIndexRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/cong-cu': {
+      id: '/portal/cong-cu'
+      path: '/cong-cu'
+      fullPath: '/portal/cong-cu'
+      preLoaderRoute: typeof PortalCongCuRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/cong-trinh-ql': {
+      id: '/portal/cong-trinh-ql'
+      path: '/cong-trinh-ql'
+      fullPath: '/portal/cong-trinh-ql'
+      preLoaderRoute: typeof PortalCongTrinhQlRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/danh-muc-vat-tu': {
+      id: '/portal/danh-muc-vat-tu'
+      path: '/danh-muc-vat-tu'
+      fullPath: '/portal/danh-muc-vat-tu'
+      preLoaderRoute: typeof PortalDanhMucVatTuRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/dashboard': {
       id: '/portal/dashboard'
       path: '/dashboard'
       fullPath: '/portal/dashboard'
       preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/don-hang': {
+      id: '/portal/don-hang'
+      path: '/don-hang'
+      fullPath: '/portal/don-hang'
+      preLoaderRoute: typeof PortalDonHangRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/giai-phap-ql': {
+      id: '/portal/giai-phap-ql'
+      path: '/giai-phap-ql'
+      fullPath: '/portal/giai-phap-ql'
+      preLoaderRoute: typeof PortalGiaiPhapQlRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/lien-he-ql': {
+      id: '/portal/lien-he-ql'
+      path: '/lien-he-ql'
+      fullPath: '/portal/lien-he-ql'
+      preLoaderRoute: typeof PortalLienHeQlRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/nguoi-dung': {
+      id: '/portal/nguoi-dung'
+      path: '/nguoi-dung'
+      fullPath: '/portal/nguoi-dung'
+      preLoaderRoute: typeof PortalNguoiDungRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/quen-mat-khau': {
@@ -317,11 +474,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalQuenMatKhauRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/san-pham': {
+      id: '/portal/san-pham'
+      path: '/san-pham'
+      fullPath: '/portal/san-pham'
+      preLoaderRoute: typeof PortalSanPhamRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/tai-khoan': {
       id: '/portal/tai-khoan'
       path: '/tai-khoan'
       fullPath: '/portal/tai-khoan'
       preLoaderRoute: typeof PortalTaiKhoanRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/tai-lieu': {
+      id: '/portal/tai-lieu'
+      path: '/tai-lieu'
+      fullPath: '/portal/tai-lieu'
+      preLoaderRoute: typeof PortalTaiLieuRouteImport
       parentRoute: typeof PortalRoute
     }
     '/san-pham/': {
@@ -349,17 +520,35 @@ declare module '@tanstack/react-router' {
 }
 
 interface PortalRouteChildren {
+  PortalCongCuRoute: typeof PortalCongCuRoute
+  PortalCongTrinhQlRoute: typeof PortalCongTrinhQlRoute
+  PortalDanhMucVatTuRoute: typeof PortalDanhMucVatTuRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
+  PortalDonHangRoute: typeof PortalDonHangRoute
+  PortalGiaiPhapQlRoute: typeof PortalGiaiPhapQlRoute
+  PortalLienHeQlRoute: typeof PortalLienHeQlRoute
+  PortalNguoiDungRoute: typeof PortalNguoiDungRoute
   PortalQuenMatKhauRoute: typeof PortalQuenMatKhauRoute
+  PortalSanPhamRoute: typeof PortalSanPhamRoute
   PortalTaiKhoanRoute: typeof PortalTaiKhoanRoute
+  PortalTaiLieuRoute: typeof PortalTaiLieuRoute
   PortalIndexRoute: typeof PortalIndexRoute
   PortalHangSlugRoute: typeof PortalHangSlugRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
+  PortalCongCuRoute: PortalCongCuRoute,
+  PortalCongTrinhQlRoute: PortalCongTrinhQlRoute,
+  PortalDanhMucVatTuRoute: PortalDanhMucVatTuRoute,
   PortalDashboardRoute: PortalDashboardRoute,
+  PortalDonHangRoute: PortalDonHangRoute,
+  PortalGiaiPhapQlRoute: PortalGiaiPhapQlRoute,
+  PortalLienHeQlRoute: PortalLienHeQlRoute,
+  PortalNguoiDungRoute: PortalNguoiDungRoute,
   PortalQuenMatKhauRoute: PortalQuenMatKhauRoute,
+  PortalSanPhamRoute: PortalSanPhamRoute,
   PortalTaiKhoanRoute: PortalTaiKhoanRoute,
+  PortalTaiLieuRoute: PortalTaiLieuRoute,
   PortalIndexRoute: PortalIndexRoute,
   PortalHangSlugRoute: PortalHangSlugRoute,
 }
@@ -383,3 +572,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

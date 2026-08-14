@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useStore } from "@/context/store";
 import { formatVnd } from "@/lib/format";
 import { products } from "@/data/mock";
+import { addSiteOrder, newOrderCode, newOrderId } from "@/data/orders-store";
 
 export const Route = createFileRoute("/thanh-toan")({
   head: () => ({
@@ -44,8 +45,31 @@ function Checkout() {
     if (Object.keys(next).length) return;
     setLoading(true);
     setTimeout(() => {
+      const code = newOrderCode();
+      addSiteOrder({
+        id: newOrderId(),
+        code,
+        name: form.name.trim(),
+        phone: form.phone.replace(/\s/g, ""),
+        email: form.email.trim(),
+        address: form.address.trim(),
+        note: form.note.trim(),
+        shipping,
+        payment,
+        items: cart.map((item) => ({
+          productSlug: item.productSlug,
+          name: products.find((p) => p.slug === item.productSlug)?.name ?? item.productSlug,
+          variantName: item.variantName,
+          sku: item.sku,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        total: cartTotal,
+        status: "Mới",
+        createdAt: new Date().toISOString(),
+      });
       setLoading(false);
-      setOrderId(`HV${Date.now().toString().slice(-8)}`);
+      setOrderId(code);
       clearCart();
     }, 1100);
   };

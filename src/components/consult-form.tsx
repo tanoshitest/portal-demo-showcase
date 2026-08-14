@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { solutions } from "@/data/mock";
-import { useStore } from "@/context/store";
+import { addSiteContact } from "@/data/contacts-store";
 
 type FormErrors = { name?: string; phone?: string; email?: string; need?: string };
 
@@ -26,7 +26,6 @@ export function ConsultForm({
   defaultSolution?: string;
   compact?: boolean;
 }) {
-  const { addLead } = useStore();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -53,7 +52,14 @@ export function ConsultForm({
     setTimeout(() => {
       setLoading(false);
       setDone(true);
-      addLead({ name: form.name, phone: form.phone, source });
+      addSiteContact({
+        name: form.name.trim(),
+        phone: form.phone.replace(/\s/g, ""),
+        email: form.email.trim(),
+        need: form.need,
+        content: form.content.trim(),
+        source,
+      });
       toast.success("Đã gửi yêu cầu tư vấn", {
         description: "Nhân viên kỹ thuật sẽ liên hệ trong 4 giờ làm việc.",
       });

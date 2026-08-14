@@ -9,7 +9,7 @@ export function BottomNav() {
     { to: "/san-pham", label: "Sản phẩm", icon: Package },
     { to: "/giai-phap", label: "Giải pháp", icon: Lightbulb },
     { to: "/cong-trinh", label: "Công trình", icon: Building2 },
-    { to: user ? "/portal/tai-khoan" : "/portal", label: "Tài khoản", icon: User },
+    { to: user ? "/portal/tai-khoan" : "/", label: "Tài khoản", icon: User },
   ] as const;
 
   return (

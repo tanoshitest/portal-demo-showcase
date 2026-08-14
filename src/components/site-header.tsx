@@ -1,11 +1,19 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Menu, Search, ShoppingCart, User, Phone, LockKeyhole } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Menu, Search, ShoppingCart, User, Phone, ChevronDown, LayoutDashboard, LogOut, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { company } from "@/data/mock";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { company, portalUsers, type PortalUser } from "@/data/mock";
 import { useStore } from "@/context/store";
+import { toast } from "sonner";
 
 const navItems = [
   { to: "/san-pham", label: "Sản phẩm" },
@@ -14,9 +22,31 @@ const navItems = [
   { to: "/lien-he", label: "Liên hệ" },
 ] as const;
 
+const loginRoles: { role: PortalUser["role"]; label: string }[] = [
+  { role: "admin", label: "Admin" },
+  { role: "sale", label: "Sale" },
+];
+
 export function SiteHeader() {
-  const { cartCount, user } = useStore();
+  const { cartCount, user, login, logout } = useStore();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const loginAs = (role: PortalUser["role"]) => {
+    const account = portalUsers.find((u) => u.role === role);
+    if (!account) return;
+    const res = login(account.email, account.password);
+    if (res.ok) {
+      setOpen(false);
+      toast.success("Đăng nhập thành công");
+      navigate({ to: "/portal/dashboard" });
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
@@ -67,11 +97,6 @@ export function SiteHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex">
-            <Link to="/portal">
-              <LockKeyhole className="h-4 w-4" /> Portal
-            </Link>
-          </Button>
           <Button asChild variant="ghost" size="icon" aria-label="Giỏ hàng" className="relative">
             <Link to="/gio-hang">
               <ShoppingCart className="h-5 w-5" />
@@ -82,11 +107,40 @@ export function SiteHeader() {
               )}
             </Link>
           </Button>
-          <Button asChild size="sm" className="hidden lg:inline-flex">
-            <Link to={user ? "/portal/tai-khoan" : "/portal"}>
-              <User className="h-4 w-4" /> {user ? "Tài khoản" : "Đăng nhập"}
-            </Link>
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="hidden lg:inline-flex">
+                <User className="h-4 w-4" /> {user ? user.roleLabel : "Đăng nhập"}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {user ? (
+                <>
+                  <DropdownMenuItem onSelect={() => navigate({ to: "/portal/dashboard" })}>
+                    <LayoutDashboard className="h-4 w-4" /> Vào Portal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => navigate({ to: "/portal/tai-lieu" })}>
+                    <FileText className="h-4 w-4" /> Tài liệu hãng
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => navigate({ to: "/portal/tai-khoan" })}>
+                    <User className="h-4 w-4" /> Tài khoản
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={handleLogout}>
+                    <LogOut className="h-4 w-4" /> Đăng xuất
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                loginRoles.map((r) => (
+                  <DropdownMenuItem key={r.role} onSelect={() => loginAs(r.role)}>
+                    {r.label}
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -107,13 +161,52 @@ export function SiteHeader() {
                     {item.label}
                   </Link>
                 ))}
-                <Link
-                  to="/portal"
-                  onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-3 text-sm font-semibold hover:bg-secondary"
-                >
-                  Portal tài liệu
-                </Link>
+                {user ? (
+                  <>
+                    <Link
+                      to="/portal/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-3 text-sm font-semibold hover:bg-secondary"
+                    >
+                      Vào Portal
+                    </Link>
+                    <Link
+                      to="/portal/tai-lieu"
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-3 text-sm font-semibold hover:bg-secondary"
+                    >
+                      Tài liệu hãng
+                    </Link>
+                    <Link
+                      to="/portal/tai-khoan"
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-3 text-sm font-semibold hover:bg-secondary"
+                    >
+                      Tài khoản
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="rounded-md px-3 py-3 text-left text-sm font-semibold hover:bg-secondary"
+                    >
+                      Đăng xuất
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="px-3 pt-2 text-xs font-bold uppercase text-muted-foreground">Đăng nhập</p>
+                    {loginRoles.map((r) => (
+                      <button
+                        key={r.role}
+                        type="button"
+                        onClick={() => loginAs(r.role)}
+                        className="rounded-md px-3 py-3 text-left text-sm font-semibold hover:bg-secondary"
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </>
+                )}
                 <Button asChild className="mt-3">
                   <a href={`tel:${company.hotline.replace(/\s/g, "")}`}>
                     <Phone className="h-4 w-4" /> Gọi {company.hotline}

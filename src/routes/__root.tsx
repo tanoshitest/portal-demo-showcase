@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { StoreProvider } from "@/context/store";
+import { StoreProvider, useStore } from "@/context/store";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BottomNav } from "@/components/bottom-nav";
@@ -123,20 +124,44 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function isAuthFreePath(pathname: string) {
+  return pathname === "/portal/quen-mat-khau";
+}
+
+function AppShell() {
+  const { user } = useStore();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isCrm = Boolean(user) && pathname.startsWith("/portal") && !isAuthFreePath(pathname);
+
+  if (isCrm) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-background font-sans antialiased">
+        <main className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background font-sans antialiased">
+      <SiteHeader />
+      <main className="flex-1 pb-16 lg:pb-0">
+        <Outlet />
+      </main>
+      <SiteFooter />
+      <BottomNav />
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
-        <div className="flex min-h-screen flex-col bg-background font-sans antialiased">
-          <SiteHeader />
-          <main className="flex-1 pb-16 lg:pb-0">
-            <Outlet />
-          </main>
-          <SiteFooter />
-          <BottomNav />
-        </div>
+        <AppShell />
         <Toaster />
       </StoreProvider>
     </QueryClientProvider>

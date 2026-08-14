@@ -97,8 +97,8 @@ function SolutionListing() {
                 <span className="text-xs font-bold uppercase text-highlight-foreground">
                   {s.group}
                 </span>
-                <h2 className="mt-1 text-lg font-bold leading-snug">{s.name}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{s.short}</p>
+                <h2 className="mt-1 line-clamp-2 text-lg font-bold leading-snug">{s.name}</h2>
+                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.short}</p>
                 <ul className="mt-3 space-y-1 text-sm">
                   {s.benefits.slice(0, 2).map((b) => (
                     <li key={b.title} className="text-muted-foreground">
@@ -106,11 +106,13 @@ function SolutionListing() {
                     </li>
                   ))}
                 </ul>
-                <Button asChild className="mt-4 w-full">
-                  <Link to="/giai-phap/$slug" params={{ slug: s.slug }}>
-                    Xem chi tiết <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="mt-auto pt-4">
+                  <Button asChild className="w-full">
+                    <Link to="/giai-phap/$slug" params={{ slug: s.slug }} className="gap-2">
+                      Xem chi tiết <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </article>
           ))}

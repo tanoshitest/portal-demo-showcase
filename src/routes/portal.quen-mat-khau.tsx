@@ -34,7 +34,7 @@ function ForgotPassword() {
               phút.
             </p>
             <Button asChild className="mt-5 w-full">
-              <Link to="/portal">Về trang đăng nhập</Link>
+              <Link to="/">Về trang chủ</Link>
             </Button>
           </div>
         ) : (
@@ -63,8 +63,8 @@ function ForgotPassword() {
             <Button type="submit" className="w-full">
               Gửi hướng dẫn
             </Button>
-            <Link to="/portal" className="block text-center text-sm font-medium text-brand hover:underline">
-              Quay lại đăng nhập
+            <Link to="/" className="block text-center text-sm font-medium text-brand hover:underline">
+              Về trang chủ
             </Link>
           </form>
         )}

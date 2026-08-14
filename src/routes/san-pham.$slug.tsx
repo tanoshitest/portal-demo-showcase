@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Minus, Plus, Star, ShieldCheck, Truck, Phone } from "lucide-react";
+import { Minus, Plus, ShieldCheck, Truck, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product-card";
 import { brands, getProduct, products, type Product } from "@/data/mock";
-import { formatVnd, stockLabel } from "@/lib/format";
+import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 
 export const Route = createFileRoute("/san-pham/$slug")({
@@ -103,13 +103,9 @@ function ProductDetail() {
           </span>
           <h1 className="mt-1 text-2xl font-black leading-tight sm:text-3xl">{product.name}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-highlight text-highlight" />
-              <b className="text-foreground">{product.rating}</b> ({product.reviewCount} đánh giá)
-            </span>
             <span>SKU: {variant.sku}</span>
-            <Badge variant="outline" className="border-success/40 text-success">
-              {stockLabel[product.stock]}
+            <Badge variant="outline" className={stockBadgeClass(product.stock)}>
+              {formatStock(product.stock)}
             </Badge>
           </div>
 
@@ -192,7 +188,6 @@ function ProductDetail() {
         <TabsList>
           <TabsTrigger value="desc">Mô tả</TabsTrigger>
           <TabsTrigger value="specs">Thông số</TabsTrigger>
-          <TabsTrigger value="reviews">Đánh giá</TabsTrigger>
         </TabsList>
         <TabsContent value="desc" className="prose-sm max-w-3xl text-sm leading-relaxed text-muted-foreground">
           {product.description}
@@ -209,22 +204,6 @@ function ProductDetail() {
               </div>
             ))}
           </div>
-        </TabsContent>
-        <TabsContent value="reviews" className="space-y-3">
-          {product.reviews.map((r) => (
-            <div key={r.name} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center justify-between">
-                <b className="text-sm">{r.name}</b>
-                <span className="text-xs text-muted-foreground">{r.date}</span>
-              </div>
-              <div className="mt-1 flex gap-0.5">
-                {Array.from({ length: r.rating }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-highlight text-highlight" />
-                ))}
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">{r.content}</p>
-            </div>
-          ))}
         </TabsContent>
       </Tabs>
 

@@ -36,6 +36,15 @@ function ProjectDetail() {
   const { project } = Route.useLoaderData() as { project: Project };
   const solution = solutions.find((s) => s.slug === project.solutionSlug);
   const usedProducts = products.filter((p) => project.productSlugs.includes(p.slug));
+  const [hero, ...thumbs] = project.gallery;
+  const thumbCols =
+    thumbs.length <= 1
+      ? "grid-cols-1"
+      : thumbs.length === 2
+        ? "sm:grid-cols-2"
+        : thumbs.length === 4
+          ? "sm:grid-cols-2 lg:grid-cols-4"
+          : "sm:grid-cols-3";
 
   return (
     <div className="container-page py-6 lg:py-10">
@@ -64,41 +73,55 @@ function ProjectDetail() {
         </span>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        {project.gallery.map((img, i) => (
+      <div className="mt-5 space-y-3">
+        {hero && (
           <img
-            key={i}
-            src={img}
-            alt={`${project.name} – hình ${i + 1}`}
-            loading={i === 0 ? "eager" : "lazy"}
+            src={hero}
+            alt={`${project.name} – hình 1`}
+            loading="eager"
             width={1400}
             height={900}
-            className={`w-full rounded-xl border border-border object-cover ${i === 0 ? "h-64 sm:col-span-3 sm:h-80" : "h-40"}`}
+            className="h-64 w-full rounded-xl border border-border object-cover sm:h-80"
           />
-        ))}
+        )}
+        {thumbs.length > 0 && (
+          <div className={`grid gap-3 ${thumbCols}`}>
+            {thumbs.map((img, i) => (
+              <img
+                key={`${img}-${i}`}
+                src={img}
+                alt={`${project.name} – hình ${i + 2}`}
+                loading="lazy"
+                width={1400}
+                height={900}
+                className="h-40 w-full rounded-xl border border-border object-cover"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+      <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-3">
+        <div className="flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-card">
           <h2 className="font-bold text-brand">Bài toán</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{project.problem}</p>
+          <p className="mt-2 flex-1 text-sm text-muted-foreground">{project.problem}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+        <div className="flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-card">
           <h2 className="font-bold text-brand">Giải pháp triển khai</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{project.solutionDesc}</p>
+          <p className="mt-2 flex-1 text-sm text-muted-foreground">{project.solutionDesc}</p>
           {solution && (
-            <Button asChild variant="outline" size="sm" className="mt-3">
+            <Button asChild variant="outline" size="sm" className="mt-auto w-fit">
               <Link to="/giai-phap/$slug" params={{ slug: solution.slug }}>
                 Xem giải pháp {solution.name}
               </Link>
             </Button>
           )}
         </div>
-        <div className="rounded-xl border border-success/30 bg-success/10 p-5">
+        <div className="flex h-full flex-col rounded-xl border border-success/30 bg-success/10 p-5">
           <h2 className="flex items-center gap-2 font-bold text-success">
             <TrendingUp className="h-5 w-5" /> Kết quả
           </h2>
-          <ul className="mt-2 space-y-2 text-sm">
+          <ul className="mt-2 flex-1 space-y-2 text-sm">
             {project.result.map((r) => (
               <li key={r}>• {r}</li>
             ))}

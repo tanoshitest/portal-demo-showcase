@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStore } from "@/context/store";
-import { PortalGate } from "./portal.dashboard";
+import { PortalGate } from "@/components/portal-gate";
 
 export const Route = createFileRoute("/portal/tai-khoan")({
   head: () => ({
@@ -22,8 +21,7 @@ export const Route = createFileRoute("/portal/tai-khoan")({
 });
 
 function Account() {
-  const { user, logout } = useStore();
-  const navigate = useNavigate();
+  const { user } = useStore();
   const [pw, setPw] = useState({ old: "", next: "", confirm: "" });
   const [error, setError] = useState("");
 
@@ -40,7 +38,7 @@ function Account() {
   };
 
   return (
-    <div className="container-page py-6 lg:py-10">
+    <div className="box-border h-full w-full max-w-none overflow-y-auto px-6 py-6 lg:px-8">
       <nav className="text-xs text-muted-foreground">
         <Link to="/portal/dashboard" className="hover:text-brand">
           Portal
@@ -50,7 +48,7 @@ function Account() {
       </nav>
       <h1 className="mt-2 text-2xl font-black sm:text-3xl">Tài khoản</h1>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid w-full gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-border bg-card p-5 shadow-card">
           <h2 className="font-bold">Thông tin cá nhân</h2>
           <dl className="mt-4 space-y-3 text-sm">
@@ -71,17 +69,6 @@ function Account() {
               </div>
             ))}
           </dl>
-          <Button
-            variant="outline"
-            className="mt-5"
-            onClick={() => {
-              logout();
-              toast.success("Đã đăng xuất");
-              navigate({ to: "/portal" });
-            }}
-          >
-            <LogOut className="h-4 w-4" /> Đăng xuất
-          </Button>
         </section>
 
         <section className="rounded-xl border border-border bg-card p-5 shadow-card">

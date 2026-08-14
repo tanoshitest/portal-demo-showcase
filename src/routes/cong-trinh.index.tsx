@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MapPin } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { projects, solutions } from "@/data/mock";
 
 export const Route = createFileRoute("/cong-trinh/")({
@@ -78,9 +78,9 @@ function ProjectListing() {
                 <span className="text-xs font-bold uppercase text-highlight-foreground">
                   {p.type} · {p.year}
                 </span>
-                <h2 className="mt-1 font-bold leading-snug group-hover:text-brand">{p.name}</h2>
+                <h2 className="mt-1 line-clamp-2 font-bold leading-snug group-hover:text-brand">{p.name}</h2>
                 <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" /> {p.location} · {p.scale}
+                  <MapPin className="h-3.5 w-3.5 shrink-0" /> {p.location} · {p.scale}
                 </p>
                 <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.problem}</p>
                 {solution && (
@@ -88,6 +88,9 @@ function ProjectListing() {
                     Giải pháp: {solution.name}
                   </span>
                 )}
+                <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-brand">
+                  Xem chi tiết <ArrowRight className="h-4 w-4" />
+                </span>
               </div>
             </Link>
           );

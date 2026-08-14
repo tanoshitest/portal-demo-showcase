@@ -6,7 +6,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { portalUsers, products, type PortalUser } from "@/data/mock";
+import { products, type PortalUser } from "@/data/mock";
+import { findPortalUser, loadPortalUsers } from "@/data/users-store";
 
 export type CartItem = {
   productSlug: string;
@@ -14,14 +15,6 @@ export type CartItem = {
   sku: string;
   price: number;
   quantity: number;
-};
-
-export type Lead = {
-  id: string;
-  name: string;
-  phone: string;
-  source: string;
-  createdAt: string;
 };
 
 type Store = {
@@ -35,8 +28,6 @@ type Store = {
   user: PortalUser | null;
   login: (email: string, password: string) => { ok: boolean; message?: string };
   logout: () => void;
-  leads: Lead[];
-  addLead: (lead: Omit<Lead, "id" | "createdAt">) => void;
 };
 
 const StoreContext = createContext<Store | null>(null);
@@ -47,7 +38,6 @@ const USER_KEY = "hv_portal_user";
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<PortalUser | null>(null);
-  const [leads, setLeads] = useState<Lead[]>([]);
 
   useEffect(() => {
     try {
@@ -56,7 +46,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const rawUser = localStorage.getItem(USER_KEY);
       if (rawUser) {
         const email = JSON.parse(rawUser) as string;
-        const found = portalUsers.find((u) => u.email === email);
+        const found = loadPortalUsers().find((u) => u.email === email);
         if (found) setUser(found);
       }
     } catch {
@@ -92,11 +82,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearCart: () => setCart([]),
       user,
       login: (email, password) => {
-        const found = portalUsers.find(
-          (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
-        );
-        if (!found) return { ok: false, message: "Email không tồn tại trong hệ thống Portal." };
-        if (found.password !== password) return { ok: false, message: "Mật khẩu không đúng." };
+        const found = findPortalUser(email, password);
+        if (!found) {
+          const exists = findPortalUser(email);
+          if (!exists) return { ok: false, message: "Email không tồn tại trong hệ thống Portal." };
+          return { ok: false, message: "Mật khẩu không đúng." };
+        }
         setUser(found);
         localStorage.setItem(USER_KEY, JSON.stringify(found.email));
         return { ok: true };
@@ -105,14 +96,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setUser(null);
         localStorage.removeItem(USER_KEY);
       },
-      leads,
-      addLead: (lead) =>
-        setLeads((prev) => [
-          ...prev,
-          { ...lead, id: `LEAD-${1000 + prev.length + 1}`, createdAt: new Date().toISOString() },
-        ]),
     };
-  }, [cart, user, leads]);
+  }, [cart, user]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
