@@ -10,7 +10,7 @@ import {
   quoteLineTotal,
   quoteTotal,
   type QuoteLineItem,
-} from "@/data/solar";
+} from "@/data/solar-quotes";
 import { formatVnd } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

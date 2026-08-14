@@ -30,7 +30,7 @@ import {
   seedSolarQuotes,
   type SolarQuote,
   type SolarQuoteStatus,
-} from "@/data/solar";
+} from "@/data/solar-quotes";
 import { formatVnd } from "@/lib/format";
 
 type SearchTab = "du-toan" | "bao-gia" | "create";

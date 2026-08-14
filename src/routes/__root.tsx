@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider, useStore } from "@/context/store";
+import { SolarProvider } from "@/context/solar-store";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BottomNav } from "@/components/bottom-nav";
@@ -161,8 +162,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
-        <AppShell />
-        <Toaster />
+        <SolarProvider>
+          <AppShell />
+          <Toaster />
+        </SolarProvider>
       </StoreProvider>
     </QueryClientProvider>
   );

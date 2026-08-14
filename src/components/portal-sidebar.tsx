@@ -17,7 +17,8 @@ type PortalPath =
   | "/portal/don-hang"
   | "/portal/lien-he-ql"
   | "/portal/nguoi-dung"
-  | "/portal/danh-muc-vat-tu";
+  | "/portal/danh-muc-vat-tu"
+  | "/portal/solar";
 
 type MenuItem = {
   id: string;
@@ -53,6 +54,7 @@ export const portalMenuGroups: MenuGroup[] = [
       { id: "docs", label: "Tài liệu hãng", to: "/portal/tai-lieu", matchPrefix: "/portal/hang/" },
       { id: "materials", label: "Danh mục vật tư", to: "/portal/danh-muc-vat-tu" },
       { id: "quotes", label: "Dự toán - Báo giá", to: "/portal/dashboard" },
+      { id: "solar", label: "Báo giá điện mặt trời", to: "/portal/solar", matchPrefix: "/portal/solar" },
       { id: "tools", label: "Công cụ tính toán", to: "/portal/cong-cu" },
     ],
   },
