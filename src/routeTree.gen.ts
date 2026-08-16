@@ -20,6 +20,7 @@ import { Route as GiaiPhapIndexRouteImport } from './routes/giai-phap.index'
 import { Route as GiaiPhapSlugRouteImport } from './routes/giai-phap.$slug'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as PortalCongCuRouteImport } from './routes/portal.cong-cu'
+import { Route as PortalCongCuDuToanRouteImport } from './routes/portal.cong-cu-du-toan'
 import { Route as PortalCongTrinhQlRouteImport } from './routes/portal.cong-trinh-ql'
 import { Route as PortalDanhMucVatTuRouteImport } from './routes/portal.danh-muc-vat-tu'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
@@ -92,6 +93,11 @@ const PortalIndexRoute = PortalIndexRouteImport.update({
 const PortalCongCuRoute = PortalCongCuRouteImport.update({
   id: '/cong-cu',
   path: '/cong-cu',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalCongCuDuToanRoute = PortalCongCuDuToanRouteImport.update({
+  id: '/cong-cu-du-toan',
+  path: '/cong-cu-du-toan',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalCongTrinhQlRoute = PortalCongTrinhQlRouteImport.update({
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/portal/cong-cu': typeof PortalCongCuRoute
+  '/portal/cong-cu-du-toan': typeof PortalCongCuDuToanRoute
   '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
   '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
   '/portal/dashboard': typeof PortalDashboardRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/portal/cong-cu': typeof PortalCongCuRoute
+  '/portal/cong-cu-du-toan': typeof PortalCongCuDuToanRoute
   '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
   '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
   '/portal/dashboard': typeof PortalDashboardRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/cong-trinh/$slug': typeof CongTrinhSlugRoute
   '/giai-phap/$slug': typeof GiaiPhapSlugRoute
   '/portal/cong-cu': typeof PortalCongCuRoute
+  '/portal/cong-cu-du-toan': typeof PortalCongCuDuToanRoute
   '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
   '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
   '/portal/dashboard': typeof PortalDashboardRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/portal/cong-cu'
+    | '/portal/cong-cu-du-toan'
     | '/portal/cong-trinh-ql'
     | '/portal/danh-muc-vat-tu'
     | '/portal/dashboard'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/portal/cong-cu'
+    | '/portal/cong-cu-du-toan'
     | '/portal/cong-trinh-ql'
     | '/portal/danh-muc-vat-tu'
     | '/portal/dashboard'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/cong-trinh/$slug'
     | '/giai-phap/$slug'
     | '/portal/cong-cu'
+    | '/portal/cong-cu-du-toan'
     | '/portal/cong-trinh-ql'
     | '/portal/danh-muc-vat-tu'
     | '/portal/dashboard'
@@ -464,6 +476,13 @@ declare module '@tanstack/react-router' {
       path: '/cong-cu'
       fullPath: '/portal/cong-cu'
       preLoaderRoute: typeof PortalCongCuRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/cong-cu-du-toan': {
+      id: '/portal/cong-cu-du-toan'
+      path: '/cong-cu-du-toan'
+      fullPath: '/portal/cong-cu-du-toan'
+      preLoaderRoute: typeof PortalCongCuDuToanRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/cong-trinh-ql': {
@@ -597,6 +616,7 @@ declare module '@tanstack/react-router' {
 
 interface PortalRouteChildren {
   PortalCongCuRoute: typeof PortalCongCuRoute
+  PortalCongCuDuToanRoute: typeof PortalCongCuDuToanRoute
   PortalCongTrinhQlRoute: typeof PortalCongTrinhQlRoute
   PortalDanhMucVatTuRoute: typeof PortalDanhMucVatTuRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
@@ -618,6 +638,7 @@ interface PortalRouteChildren {
 
 const PortalRouteChildren: PortalRouteChildren = {
   PortalCongCuRoute: PortalCongCuRoute,
+  PortalCongCuDuToanRoute: PortalCongCuDuToanRoute,
   PortalCongTrinhQlRoute: PortalCongTrinhQlRoute,
   PortalDanhMucVatTuRoute: PortalDanhMucVatTuRoute,
   PortalDashboardRoute: PortalDashboardRoute,

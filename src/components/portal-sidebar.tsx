@@ -12,13 +12,13 @@ type PortalPath =
   | "/portal/dashboard"
   | "/portal/san-pham"
   | "/portal/cong-cu"
+  | "/portal/cong-cu-du-toan"
   | "/portal/cong-trinh-ql"
   | "/portal/giai-phap-ql"
   | "/portal/don-hang"
   | "/portal/lien-he-ql"
   | "/portal/nguoi-dung"
-  | "/portal/danh-muc-vat-tu"
-  | "/portal/solar";
+  | "/portal/danh-muc-vat-tu";
 
 type MenuItem = {
   id: string;
@@ -53,9 +53,7 @@ export const portalMenuGroups: MenuGroup[] = [
     items: [
       { id: "docs", label: "Tài liệu hãng", to: "/portal/tai-lieu", matchPrefix: "/portal/hang/" },
       { id: "materials", label: "Danh mục vật tư", to: "/portal/danh-muc-vat-tu" },
-      { id: "quotes", label: "Dự toán - Báo giá", to: "/portal/dashboard" },
-      { id: "solar", label: "Báo giá điện mặt trời", to: "/portal/solar", matchPrefix: "/portal/solar" },
-      { id: "tools", label: "Công cụ tính toán", to: "/portal/cong-cu" },
+      { id: "estimate-tools", label: "Công cụ dự toán", to: "/portal/cong-cu-du-toan" },
     ],
   },
 ];

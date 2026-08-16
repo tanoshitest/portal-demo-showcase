@@ -18,6 +18,8 @@ export type AutoCalcInputs = {
   batteryName: string;
   panelCount: number;
   batteryQty: number;
+  summerKwh?: number;
+  winterKwh?: number;
 };
 
 export function defaultAutoCalcInputs(): AutoCalcInputs {
@@ -60,8 +62,14 @@ export function computeAutoCalc(input: AutoCalcInputs) {
   const pshWinter = Math.max(0.1, input.pshWinter || PSH_WINTER);
   const panelKwp = round2(panel.watt / 1000);
 
-  const summerKwh = Math.round(Math.max(0, input.summerBill) / tariff);
-  const winterKwh = Math.round(Math.max(0, input.winterBill) / tariff);
+  const summerKwh =
+    input.summerKwh != null
+      ? Math.round(Math.max(0, input.summerKwh))
+      : Math.round(Math.max(0, input.summerBill) / tariff);
+  const winterKwh =
+    input.winterKwh != null
+      ? Math.round(Math.max(0, input.winterKwh))
+      : Math.round(Math.max(0, input.winterBill) / tariff);
   const summerDaily = Math.round(summerKwh / DAYS_PER_MONTH);
   const winterDaily = Math.round(winterKwh / DAYS_PER_MONTH);
 

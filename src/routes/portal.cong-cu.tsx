@@ -1,9 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AutoCalcSheet } from "@/components/auto-calc-sheet";
 import { PortalGate } from "@/components/portal-gate";
 import { useStore } from "@/context/store";
 
 export const Route = createFileRoute("/portal/cong-cu")({
+  beforeLoad: () => {
+    throw redirect({ to: "/portal/cong-cu-du-toan" });
+  },
   head: () => ({
     meta: [
       { title: "Công cụ tính toán | Hoàng Vĩnh VKT" },

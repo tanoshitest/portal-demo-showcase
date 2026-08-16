@@ -15,7 +15,7 @@ export const BATTERY_TYPES = [
   { id: "pylon-10", name: "Pylontech 10.65", kwh: 10.65, price: 28_000_000 },
 ] as const;
 
-export const ROOF_TYPES = ["Mái tôn", "Mái ngói", "Mái bằng"] as const;
+export const ROOF_TYPES = ["Mái ngói", "Mái tôn", "Khung giàn"] as const;
 
 export const AC_WIRES = [
   "Dây điện 1 Pha Cadisun 2*4+1*2.5",
@@ -24,6 +24,13 @@ export const AC_WIRES = [
 ] as const;
 
 export const INVERTER_KW_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 15];
+
+export const CABINET_TYPES = [
+  "Tủ điện AC 1 pha",
+  "Tủ điện AC 3 pha",
+  "Tủ điện DC",
+  "Tủ điện hybrid AC/DC",
+] as const;
 
 export type EstimateInputs = {
   customer: string;
@@ -36,9 +43,11 @@ export type EstimateInputs = {
   dayRate: number;
   phase: "Điện 1 pha" | "Điện 3 pha";
   crane: number;
+  craneShifts: number;
   cranePrice: number;
   roof: (typeof ROOF_TYPES)[number];
   remote: number;
+  remoteDays: number;
   remotePrice: number;
   acWire: string;
   acWireM: number;
@@ -51,7 +60,16 @@ export type EstimateInputs = {
   batteryTypeAuto: string;
   batteryTypeManual: string;
   batteryQtyManual: number;
+  cabinetType: string;
 };
+
+export function autoCabinetType(phase: EstimateInputs["phase"]) {
+  return phase === "Điện 1 pha" ? "Tủ điện AC 1 pha" : "Tủ điện AC 3 pha";
+}
+
+export function autoAcWire(phase: EstimateInputs["phase"]) {
+  return phase === "Điện 1 pha" ? AC_WIRES[0] : AC_WIRES[1];
+}
 
 export type EstimateScenario = {
   panelType: string;
@@ -185,9 +203,11 @@ export function defaultEstimateInputs(): EstimateInputs {
     dayRate: 40,
     phase: "Điện 3 pha",
     crane: 0,
+    craneShifts: 0,
     cranePrice: 1_500_000,
     roof: "Mái tôn",
     remote: 1,
+    remoteDays: 1,
     remotePrice: 500_000,
     acWire: "Dây điện 3 Pha Cadisun 3*6+1*4",
     acWireM: 10,
@@ -200,6 +220,7 @@ export function defaultEstimateInputs(): EstimateInputs {
     batteryTypeAuto: "EJOR 16 - BH7",
     batteryTypeManual: "SOFAR 16 - BH10",
     batteryQtyManual: 1,
+    cabinetType: "Tủ điện AC 3 pha",
   };
 }
 
@@ -227,8 +248,8 @@ export function extrasTotal(form: EstimateInputs) {
   const dc = 28_000;
   const pipe = 12_000;
   return (
-    (form.crane ? form.cranePrice : 0) +
-    (form.remote ? form.remotePrice : 0) +
+    (form.crane ? form.cranePrice * Math.max(0, form.craneShifts) : 0) +
+    (form.remote ? form.remotePrice * Math.max(0, form.remoteDays) : 0) +
     form.acWireM * ac +
     form.dcWireM * dc +
     form.pipeM * pipe
@@ -275,7 +296,11 @@ export function loadEstimateInputs(): EstimateInputs {
     const raw = localStorage.getItem(ESTIMATE_STORAGE_KEY);
     if (!raw) return seed;
     const parsed = JSON.parse(raw) as Partial<EstimateInputs>;
-    return { ...seed, ...parsed };
+    const merged = { ...seed, ...parsed };
+    if (!ROOF_TYPES.includes(merged.roof as (typeof ROOF_TYPES)[number])) {
+      merged.roof = seed.roof;
+    }
+    return merged;
   } catch {
     return seed;
   }

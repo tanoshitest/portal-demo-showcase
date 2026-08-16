@@ -2,6 +2,6 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/portal/")({
   beforeLoad: () => {
-    throw redirect({ to: "/portal/dashboard" });
+    throw redirect({ to: "/portal/cong-cu-du-toan" });
   },
 });

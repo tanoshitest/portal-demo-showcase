@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { Eye, Plus, Printer, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,9 @@ import { formatVnd } from "@/lib/format";
 type SearchTab = "du-toan" | "bao-gia" | "create";
 
 export const Route = createFileRoute("/portal/dashboard")({
+  beforeLoad: () => {
+    throw redirect({ to: "/portal/cong-cu-du-toan" });
+  },
   validateSearch: (search: Record<string, unknown>): { tab?: SearchTab } => {
     if (search.tab === "create" || search.tab === "bao-gia" || search.tab === "du-toan") {
       return { tab: search.tab };
