@@ -15,7 +15,11 @@ export function PortalHeader() {
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4">
       <div className="flex min-w-0 items-center gap-2">
         <PortalMenuTrigger />
-        <Link to="/portal/dashboard" search={{}} className="flex min-w-0 items-center gap-2">
+        <Link
+          to="/portal/dashboard"
+          search={{}}
+          className="hidden min-w-0 items-center gap-2 lg:flex"
+        >
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-brand text-xs font-black text-brand-foreground">
             HV
           </span>
@@ -25,9 +29,9 @@ export function PortalHeader() {
         </Link>
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        <p className="max-w-[40vw] truncate text-sm text-muted-foreground sm:max-w-none">
+        <p className="hidden max-w-none truncate text-sm text-muted-foreground lg:block">
           <span className="font-medium text-foreground">{user.name}</span>
-          {user.roleLabel ? <span className="hidden sm:inline"> · {user.roleLabel}</span> : null}
+          {user.roleLabel ? <span> · {user.roleLabel}</span> : null}
         </p>
         <Button
           variant="outline"
