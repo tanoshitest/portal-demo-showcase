@@ -20,7 +20,6 @@
       "binding": "DB",
       "database_name": "portal-demo-showcase-db",
       "database_id": "99adbb68-01b2-4583-aa2e-b5aececa5c48",
-      "preview_database_id": "6e9643f3-4644-44ec-8af8-e9226594d198",
       "migrations_dir": "migrations",
     },
   ],
