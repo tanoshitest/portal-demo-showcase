@@ -317,6 +317,74 @@ export function quoteTotal(lines: QuoteLineItem[]) {
   return lines.reduce((sum, line) => sum + quoteLineTotal(line), 0);
 }
 
+export function estimateQuoteTotal(input: {
+  summerBillAuto: number;
+  winterBillAuto: number;
+  crane: number;
+  craneShifts: number;
+  cranePrice: number;
+  remote: number;
+  remoteDays: number;
+  remotePrice: number;
+  acWireM: number;
+  dcWireM: number;
+  pipeM: number;
+}) {
+  const ac = 52_000;
+  const dc = 28_000;
+  const pipe = 12_000;
+  const baseHardware = Math.round(
+    input.summerBillAuto * 0.18 + input.winterBillAuto * 0.12,
+  );
+  const extras =
+    (input.crane ? input.cranePrice * Math.max(0, input.craneShifts) : 0) +
+    (input.remote ? input.remotePrice * Math.max(0, input.remoteDays) : 0) +
+    input.acWireM * ac +
+    input.dcWireM * dc +
+    input.pipeM * pipe;
+  return Math.max(0, baseHardware + extras);
+}
+
+export function makeEstimateQuote(input: {
+  customer: string;
+  phone: string;
+  address: string;
+  systemTitle: string;
+  summary: string;
+  total: number;
+  estimateDate?: string;
+}): SolarQuote {
+  return {
+    id: newQuoteId(),
+    code: `DT-${new Date().getFullYear()}-${Date.now().toString().slice(-5)}`,
+    customer: input.customer.trim() || "Quý Khách Hàng",
+    address: input.address.trim(),
+    phone: input.phone.trim(),
+    packageType: "Mái tôn",
+    systemTitle: input.systemTitle.trim() || "Báo giá dự toán",
+    solution: "Hòa lưới bám tải",
+    capacityKwp: 0,
+    monthlyKwh: 0,
+    tariff: 0,
+    total: input.total,
+    paybackYears: 0,
+    createdAt: input.estimateDate ?? new Date().toISOString(),
+    status: "draft",
+    lines: [
+      {
+        id: newQuoteLineId(),
+        materialId: "",
+        name: input.summary,
+        specs: [],
+        image: "",
+        unit: "gói",
+        qty: 1,
+        unitPrice: input.total,
+      },
+    ],
+  };
+}
+
 export function newQuoteLineId() {
   return `ql-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }

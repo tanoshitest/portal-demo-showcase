@@ -13,12 +13,14 @@ type PortalPath =
   | "/portal/san-pham"
   | "/portal/cong-cu"
   | "/portal/cong-cu-du-toan"
+  | "/portal/quan-ly-bao-gia"
   | "/portal/cong-trinh-ql"
   | "/portal/giai-phap-ql"
   | "/portal/don-hang"
   | "/portal/lien-he-ql"
   | "/portal/nguoi-dung"
-  | "/portal/danh-muc-vat-tu";
+  | "/portal/danh-muc-vat-tu"
+  | "/portal/danh-muc-thiet-bi";
 
 type MenuItem = {
   id: string;
@@ -52,8 +54,9 @@ export const portalMenuGroups: MenuGroup[] = [
     label: "Quản lý vận hành",
     items: [
       { id: "docs", label: "Tài liệu hãng", to: "/portal/tai-lieu", matchPrefix: "/portal/hang/" },
-      { id: "materials", label: "Danh mục vật tư", to: "/portal/danh-muc-vat-tu" },
       { id: "estimate-tools", label: "Công cụ dự toán", to: "/portal/cong-cu-du-toan" },
+      { id: "equipment", label: "Danh mục thiết bị", to: "/portal/danh-muc-thiet-bi" },
+      { id: "quote-management", label: "Quản lý báo giá", to: "/portal/quan-ly-bao-gia" },
     ],
   },
 ];

@@ -42,6 +42,10 @@ function round1(n: number) {
   return Math.round(n * 10) / 10;
 }
 
+function round3(n: number) {
+  return Math.round(n * 1000) / 1000;
+}
+
 function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
@@ -60,7 +64,7 @@ export function computeAutoCalc(input: AutoCalcInputs) {
   const tariff = Math.max(1, input.tariff || DEFAULT_TARIFF_VND);
   const pshSummer = Math.max(0.1, input.pshSummer || PSH_SUMMER);
   const pshWinter = Math.max(0.1, input.pshWinter || PSH_WINTER);
-  const panelKwp = round2(panel.watt / 1000);
+  const panelKwp = round3(panel.watt / 1000);
 
   const summerKwh =
     input.summerKwh != null
@@ -76,9 +80,9 @@ export function computeAutoCalc(input: AutoCalcInputs) {
   const summerNeedKwp = round1(summerDaily / pshSummer);
   const winterNeedKwp = round1(winterDaily / pshWinter);
 
-  const summerPanels = Math.max(1, Math.ceil(summerNeedKwp / panelKwp - 1e-9));
-  const winterPanels = Math.max(1, Math.ceil(winterNeedKwp / panelKwp - 1e-9));
-  const suggestedPanels = Math.max(summerPanels, winterPanels);
+  const summerPanels = Math.ceil(summerNeedKwp / panelKwp);
+  const winterPanels = Math.ceil(winterNeedKwp / panelKwp);
+  const suggestedPanels = Math.max(Math.ceil(summerPanels), Math.ceil(winterPanels));
   const panelCount = input.panelCount > 0 ? input.panelCount : suggestedPanels;
   const totalKwp = round1(panelCount * panelKwp);
   const inverterKw = autoInverterKw(totalKwp);

@@ -1,8 +1,19 @@
 import { useMemo, type ReactNode } from "react";
 import { computeAutoCalc } from "@/data/auto-calc";
+import { PANEL_TYPES, type EstimateInputs } from "@/data/estimate";
 import { kwhFromBill, amountExclVat, type EvnBillResult } from "@/data/evn-bill";
 import { formatVnd } from "@/lib/format";
-import type { EstimateInputs } from "@/data/estimate";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 
 function money(n: number) {
   return new Intl.NumberFormat("vi-VN").format(Math.round(n));
@@ -11,34 +22,30 @@ function money(n: number) {
 function TrioCols() {
   return (
     <colgroup>
-      <col className="w-[36%]" />
-      <col className="w-[32%]" />
-      <col className="w-[32%]" />
+      <col className="w-[52%]" />
+      <col className="w-[24%]" />
+      <col className="w-[24%]" />
     </colgroup>
-  );
-}
-
-function FillRow() {
-  return (
-    <tr className="hidden h-full lg:table-row">
-      <td className="p-0" />
-      <td className="p-0" />
-      <td className="p-0" />
-    </tr>
   );
 }
 
 const colLine =
   "[&_th]:border-r [&_td]:border-r [&_th]:border-border [&_td]:border-border [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0";
+const tableCls = `w-full table-fixed border-collapse text-[10px] sm:text-[11px] lg:h-full ${colLine}`;
 
-const gridLine =
-  "[&>div]:border-r [&>div]:border-border [&>div:last-child]:border-r-0";
-
-const tableCls = `w-full table-fixed border-collapse text-[11px] sm:text-xs lg:h-full ${colLine}`;
-const trio = "grid grid-cols-[minmax(0,36%)_minmax(0,32%)_minmax(0,32%)]";
-const duo = "grid grid-cols-[minmax(0,36%)_minmax(0,64%)]";
-
-export function AutoCalcGrid({ form }: { form: EstimateInputs }) {
+export function AutoCalcGrid({
+  form,
+  onPanelChange,
+  onBatteryChange,
+  onPatch,
+  onPhaseChange,
+}: {
+  form: EstimateInputs;
+  onPanelChange: (panelName: string) => void;
+  onBatteryChange: (batteryName: string) => void;
+  onPatch: <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => void;
+  onPhaseChange: (phase: EstimateInputs["phase"]) => void;
+}) {
   const summerNet = amountExclVat(form.summerBillAuto);
   const winterNet = amountExclVat(form.winterBillAuto);
   const summerEvn = useMemo(() => kwhFromBill(summerNet), [summerNet]);
@@ -63,19 +70,204 @@ export function AutoCalcGrid({ form }: { form: EstimateInputs }) {
     [form, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh],
   );
 
+  const setCrane = (enabled: 0 | 1) => {
+    onPatch("crane", enabled);
+    onPatch("craneShifts", enabled ? Math.max(1, form.craneShifts) : 0);
+  };
+
+  const setRemote = (enabled: 0 | 1) => {
+    onPatch("remote", enabled);
+    onPatch("remoteDays", enabled ? Math.max(1, form.remoteDays) : 0);
+  };
+
   return (
     <div className="flex min-h-0 min-w-0 flex-col overflow-x-hidden border-border lg:grid lg:h-full lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)] lg:border-l">
-      <div className="min-w-0 border-b border-border lg:col-start-1 lg:row-start-1 lg:border-b-0">
-        <SubHead>1. Thông tin tiền điện</SubHead>
-        <div
-          className={`${trio} ${gridLine} bg-amber-100 text-[10px] font-bold uppercase text-amber-950`}
-        >
-          <div className="overflow-hidden px-1.5 py-1 leading-tight sm:py-1.5">Thông tin</div>
-          <div className="overflow-hidden px-1.5 py-1 leading-tight sm:py-1.5">Số tiền (chưa thuế)</div>
-          <div className="overflow-hidden px-1.5 py-1 leading-tight sm:py-1.5">Số kWh phải mua</div>
+      <div className="min-w-0 border-b border-border lg:col-span-2 lg:row-start-1 lg:border-b-0">
+        <div className="grid grid-cols-1 gap-1 p-1.5 text-[11px] lg:grid-cols-2 2xl:grid-cols-12">
+          <div className="contents">
+            <div className="min-w-0 2xl:col-span-4">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Tiền điện hè</Label>
+              <div className="mt-0.5 flex items-end gap-2">
+                <Slider
+                  className="min-w-0 flex-1"
+                  min={0}
+                  max={100_000_000}
+                  step={50_000}
+                  value={[form.summerBillAuto]}
+                  onValueChange={([v]) => onPatch("summerBillAuto", v ?? 0)}
+                />
+                <p className="min-w-[5.5rem] text-right text-[11px] font-semibold tabular-nums text-foreground">
+                  {money(form.summerBillAuto)} đ
+                </p>
+              </div>
+            </div>
+            <div className="min-w-0 2xl:col-span-4">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Tiền điện đông</Label>
+              <div className="mt-0.5 flex items-end gap-2">
+                <Slider
+                  className="min-w-0 flex-1"
+                  min={0}
+                  max={100_000_000}
+                  step={50_000}
+                  value={[form.winterBillAuto]}
+                  onValueChange={([v]) => onPatch("winterBillAuto", v ?? 0)}
+                />
+                <p className="min-w-[5.5rem] text-right text-[11px] font-semibold tabular-nums text-foreground">
+                  {money(form.winterBillAuto)} đ
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="contents">
+            <div className="min-w-0 2xl:col-span-4">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Ngày / đêm</Label>
+              <div className="mt-0.5 flex items-end gap-2">
+                <Slider
+                  className="min-w-0 flex-1"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={[form.dayRate]}
+                  onValueChange={([v]) => onPatch("dayRate", v ?? 0)}
+                />
+                <p className="min-w-[4.75rem] text-right text-[11px] tabular-nums text-muted-foreground">
+                  {form.dayRate}% / {Math.max(0, 100 - form.dayRate)}%
+                </p>
+              </div>
+            </div>
+            <div className="min-w-0 2xl:col-span-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Pha điện</Label>
+              <div className="mt-0.5 flex h-7 items-center gap-2 rounded border border-border bg-card px-2">
+                {(["Điện 1 pha", "Điện 3 pha"] as const).map((option) => (
+                  <label key={option} className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-[11px]">
+                    <Checkbox checked={form.phase === option} onCheckedChange={() => onPhaseChange(option)} />
+                    {option.replace("Điện ", "")}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="contents">
+            <div className="min-w-0 2xl:col-span-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Tủ điện</Label>
+              <Select value={form.cabinetType} onValueChange={(v) => onPatch("cabinetType", v)}>
+                <SelectTrigger className="mt-0.5 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["Tủ điện AC 1 pha", "Tủ điện AC 3 pha", "Tủ điện DC", "Tủ điện hybrid AC/DC"].map((cabinet) => (
+                    <SelectItem key={cabinet} value={cabinet}>
+                      {cabinet}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 2xl:col-span-2">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Mái nhà</Label>
+              <Select value={form.roof} onValueChange={(v) => onPatch("roof", v as EstimateInputs["roof"])}>
+                <SelectTrigger className="mt-0.5 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["Mái tôn", "Mái ngói", "Mái bằng"].map((roof) => (
+                    <SelectItem key={roof} value={roof}>
+                      {roof}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Cẩu pin</Label>
+              <Select value={String(form.crane)} onValueChange={(v) => setCrane(Number(v) as 0 | 1)}>
+                <SelectTrigger className="mt-0.5 h-7 px-2 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Không</SelectItem>
+                  <SelectItem value="1">Có</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Số ca cẩu</Label>
+              <Input
+                className="mt-0.5 h-7 px-2 text-xs disabled:bg-secondary/50"
+                type="number"
+                min={form.crane ? 1 : 0}
+                disabled={!form.crane}
+                value={form.crane ? form.craneShifts : 0}
+                onChange={(e) => onPatch("craneShifts", Math.max(1, Number(e.target.value) || 1))}
+              />
+            </div>
+            <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">CT xa</Label>
+              <Select value={String(form.remote)} onValueChange={(v) => setRemote(Number(v) as 0 | 1)}>
+                <SelectTrigger className="mt-0.5 h-7 px-2 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Không</SelectItem>
+                  <SelectItem value="1">Có</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Số ngày CT xa</Label>
+              <Input
+                className="mt-0.5 h-7 px-2 text-xs disabled:bg-secondary/50"
+                type="number"
+                min={form.remote ? 1 : 0}
+                disabled={!form.remote}
+                value={form.remote ? form.remoteDays : 0}
+                onChange={(e) => onPatch("remoteDays", Math.max(1, Number(e.target.value) || 1))}
+              />
+            </div>
+          </div>
+
+          <div className="contents">
+            <div className="min-w-0 2xl:col-span-4 2xl:col-start-9 2xl:row-start-2">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Dây AC</Label>
+              <Select value={form.acWire} onValueChange={(v) => onPatch("acWire", v)}>
+                <SelectTrigger className="mt-0.5 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["Dây điện 1 Pha Cadisun 2*4+1*2.5", "Dây điện 3 Pha Cadisun 4*6+1*4"].map((wire) => (
+                    <SelectItem key={wire} value={wire}>
+                      {wire}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid min-w-0 grid-cols-2 gap-1.5 2xl:col-span-4 2xl:row-start-3">
+              <div className="min-w-0">
+                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">DC (m)</Label>
+                <Input
+                  className="mt-0.5 h-7 px-2 text-xs"
+                  type="number"
+                  min={0}
+                  value={form.dcWireM}
+                  onChange={(e) => onPatch("dcWireM", Number(e.target.value) || 0)}
+                />
+              </div>
+              <div className="min-w-0">
+                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Ống D20 (m)</Label>
+                <Input
+                  className="mt-0.5 h-7 px-2 text-xs"
+                  type="number"
+                  min={0}
+                  value={form.pipeM}
+                  onChange={(e) => onPatch("pipeM", Number(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-        <BillBand season="mùa hè" amount={summerNet} kwh={summerEvn.totalKwh} />
-        <BillBand season="mùa đông" amount={winterNet} kwh={winterEvn.totalKwh} />
       </div>
 
       <div className="min-w-0 border-b border-border lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:border-b-0 lg:border-t">
@@ -86,52 +278,73 @@ export function AutoCalcGrid({ form }: { form: EstimateInputs }) {
               <YellowHead cols={["Thông số", "Mùa hè", "Mùa đông"]} />
             </thead>
             <tbody>
-              <PairRow label="Nhu cầu điện tiêu thụ/ngày (kWh)" a={r.summerDaily} b={r.winterDaily} />
-              <PairRow label="Hiệu suất tấm pin (giờ nắng đỉnh)" a={r.pshSummer} b={r.pshWinter} />
-              <PairRow label="Công suất hệ thống cần lắp (kWp)" a={r.summerNeedKwp} b={r.winterNeedKwp} />
-              <tr className="border-t border-border">
-                <td className="px-1.5 py-1 sm:px-2.5">Công suất 1 tấm pin (kWp)</td>
-                <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
-                  <Calc>{r.panelKwp}</Calc>
+              <SeasonalBillRow label="Tiền điện trước thuế mùa hè" value={summerNet} season="summer" />
+              <SeasonalBillRow label="Tiền điện trước thuế mùa đông" value={winterNet} season="winter" />
+              <PairRowDark label="Nhu cầu điện tiêu thụ/ngày" a={r.summerDaily} b={r.winterDaily} />
+              <PairRowDark label="Hiệu suất tấm pin" a={r.pshSummer} b={r.pshWinter} />
+              <PairRowDark label="Công suất hệ thống cần lắp" a={r.summerNeedKwp} b={r.winterNeedKwp} />
+              <tr className="border-t border-border text-[11px] sm:text-xs text-destructive">
+                <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Tấm pin đã chọn</td>
+                <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                  <Select value={form.panelTypeAuto} onValueChange={onPanelChange}>
+                    <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none [&>span]:text-destructive">
+                      <SelectValue className="text-destructive" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PANEL_TYPES.map((panel) => (
+                        <SelectItem key={panel.id} value={panel.name} className="text-destructive">
+                          {panel.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </td>
               </tr>
-              <PairRow label="Dự toán số tấm pin cần lắp" a={r.summerPanels} b={r.winterPanels} />
+              <AreaTr
+                label="Công suất 1 tấm pin (kWp)"
+                value={r.panelKwp}
+                calc
+                valueClassName="text-destructive"
+                labelClassName="text-destructive"
+              />
+              <AreaTr
+                label="Diện tích 1 tấm (m²)"
+                value={r.area1}
+                calc
+                valueClassName="text-destructive"
+                labelClassName="text-destructive"
+              />
+              <AreaTr label="Số tấm pin" value={r.panelCount} calc labelClassName="text-foreground" />
+              <AreaTr
+                label="Tổng diện tích lắp đặt (m²)"
+                value={`${r.totalArea} m2`}
+                calc
+                strong
+                labelClassName="text-foreground"
+                valueClassName="text-foreground"
+              />
+              <PairRowDark label="Dự toán số tấm pin cần lắp" a={r.summerPanels} b={r.winterPanels} />
               <tr className="border-t border-border bg-secondary/40">
                 <td className="px-1.5 py-1 font-semibold sm:px-2.5">Chốt phương án — Số tấm pin</td>
                 <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
-                  <Calc>{r.panelCount}</Calc>
+                  <CalcDark>{r.panelCount}</CalcDark>
                 </td>
               </tr>
               <tr className="border-t border-border">
                 <td className="px-1.5 py-1 sm:px-2.5">Tổng công suất lắp đặt (kWp)</td>
                 <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
-                  <Calc>{r.totalKwp}</Calc>
+                  <CalcDark>{Math.round(r.totalKwp)}</CalcDark>
                 </td>
               </tr>
               <tr className="border-t border-border">
-                <td className="px-1.5 py-1 sm:px-2.5">Công suất biến tần đề xuất (kW)</td>
+                <td className="px-1.5 py-1 sm:px-2.5">Công suất biến tần đề xuất</td>
                 <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
-                  <Calc>{r.inverterKw}</Calc>
+                  <CalcDark>{Math.round(r.inverterKw)}</CalcDark>
                 </td>
               </tr>
-              <FillRow />
             </tbody>
           </table>
         </CalcPane>
-      </div>
-
-      <div className="min-w-0 border-b border-border max-lg:border-t-2 lg:col-start-2 lg:row-start-1 lg:border-b-0 lg:border-l">
-        <SubHead>3. Diện tích lắp đặt</SubHead>
-        <div
-          className={`${duo} ${gridLine} bg-amber-100 text-[10px] font-bold uppercase text-amber-950`}
-        >
-          <div className="overflow-hidden px-1.5 py-1 leading-tight sm:py-1.5">Dữ liệu tấm pin</div>
-          <div className="overflow-hidden px-1.5 py-1 leading-tight sm:py-1.5">Giá trị</div>
-        </div>
-        <AreaBand label="Tấm pin đã chọn" value={r.panel.name} />
-        <AreaBand label="Diện tích 1 tấm (m²)" value={r.area1} calc />
-        <AreaBand label="Số tấm pin" value={r.panelCount} calc />
-        <AreaBand label="Tổng diện tích lắp đặt (m²)" value={r.totalArea} calc strong />
       </div>
 
       <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:min-h-0 lg:border-l lg:border-t">
@@ -142,8 +355,8 @@ export function AutoCalcGrid({ form }: { form: EstimateInputs }) {
               <YellowHead cols={["Thông số", "Mùa hè", "Mùa đông"]} />
             </thead>
             <tbody>
-              <PairRow label="Tỉ lệ dùng ban ngày (%)" a={r.dayRate} b={r.dayRate} />
-              <PairRow label="Tỉ lệ dùng ban đêm (%)" a={r.nightRate} b={r.nightRate} />
+              <PairRow label="Tỷ lệ dùng ban ngày (%)" a={r.dayRate} b={r.dayRate} />
+              <PairRow label="Tỷ lệ dùng ban đêm (%)" a={r.nightRate} b={r.nightRate} />
               <PairRow label="Số điện cần lưu ban đêm (kWh)" a={r.summerNight} b={r.winterNight} />
               <tr className="border-t border-border">
                 <td className="px-1.5 py-1 sm:px-2.5">Hiệu suất xả pin (%)</td>
@@ -158,13 +371,28 @@ export function AutoCalcGrid({ form }: { form: EstimateInputs }) {
                   <Calc>{r.neededBatt}</Calc>
                 </td>
               </tr>
-              <KVRow label="Hãng pin" value={r.battery.name} span />
+              <tr className="border-t border-border text-[11px] sm:text-xs">
+                <td className="px-1.5 py-1 sm:px-2.5">Hãng pin đã chọn</td>
+                <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                  <Select value={form.batteryTypeAuto} onValueChange={onBatteryChange}>
+                    <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs shadow-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["EJOR 16 - BH7", "SOFAR 16 - BH10", "Pylontech 10.65", "Dyness 10.24", "DEYE 15.36"].map(
+                        (battery) => (
+                          <SelectItem key={battery} value={battery}>
+                            {battery}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </td>
+              </tr>
               <KVRow label="Dung tích pin (kWh/bộ)" value={r.battery.kwh} calc span />
               <KVRow label="Số lượng" value={r.batteryQty} calc span />
               <KVRow label="Tổng dung tích (kWh)" value={r.totalBatt} calc strong span />
-              <KVRow label="Giá tiền" value={formatVnd(r.unitPrice)} calc span />
-              <KVRow label="Thành tiền" value={formatVnd(r.lineTotal)} calc strong span />
-              <FillRow />
             </tbody>
           </table>
         </CalcPane>
@@ -173,15 +401,15 @@ export function AutoCalcGrid({ form }: { form: EstimateInputs }) {
   );
 }
 
-export function EstimateCalcTables({ form }: { form: EstimateInputs }) {
-  const summerEvn = useMemo(
-    () => kwhFromBill(amountExclVat(form.summerBillAuto)),
-    [form.summerBillAuto],
-  );
-  const winterEvn = useMemo(
-    () => kwhFromBill(amountExclVat(form.winterBillAuto)),
-    [form.winterBillAuto],
-  );
+export function EstimateCalcTables({
+  form,
+  onPanelChange,
+}: {
+  form: EstimateInputs;
+  onPanelChange: (panelName: string) => void;
+}) {
+  const summerEvn = useMemo(() => kwhFromBill(amountExclVat(form.summerBillAuto)), [form.summerBillAuto]);
+  const winterEvn = useMemo(() => kwhFromBill(amountExclVat(form.winterBillAuto)), [form.winterBillAuto]);
 
   return (
     <section className="min-h-0 min-w-0 overflow-x-hidden rounded-none border border-border bg-card">
@@ -217,14 +445,16 @@ function EvnTable({
       </p>
       <table className={`w-full table-fixed border-collapse text-[11px] sm:text-xs ${colLine}`}>
         <thead>
-          <YellowHead cols={["Bậc", "Giá (đ/kWh)", "Giới hạn", "Số kWh", "Tiền (đ)"]} />
+          <YellowHead cols={["Bậc", "Điện tiêu thụ", "Giá chưa VAT", "Số kWh", "Tiền (đ)"]} />
         </thead>
         <tbody>
           {result.rows.map((row) => (
             <tr key={row.bac} className="border-t border-border">
               <td className="px-1.5 py-1 sm:px-3 sm:py-1.5">Bậc {row.bac}</td>
-              <td className="px-1.5 py-1 text-right tabular-nums sm:px-3 sm:py-1.5">{money(row.price)}</td>
-              <td className="px-1.5 py-1 text-right tabular-nums sm:px-3 sm:py-1.5">{row.limit}</td>
+              <td className="px-1.5 py-1 text-center whitespace-nowrap sm:px-3 sm:py-1.5">{row.consumption}</td>
+              <td className="px-1.5 py-1 text-right tabular-nums whitespace-nowrap sm:px-3 sm:py-1.5">
+                {money(row.price)} đ/kWh
+              </td>
               <td className="px-1.5 py-1 text-right sm:px-3 sm:py-1.5">
                 <Calc>{row.kwh}</Calc>
               </td>
@@ -269,7 +499,7 @@ function CalcPane({
 
 function SubHead({ children }: { children: ReactNode }) {
   return (
-    <div className="shrink-0 overflow-hidden bg-secondary px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide sm:text-[11px]">
+    <div className="shrink-0 overflow-hidden bg-secondary px-2 py-1 text-[10px] font-bold uppercase tracking-wide sm:text-[11px]">
       {children}
     </div>
   );
@@ -286,7 +516,7 @@ function YellowHead({
         const label = typeof c === "string" ? c : c.label;
         const span = typeof c === "string" ? 1 : (c.span ?? 1);
         return (
-          <th key={label} colSpan={span} className="overflow-hidden px-1.5 py-1.5 text-left leading-tight">
+          <th key={label} colSpan={span} className="overflow-hidden px-1.5 py-1 text-left leading-tight">
             {label}
           </th>
         );
@@ -299,60 +529,88 @@ function Calc({ children }: { children: ReactNode }) {
   return <span className="font-semibold tabular-nums text-destructive">{children}</span>;
 }
 
-function BillBand({
-  season,
-  amount,
-  kwh,
-}: {
-  season: string;
-  amount: number;
-  kwh: number;
-}) {
-  return (
-    <div className={`${trio} ${gridLine} border-t border-border text-[11px] sm:text-xs`}>
-      <div className="flex items-center px-1.5 py-1 leading-tight sm:px-2">
-        Tiền điện hàng tháng
-        <br />
-        {season}
-      </div>
-      <div className="flex items-center justify-end px-1.5 tabular-nums sm:px-2">{money(amount)}</div>
-      <div className="flex items-center justify-end px-1.5 sm:px-2">
-        <Calc>{kwh}</Calc>
-      </div>
-    </div>
-  );
+function CalcDark({ children }: { children: ReactNode }) {
+  return <span className="font-semibold tabular-nums text-foreground">{children}</span>;
 }
 
-function AreaBand({
+function AreaTr({
   label,
   value,
   calc,
   strong,
+  valueClassName,
+  labelClassName,
 }: {
   label: string;
   value: string | number;
   calc?: boolean;
   strong?: boolean;
+  valueClassName?: string;
+  labelClassName?: string;
 }) {
   return (
-    <div className={`${duo} ${gridLine} border-t border-border text-[11px] sm:text-xs`}>
-      <div className={`flex items-center px-1.5 py-1 sm:px-2 ${strong ? "font-semibold" : ""}`}>{label}</div>
-      <div className="flex items-center justify-end px-1.5 sm:px-2">
-        {calc ? <Calc>{value}</Calc> : <span className="tabular-nums">{value}</span>}
-      </div>
-    </div>
+    <tr className="border-t border-border text-[11px] sm:text-xs">
+      <td
+        className={`px-1.5 py-1 leading-tight sm:px-2 ${strong ? "font-semibold" : ""} ${labelClassName ?? ""}`}
+      >
+        {label}
+      </td>
+      <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2">
+        {calc ? (
+          <Calc>{value}</Calc>
+        ) : (
+          <span className={`tabular-nums ${valueClassName ?? ""}`}>{value}</span>
+        )}
+      </td>
+    </tr>
   );
 }
 
 function PairRow({ label, a, b }: { label: string; a: number; b: number }) {
   return (
     <tr className="border-t border-border">
-      <td className="px-1.5 py-1 sm:px-2.5">{label}</td>
+      <td className="px-1.5 py-1 leading-tight sm:px-2.5">{label}</td>
       <td className="px-1.5 py-1 text-right sm:px-2.5">
         <Calc>{a}</Calc>
       </td>
       <td className="px-1.5 py-1 text-right sm:px-2.5">
         <Calc>{b}</Calc>
+      </td>
+    </tr>
+  );
+}
+
+function PairRowDark({ label, a, b }: { label: string; a: number; b: number }) {
+  return (
+    <tr className="border-t border-border">
+      <td className="px-1.5 py-1 leading-tight sm:px-2.5">{label}</td>
+      <td className="px-1.5 py-1 text-right sm:px-2.5">
+        <CalcDark>{a}</CalcDark>
+      </td>
+      <td className="px-1.5 py-1 text-right sm:px-2.5">
+        <CalcDark>{b}</CalcDark>
+      </td>
+    </tr>
+  );
+}
+
+function SeasonalBillRow({
+  label,
+  value,
+  season,
+}: {
+  label: string;
+  value: number;
+  season: "summer" | "winter";
+}) {
+  return (
+    <tr className="border-t border-border">
+      <td className="px-1.5 py-1 leading-tight sm:px-2.5">{label}</td>
+      <td className="whitespace-nowrap px-1.5 py-1 text-right sm:px-2.5">
+        {season === "summer" ? <CalcDark>{money(value)} đ</CalcDark> : "-"}
+      </td>
+      <td className="whitespace-nowrap px-1.5 py-1 text-right sm:px-2.5">
+        {season === "winter" ? <CalcDark>{money(value)} đ</CalcDark> : "-"}
       </td>
     </tr>
   );

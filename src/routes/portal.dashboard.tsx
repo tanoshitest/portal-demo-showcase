@@ -39,11 +39,14 @@ export const Route = createFileRoute("/portal/dashboard")({
   beforeLoad: () => {
     throw redirect({ to: "/portal/cong-cu-du-toan" });
   },
-  validateSearch: (search: Record<string, unknown>): { tab?: SearchTab } => {
+  validateSearch: (search: Record<string, unknown>): { tab?: SearchTab; edit?: string } => {
     if (search.tab === "create" || search.tab === "bao-gia" || search.tab === "du-toan") {
-      return { tab: search.tab };
+      return {
+        tab: search.tab,
+        edit: typeof search.edit === "string" ? search.edit : undefined,
+      };
     }
-    return {};
+    return { edit: typeof search.edit === "string" ? search.edit : undefined };
   },
   head: () => ({
     meta: [
@@ -91,6 +94,15 @@ function SolarDashboard() {
     setQuotes(loadSolarQuotes());
     setMaterials(loadAdminMaterials());
   }, []);
+
+  useEffect(() => {
+    if (!search.edit || !quotes.length) return;
+    const target = quotes.find((q) => q.id === search.edit);
+    if (!target) return;
+    setEditingId(target.id);
+    setForm(formFromQuote(target));
+    navigate({ search: { tab: "create" }, replace: true });
+  }, [search.edit, quotes, navigate]);
 
   if (!user) return <PortalGate />;
 

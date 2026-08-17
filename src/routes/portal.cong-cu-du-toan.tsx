@@ -18,7 +18,7 @@ function EstimateToolsPage() {
   if (!user) return <PortalGate />;
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 pt-3 pb-3 lg:px-4">
+    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 py-2 lg:px-4">
       <EstimateToolsForm />
     </div>
   );

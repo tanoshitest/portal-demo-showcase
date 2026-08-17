@@ -3,16 +3,20 @@ export const ESTIMATE_STORAGE_KEY = "hv_solar_estimate_v1";
 export const PANEL_AREA_M2 = 2.75;
 
 export const PANEL_TYPES = [
-  { id: "jinko-625", name: "JINKO 625", watt: 625, areaM2: 2.75 },
+  { id: "trina-630", name: "TRINA 630", watt: 630, areaM2: 2.84 },
+  { id: "longi-650", name: "LONGI 650", watt: 650, areaM2: 2.84 },
+  { id: "aiko-650", name: "AIKO 650", watt: 650, areaM2: 2.84 },
   { id: "vsun-580", name: "VSUN 580", watt: 580, areaM2: 2.7 },
-  { id: "longi-575", name: "Longi 575", watt: 575, areaM2: 2.6 },
-  { id: "canadian-430", name: "Canadian Solar 430", watt: 430, areaM2: 2.2 },
+  { id: "jinko-625", name: "JINKO 625", watt: 625, areaM2: 2.75 },
+  { id: "tcl-620", name: "TCL 620", watt: 620, areaM2: 2.8 },
 ] as const;
 
 export const BATTERY_TYPES = [
   { id: "ejor-16", name: "EJOR 16 - BH7", kwh: 16, price: 36_500_000 },
   { id: "sofar-16", name: "SOFAR 16 - BH10", kwh: 16, price: 42_000_000 },
   { id: "pylon-10", name: "Pylontech 10.65", kwh: 10.65, price: 28_000_000 },
+  { id: "dyness-10", name: "Dyness 10.24", kwh: 10.24, price: 30_500_000 },
+  { id: "deye-15", name: "DEYE 15.36", kwh: 15.36, price: 39_800_000 },
 ] as const;
 
 export const ROOF_TYPES = ["Mái ngói", "Mái tôn", "Khung giàn"] as const;
@@ -237,10 +241,7 @@ export function autoPanelCount(summerBillAuto: number) {
 }
 
 export function autoInverterKw(capacityKw: number) {
-  if (capacityKw < 8) return 4;
-  if (capacityKw < 12) return 8;
-  if (capacityKw < 16) return 12;
-  return 15;
+  return Math.round((capacityKw / 2) * 10) / 10;
 }
 
 export function extrasTotal(form: EstimateInputs) {

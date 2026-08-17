@@ -22,12 +22,15 @@ import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as PortalCongCuRouteImport } from './routes/portal.cong-cu'
 import { Route as PortalCongCuDuToanRouteImport } from './routes/portal.cong-cu-du-toan'
 import { Route as PortalCongTrinhQlRouteImport } from './routes/portal.cong-trinh-ql'
+import { Route as PortalDanhMucThietBiRouteImport } from './routes/portal.danh-muc-thiet-bi'
 import { Route as PortalDanhMucVatTuRouteImport } from './routes/portal.danh-muc-vat-tu'
+import { Route as PortalDanhMucVatTuNhanCongRouteImport } from './routes/portal.danh-muc-vat-tu-nhan-cong'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalDonHangRouteImport } from './routes/portal.don-hang'
 import { Route as PortalGiaiPhapQlRouteImport } from './routes/portal.giai-phap-ql'
 import { Route as PortalLienHeQlRouteImport } from './routes/portal.lien-he-ql'
 import { Route as PortalNguoiDungRouteImport } from './routes/portal.nguoi-dung'
+import { Route as PortalQuanLyBaoGiaRouteImport } from './routes/portal.quan-ly-bao-gia'
 import { Route as PortalQuenMatKhauRouteImport } from './routes/portal.quen-mat-khau'
 import { Route as PortalSanPhamRouteImport } from './routes/portal.san-pham'
 import { Route as PortalTaiKhoanRouteImport } from './routes/portal.tai-khoan'
@@ -35,6 +38,7 @@ import { Route as PortalTaiLieuRouteImport } from './routes/portal.tai-lieu'
 import { Route as SanPhamIndexRouteImport } from './routes/san-pham.index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham.$slug'
 import { Route as PortalHangSlugRouteImport } from './routes/portal.hang.$slug'
+import { Route as PortalQuanLyBaoGiaIdRouteImport } from './routes/portal.quan-ly-bao-gia.$id'
 import { Route as PortalSolarIndexRouteImport } from './routes/portal.solar.index'
 import { Route as PortalSolarBaoGiaMoiRouteImport } from './routes/portal.solar.bao-gia-moi'
 import { Route as PortalSolarCauHinhRouteImport } from './routes/portal.solar.cau-hinh'
@@ -105,11 +109,22 @@ const PortalCongTrinhQlRoute = PortalCongTrinhQlRouteImport.update({
   path: '/cong-trinh-ql',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalDanhMucThietBiRoute = PortalDanhMucThietBiRouteImport.update({
+  id: '/danh-muc-thiet-bi',
+  path: '/danh-muc-thiet-bi',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalDanhMucVatTuRoute = PortalDanhMucVatTuRouteImport.update({
   id: '/danh-muc-vat-tu',
   path: '/danh-muc-vat-tu',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalDanhMucVatTuNhanCongRoute =
+  PortalDanhMucVatTuNhanCongRouteImport.update({
+    id: '/danh-muc-vat-tu-nhan-cong',
+    path: '/danh-muc-vat-tu-nhan-cong',
+    getParentRoute: () => PortalRoute,
+  } as any)
 const PortalDashboardRoute = PortalDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -133,6 +148,11 @@ const PortalLienHeQlRoute = PortalLienHeQlRouteImport.update({
 const PortalNguoiDungRoute = PortalNguoiDungRouteImport.update({
   id: '/nguoi-dung',
   path: '/nguoi-dung',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalQuanLyBaoGiaRoute = PortalQuanLyBaoGiaRouteImport.update({
+  id: '/quan-ly-bao-gia',
+  path: '/quan-ly-bao-gia',
   getParentRoute: () => PortalRoute,
 } as any)
 const PortalQuenMatKhauRoute = PortalQuenMatKhauRouteImport.update({
@@ -170,6 +190,11 @@ const PortalHangSlugRoute = PortalHangSlugRouteImport.update({
   path: '/hang/$slug',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalQuanLyBaoGiaIdRoute = PortalQuanLyBaoGiaIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PortalQuanLyBaoGiaRoute,
+} as any)
 const PortalSolarIndexRoute = PortalSolarIndexRouteImport.update({
   id: '/solar/',
   path: '/solar/',
@@ -202,12 +227,15 @@ export interface FileRoutesByFullPath {
   '/portal/cong-cu': typeof PortalCongCuRoute
   '/portal/cong-cu-du-toan': typeof PortalCongCuDuToanRoute
   '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
+  '/portal/danh-muc-thiet-bi': typeof PortalDanhMucThietBiRoute
   '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
+  '/portal/danh-muc-vat-tu-nhan-cong': typeof PortalDanhMucVatTuNhanCongRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/don-hang': typeof PortalDonHangRoute
   '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
   '/portal/lien-he-ql': typeof PortalLienHeQlRoute
   '/portal/nguoi-dung': typeof PortalNguoiDungRoute
+  '/portal/quan-ly-bao-gia': typeof PortalQuanLyBaoGiaRouteWithChildren
   '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
   '/portal/san-pham': typeof PortalSanPhamRoute
   '/portal/tai-khoan': typeof PortalTaiKhoanRoute
@@ -218,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/quan-ly-bao-gia/$id': typeof PortalQuanLyBaoGiaIdRoute
   '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar/': typeof PortalSolarIndexRoute
@@ -233,12 +262,15 @@ export interface FileRoutesByTo {
   '/portal/cong-cu': typeof PortalCongCuRoute
   '/portal/cong-cu-du-toan': typeof PortalCongCuDuToanRoute
   '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
+  '/portal/danh-muc-thiet-bi': typeof PortalDanhMucThietBiRoute
   '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
+  '/portal/danh-muc-vat-tu-nhan-cong': typeof PortalDanhMucVatTuNhanCongRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/don-hang': typeof PortalDonHangRoute
   '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
   '/portal/lien-he-ql': typeof PortalLienHeQlRoute
   '/portal/nguoi-dung': typeof PortalNguoiDungRoute
+  '/portal/quan-ly-bao-gia': typeof PortalQuanLyBaoGiaRouteWithChildren
   '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
   '/portal/san-pham': typeof PortalSanPhamRoute
   '/portal/tai-khoan': typeof PortalTaiKhoanRoute
@@ -249,6 +281,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalIndexRoute
   '/san-pham': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/quan-ly-bao-gia/$id': typeof PortalQuanLyBaoGiaIdRoute
   '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar': typeof PortalSolarIndexRoute
@@ -266,12 +299,15 @@ export interface FileRoutesById {
   '/portal/cong-cu': typeof PortalCongCuRoute
   '/portal/cong-cu-du-toan': typeof PortalCongCuDuToanRoute
   '/portal/cong-trinh-ql': typeof PortalCongTrinhQlRoute
+  '/portal/danh-muc-thiet-bi': typeof PortalDanhMucThietBiRoute
   '/portal/danh-muc-vat-tu': typeof PortalDanhMucVatTuRoute
+  '/portal/danh-muc-vat-tu-nhan-cong': typeof PortalDanhMucVatTuNhanCongRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/don-hang': typeof PortalDonHangRoute
   '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
   '/portal/lien-he-ql': typeof PortalLienHeQlRoute
   '/portal/nguoi-dung': typeof PortalNguoiDungRoute
+  '/portal/quan-ly-bao-gia': typeof PortalQuanLyBaoGiaRouteWithChildren
   '/portal/quen-mat-khau': typeof PortalQuenMatKhauRoute
   '/portal/san-pham': typeof PortalSanPhamRoute
   '/portal/tai-khoan': typeof PortalTaiKhoanRoute
@@ -282,6 +318,7 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/san-pham/': typeof SanPhamIndexRoute
   '/portal/hang/$slug': typeof PortalHangSlugRoute
+  '/portal/quan-ly-bao-gia/$id': typeof PortalQuanLyBaoGiaIdRoute
   '/portal/solar/bao-gia-moi': typeof PortalSolarBaoGiaMoiRoute
   '/portal/solar/cau-hinh': typeof PortalSolarCauHinhRoute
   '/portal/solar/': typeof PortalSolarIndexRoute
@@ -300,12 +337,15 @@ export interface FileRouteTypes {
     | '/portal/cong-cu'
     | '/portal/cong-cu-du-toan'
     | '/portal/cong-trinh-ql'
+    | '/portal/danh-muc-thiet-bi'
     | '/portal/danh-muc-vat-tu'
+    | '/portal/danh-muc-vat-tu-nhan-cong'
     | '/portal/dashboard'
     | '/portal/don-hang'
     | '/portal/giai-phap-ql'
     | '/portal/lien-he-ql'
     | '/portal/nguoi-dung'
+    | '/portal/quan-ly-bao-gia'
     | '/portal/quen-mat-khau'
     | '/portal/san-pham'
     | '/portal/tai-khoan'
@@ -316,6 +356,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/san-pham/'
     | '/portal/hang/$slug'
+    | '/portal/quan-ly-bao-gia/$id'
     | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar/'
@@ -331,12 +372,15 @@ export interface FileRouteTypes {
     | '/portal/cong-cu'
     | '/portal/cong-cu-du-toan'
     | '/portal/cong-trinh-ql'
+    | '/portal/danh-muc-thiet-bi'
     | '/portal/danh-muc-vat-tu'
+    | '/portal/danh-muc-vat-tu-nhan-cong'
     | '/portal/dashboard'
     | '/portal/don-hang'
     | '/portal/giai-phap-ql'
     | '/portal/lien-he-ql'
     | '/portal/nguoi-dung'
+    | '/portal/quan-ly-bao-gia'
     | '/portal/quen-mat-khau'
     | '/portal/san-pham'
     | '/portal/tai-khoan'
@@ -347,6 +391,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/san-pham'
     | '/portal/hang/$slug'
+    | '/portal/quan-ly-bao-gia/$id'
     | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar'
@@ -363,12 +408,15 @@ export interface FileRouteTypes {
     | '/portal/cong-cu'
     | '/portal/cong-cu-du-toan'
     | '/portal/cong-trinh-ql'
+    | '/portal/danh-muc-thiet-bi'
     | '/portal/danh-muc-vat-tu'
+    | '/portal/danh-muc-vat-tu-nhan-cong'
     | '/portal/dashboard'
     | '/portal/don-hang'
     | '/portal/giai-phap-ql'
     | '/portal/lien-he-ql'
     | '/portal/nguoi-dung'
+    | '/portal/quan-ly-bao-gia'
     | '/portal/quen-mat-khau'
     | '/portal/san-pham'
     | '/portal/tai-khoan'
@@ -379,6 +427,7 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/san-pham/'
     | '/portal/hang/$slug'
+    | '/portal/quan-ly-bao-gia/$id'
     | '/portal/solar/bao-gia-moi'
     | '/portal/solar/cau-hinh'
     | '/portal/solar/'
@@ -492,11 +541,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCongTrinhQlRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/danh-muc-thiet-bi': {
+      id: '/portal/danh-muc-thiet-bi'
+      path: '/danh-muc-thiet-bi'
+      fullPath: '/portal/danh-muc-thiet-bi'
+      preLoaderRoute: typeof PortalDanhMucThietBiRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/danh-muc-vat-tu': {
       id: '/portal/danh-muc-vat-tu'
       path: '/danh-muc-vat-tu'
       fullPath: '/portal/danh-muc-vat-tu'
       preLoaderRoute: typeof PortalDanhMucVatTuRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/danh-muc-vat-tu-nhan-cong': {
+      id: '/portal/danh-muc-vat-tu-nhan-cong'
+      path: '/danh-muc-vat-tu-nhan-cong'
+      fullPath: '/portal/danh-muc-vat-tu-nhan-cong'
+      preLoaderRoute: typeof PortalDanhMucVatTuNhanCongRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/dashboard': {
@@ -532,6 +595,13 @@ declare module '@tanstack/react-router' {
       path: '/nguoi-dung'
       fullPath: '/portal/nguoi-dung'
       preLoaderRoute: typeof PortalNguoiDungRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/quan-ly-bao-gia': {
+      id: '/portal/quan-ly-bao-gia'
+      path: '/quan-ly-bao-gia'
+      fullPath: '/portal/quan-ly-bao-gia'
+      preLoaderRoute: typeof PortalQuanLyBaoGiaRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/quen-mat-khau': {
@@ -583,6 +653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalHangSlugRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/quan-ly-bao-gia/$id': {
+      id: '/portal/quan-ly-bao-gia/$id'
+      path: '/$id'
+      fullPath: '/portal/quan-ly-bao-gia/$id'
+      preLoaderRoute: typeof PortalQuanLyBaoGiaIdRouteImport
+      parentRoute: typeof PortalQuanLyBaoGiaRoute
+    }
     '/portal/solar/': {
       id: '/portal/solar/'
       path: '/solar'
@@ -614,16 +691,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface PortalQuanLyBaoGiaRouteChildren {
+  PortalQuanLyBaoGiaIdRoute: typeof PortalQuanLyBaoGiaIdRoute
+}
+
+const PortalQuanLyBaoGiaRouteChildren: PortalQuanLyBaoGiaRouteChildren = {
+  PortalQuanLyBaoGiaIdRoute: PortalQuanLyBaoGiaIdRoute,
+}
+
+const PortalQuanLyBaoGiaRouteWithChildren =
+  PortalQuanLyBaoGiaRoute._addFileChildren(PortalQuanLyBaoGiaRouteChildren)
+
 interface PortalRouteChildren {
   PortalCongCuRoute: typeof PortalCongCuRoute
   PortalCongCuDuToanRoute: typeof PortalCongCuDuToanRoute
   PortalCongTrinhQlRoute: typeof PortalCongTrinhQlRoute
+  PortalDanhMucThietBiRoute: typeof PortalDanhMucThietBiRoute
   PortalDanhMucVatTuRoute: typeof PortalDanhMucVatTuRoute
+  PortalDanhMucVatTuNhanCongRoute: typeof PortalDanhMucVatTuNhanCongRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalDonHangRoute: typeof PortalDonHangRoute
   PortalGiaiPhapQlRoute: typeof PortalGiaiPhapQlRoute
   PortalLienHeQlRoute: typeof PortalLienHeQlRoute
   PortalNguoiDungRoute: typeof PortalNguoiDungRoute
+  PortalQuanLyBaoGiaRoute: typeof PortalQuanLyBaoGiaRouteWithChildren
   PortalQuenMatKhauRoute: typeof PortalQuenMatKhauRoute
   PortalSanPhamRoute: typeof PortalSanPhamRoute
   PortalTaiKhoanRoute: typeof PortalTaiKhoanRoute
@@ -640,12 +731,15 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalCongCuRoute: PortalCongCuRoute,
   PortalCongCuDuToanRoute: PortalCongCuDuToanRoute,
   PortalCongTrinhQlRoute: PortalCongTrinhQlRoute,
+  PortalDanhMucThietBiRoute: PortalDanhMucThietBiRoute,
   PortalDanhMucVatTuRoute: PortalDanhMucVatTuRoute,
+  PortalDanhMucVatTuNhanCongRoute: PortalDanhMucVatTuNhanCongRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalDonHangRoute: PortalDonHangRoute,
   PortalGiaiPhapQlRoute: PortalGiaiPhapQlRoute,
   PortalLienHeQlRoute: PortalLienHeQlRoute,
   PortalNguoiDungRoute: PortalNguoiDungRoute,
+  PortalQuanLyBaoGiaRoute: PortalQuanLyBaoGiaRouteWithChildren,
   PortalQuenMatKhauRoute: PortalQuenMatKhauRoute,
   PortalSanPhamRoute: PortalSanPhamRoute,
   PortalTaiKhoanRoute: PortalTaiKhoanRoute,
