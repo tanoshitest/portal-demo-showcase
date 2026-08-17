@@ -132,11 +132,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           });
           if (response.ok) {
             const result = (await response.json()) as { user: PortalUser };
-            setUser(result.user);
             if (result.user.role === "admin") await migrateLegacyUsersToCloud();
             const syncResult = await syncCloudStateWithLocal();
             if (syncResult === "changed") reloadOnceAfterCloudSync();
             else clearCloudSyncReloadFlag();
+            setUser(result.user);
             return { ok: true };
           }
           if (response.status !== 503) {

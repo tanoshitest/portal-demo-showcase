@@ -134,6 +134,35 @@ function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isCrm = Boolean(user) && pathname.startsWith("/portal") && !isAuthFreePath(pathname);
 
+  useEffect(() => {
+    if (!isCrm) return;
+
+    const clearOrphanedModalLayer = () => {
+      const activeDialog = document.querySelector('body > [role="dialog"][data-state="open"]');
+      if (activeDialog) return;
+
+      document.querySelectorAll<HTMLElement>("body > div.fixed.inset-0.z-50").forEach((element) => {
+        if (element.classList.contains("bg-black/80")) element.remove();
+      });
+
+      if (document.body.style.pointerEvents === "none") {
+        document.body.style.removeProperty("pointer-events");
+      }
+      if (document.body.style.overflow === "hidden") {
+        document.body.style.removeProperty("overflow");
+      }
+    };
+
+    clearOrphanedModalLayer();
+    const animationFrame = window.requestAnimationFrame(clearOrphanedModalLayer);
+    const timeout = window.setTimeout(clearOrphanedModalLayer, 350);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(timeout);
+    };
+  }, [isCrm]);
+
   if (isCrm) {
     return (
       <div className="flex h-screen flex-col overflow-hidden bg-background font-sans antialiased">

@@ -54,6 +54,9 @@ export function SiteHeader() {
     setIsLoggingIn(true);
     setLoginOpen(false);
     const loadingToast = toast.loading("Đang đăng nhập...");
+
+    // Let Radix finish unmounting its portal before authentication swaps the app shell.
+    await new Promise((resolve) => window.setTimeout(resolve, 250));
     const res = await login(email, password);
     toast.dismiss(loadingToast);
     setIsLoggingIn(false);
