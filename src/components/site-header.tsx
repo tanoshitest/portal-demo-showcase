@@ -52,15 +52,18 @@ export function SiteHeader() {
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoggingIn(true);
+    setLoginOpen(false);
+    const loadingToast = toast.loading("Đang đăng nhập...");
     const res = await login(email, password);
+    toast.dismiss(loadingToast);
     setIsLoggingIn(false);
     if (res.ok) {
       setOpen(false);
-      setLoginOpen(false);
       setPassword("");
       toast.success("Đăng nhập thành công");
       navigate({ to: "/portal/dashboard" });
     } else if (res.message) {
+      setLoginOpen(true);
       toast.error(res.message);
     }
   };
