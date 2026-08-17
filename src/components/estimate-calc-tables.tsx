@@ -32,6 +32,10 @@ function TrioCols() {
 const colLine =
   "[&_th]:border-r [&_td]:border-r [&_th]:border-border [&_td]:border-border [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0";
 const tableCls = `w-full table-fixed border-collapse text-[10px] sm:text-[11px] lg:h-full ${colLine}`;
+const mobileSliderCls =
+  "min-w-0 flex-1 py-2 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 lg:py-0 lg:[&_[role=slider]]:h-4 lg:[&_[role=slider]]:w-4";
+const mobileSelectCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
+const mobileInputCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
 
 export function AutoCalcGrid({
   form,
@@ -83,13 +87,15 @@ export function AutoCalcGrid({
   return (
     <div className="flex min-h-0 min-w-0 flex-col overflow-x-hidden border-border lg:grid lg:h-full lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)] lg:border-l">
       <div className="min-w-0 border-b border-border lg:col-span-2 lg:row-start-1 lg:border-b-0">
-        <div className="grid grid-cols-1 gap-1 p-1.5 text-[11px] lg:grid-cols-2 2xl:grid-cols-12">
+        <div className="grid grid-cols-2 gap-x-2 gap-y-2 p-2 text-[11px] sm:gap-y-1.5 lg:grid-cols-2 lg:p-1.5 2xl:grid-cols-12">
           <div className="contents">
-            <div className="min-w-0 2xl:col-span-4">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Tiền điện hè</Label>
+            <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-4">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Tiền điện hè
+              </Label>
               <div className="mt-0.5 flex items-end gap-2">
                 <Slider
-                  className="min-w-0 flex-1"
+                  className={mobileSliderCls}
                   min={0}
                   max={100_000_000}
                   step={50_000}
@@ -101,11 +107,13 @@ export function AutoCalcGrid({
                 </p>
               </div>
             </div>
-            <div className="min-w-0 2xl:col-span-4">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Tiền điện đông</Label>
+            <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-4">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Tiền điện đông
+              </Label>
               <div className="mt-0.5 flex items-end gap-2">
                 <Slider
-                  className="min-w-0 flex-1"
+                  className={mobileSliderCls}
                   min={0}
                   max={100_000_000}
                   step={50_000}
@@ -120,11 +128,13 @@ export function AutoCalcGrid({
           </div>
 
           <div className="contents">
-            <div className="min-w-0 2xl:col-span-4">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Ngày / đêm</Label>
+            <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-4">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Ngày / đêm
+              </Label>
               <div className="mt-0.5 flex items-end gap-2">
                 <Slider
-                  className="min-w-0 flex-1"
+                  className={mobileSliderCls}
                   min={0}
                   max={100}
                   step={1}
@@ -136,12 +146,20 @@ export function AutoCalcGrid({
                 </p>
               </div>
             </div>
-            <div className="min-w-0 2xl:col-span-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Pha điện</Label>
-              <div className="mt-0.5 flex h-7 items-center gap-2 rounded border border-border bg-card px-2">
+            <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-3">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Pha điện
+              </Label>
+              <div className="mt-1 flex h-10 items-center gap-3 rounded border border-border bg-card px-3 sm:h-8 lg:mt-0.5 lg:h-7 lg:gap-2 lg:px-2">
                 {(["Điện 1 pha", "Điện 3 pha"] as const).map((option) => (
-                  <label key={option} className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-[11px]">
-                    <Checkbox checked={form.phase === option} onCheckedChange={() => onPhaseChange(option)} />
+                  <label
+                    key={option}
+                    className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-[11px]"
+                  >
+                    <Checkbox
+                      checked={form.phase === option}
+                      onCheckedChange={() => onPhaseChange(option)}
+                    />
                     {option.replace("Điện ", "")}
                   </label>
                 ))}
@@ -151,13 +169,20 @@ export function AutoCalcGrid({
 
           <div className="contents">
             <div className="min-w-0 2xl:col-span-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Tủ điện</Label>
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Tủ điện
+              </Label>
               <Select value={form.cabinetType} onValueChange={(v) => onPatch("cabinetType", v)}>
-                <SelectTrigger className="mt-0.5 h-7 text-xs">
+                <SelectTrigger className={mobileSelectCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Tủ điện AC 1 pha", "Tủ điện AC 3 pha", "Tủ điện DC", "Tủ điện hybrid AC/DC"].map((cabinet) => (
+                  {[
+                    "Tủ điện AC 1 pha",
+                    "Tủ điện AC 3 pha",
+                    "Tủ điện DC",
+                    "Tủ điện hybrid AC/DC",
+                  ].map((cabinet) => (
                     <SelectItem key={cabinet} value={cabinet}>
                       {cabinet}
                     </SelectItem>
@@ -166,9 +191,14 @@ export function AutoCalcGrid({
               </Select>
             </div>
             <div className="min-w-0 2xl:col-span-2">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Mái nhà</Label>
-              <Select value={form.roof} onValueChange={(v) => onPatch("roof", v as EstimateInputs["roof"])}>
-                <SelectTrigger className="mt-0.5 h-7 text-xs">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Mái nhà
+              </Label>
+              <Select
+                value={form.roof}
+                onValueChange={(v) => onPatch("roof", v as EstimateInputs["roof"])}
+              >
+                <SelectTrigger className={mobileSelectCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,9 +211,14 @@ export function AutoCalcGrid({
               </Select>
             </div>
             <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Cẩu pin</Label>
-              <Select value={String(form.crane)} onValueChange={(v) => setCrane(Number(v) as 0 | 1)}>
-                <SelectTrigger className="mt-0.5 h-7 px-2 text-xs">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Cẩu pin
+              </Label>
+              <Select
+                value={String(form.crane)}
+                onValueChange={(v) => setCrane(Number(v) as 0 | 1)}
+              >
+                <SelectTrigger className={mobileSelectCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -193,9 +228,11 @@ export function AutoCalcGrid({
               </Select>
             </div>
             <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Số ca cẩu</Label>
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Số ca cẩu
+              </Label>
               <Input
-                className="mt-0.5 h-7 px-2 text-xs disabled:bg-secondary/50"
+                className={`${mobileInputCls} disabled:bg-secondary/50`}
                 type="number"
                 min={form.crane ? 1 : 0}
                 disabled={!form.crane}
@@ -204,9 +241,14 @@ export function AutoCalcGrid({
               />
             </div>
             <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">CT xa</Label>
-              <Select value={String(form.remote)} onValueChange={(v) => setRemote(Number(v) as 0 | 1)}>
-                <SelectTrigger className="mt-0.5 h-7 px-2 text-xs">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                CT xa
+              </Label>
+              <Select
+                value={String(form.remote)}
+                onValueChange={(v) => setRemote(Number(v) as 0 | 1)}
+              >
+                <SelectTrigger className={mobileSelectCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -216,9 +258,11 @@ export function AutoCalcGrid({
               </Select>
             </div>
             <div className="min-w-0 2xl:col-span-2 2xl:row-start-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Số ngày CT xa</Label>
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Số ngày CT xa
+              </Label>
               <Input
-                className="mt-0.5 h-7 px-2 text-xs disabled:bg-secondary/50"
+                className={`${mobileInputCls} disabled:bg-secondary/50`}
                 type="number"
                 min={form.remote ? 1 : 0}
                 disabled={!form.remote}
@@ -229,26 +273,32 @@ export function AutoCalcGrid({
           </div>
 
           <div className="contents">
-            <div className="min-w-0 2xl:col-span-4 2xl:col-start-9 2xl:row-start-2">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Dây AC</Label>
+            <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-4 2xl:col-start-9 2xl:row-start-2">
+              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                Dây AC
+              </Label>
               <Select value={form.acWire} onValueChange={(v) => onPatch("acWire", v)}>
-                <SelectTrigger className="mt-0.5 h-7 text-xs">
+                <SelectTrigger className={mobileSelectCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Dây điện 1 Pha Cadisun 2*4+1*2.5", "Dây điện 3 Pha Cadisun 4*6+1*4"].map((wire) => (
-                    <SelectItem key={wire} value={wire}>
-                      {wire}
-                    </SelectItem>
-                  ))}
+                  {["Dây điện 1 Pha Cadisun 2*4+1*2.5", "Dây điện 3 Pha Cadisun 4*6+1*4"].map(
+                    (wire) => (
+                      <SelectItem key={wire} value={wire}>
+                        {wire}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid min-w-0 grid-cols-2 gap-1.5 2xl:col-span-4 2xl:row-start-3">
+            <div className="col-span-2 grid min-w-0 grid-cols-2 gap-2 sm:col-span-1 2xl:col-span-4 2xl:row-start-3">
               <div className="min-w-0">
-                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">DC (m)</Label>
+                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                  DC (m)
+                </Label>
                 <Input
-                  className="mt-0.5 h-7 px-2 text-xs"
+                  className={mobileInputCls}
                   type="number"
                   min={0}
                   value={form.dcWireM}
@@ -256,9 +306,11 @@ export function AutoCalcGrid({
                 />
               </div>
               <div className="min-w-0">
-                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">Ống D20 (m)</Label>
+                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                  Ống D20 (m)
+                </Label>
                 <Input
-                  className="mt-0.5 h-7 px-2 text-xs"
+                  className={mobileInputCls}
                   type="number"
                   min={0}
                   value={form.pipeM}
@@ -278,11 +330,23 @@ export function AutoCalcGrid({
               <YellowHead cols={["Thông số", "Mùa hè", "Mùa đông"]} />
             </thead>
             <tbody>
-              <SeasonalBillRow label="Tiền điện trước thuế mùa hè" value={summerNet} season="summer" />
-              <SeasonalBillRow label="Tiền điện trước thuế mùa đông" value={winterNet} season="winter" />
+              <SeasonalBillRow
+                label="Tiền điện trước thuế mùa hè"
+                value={summerNet}
+                season="summer"
+              />
+              <SeasonalBillRow
+                label="Tiền điện trước thuế mùa đông"
+                value={winterNet}
+                season="winter"
+              />
               <PairRowDark label="Nhu cầu điện tiêu thụ/ngày" a={r.summerDaily} b={r.winterDaily} />
               <PairRowDark label="Hiệu suất tấm pin" a={r.pshSummer} b={r.pshWinter} />
-              <PairRowDark label="Công suất hệ thống cần lắp" a={r.summerNeedKwp} b={r.winterNeedKwp} />
+              <PairRowDark
+                label="Công suất hệ thống cần lắp"
+                a={r.summerNeedKwp}
+                b={r.winterNeedKwp}
+              />
               <tr className="border-t border-border text-[11px] sm:text-xs text-destructive">
                 <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Tấm pin đã chọn</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
@@ -314,7 +378,12 @@ export function AutoCalcGrid({
                 valueClassName="text-destructive"
                 labelClassName="text-destructive"
               />
-              <AreaTr label="Số tấm pin" value={r.panelCount} calc labelClassName="text-foreground" />
+              <AreaTr
+                label="Số tấm pin"
+                value={r.panelCount}
+                calc
+                labelClassName="text-foreground"
+              />
               <AreaTr
                 label="Tổng diện tích lắp đặt (m²)"
                 value={`${r.totalArea} m2`}
@@ -323,7 +392,11 @@ export function AutoCalcGrid({
                 labelClassName="text-foreground"
                 valueClassName="text-foreground"
               />
-              <PairRowDark label="Dự toán số tấm pin cần lắp" a={r.summerPanels} b={r.winterPanels} />
+              <PairRowDark
+                label="Dự toán số tấm pin cần lắp"
+                a={r.summerPanels}
+                b={r.winterPanels}
+              />
               <tr className="border-t border-border bg-secondary/40">
                 <td className="px-1.5 py-1 font-semibold sm:px-2.5">Chốt phương án — Số tấm pin</td>
                 <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
@@ -366,7 +439,9 @@ export function AutoCalcGrid({
               </tr>
               <PairRow label="Tổng dung lượng pin cần (kWh)" a={r.summerBatt} b={r.winterBatt} />
               <tr className="border-t border-border bg-secondary/40">
-                <td className="px-1.5 py-1 font-semibold sm:px-2.5">Tổng dung tích lựa chọn (kWh)</td>
+                <td className="px-1.5 py-1 font-semibold sm:px-2.5">
+                  Tổng dung tích lựa chọn (kWh)
+                </td>
                 <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
                   <Calc>{r.neededBatt}</Calc>
                 </td>
@@ -379,13 +454,17 @@ export function AutoCalcGrid({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {["EJOR 16 - BH7", "SOFAR 16 - BH10", "Pylontech 10.65", "Dyness 10.24", "DEYE 15.36"].map(
-                        (battery) => (
-                          <SelectItem key={battery} value={battery}>
-                            {battery}
-                          </SelectItem>
-                        ),
-                      )}
+                      {[
+                        "EJOR 16 - BH7",
+                        "SOFAR 16 - BH10",
+                        "Pylontech 10.65",
+                        "Dyness 10.24",
+                        "DEYE 15.36",
+                      ].map((battery) => (
+                        <SelectItem key={battery} value={battery}>
+                          {battery}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </td>
@@ -408,15 +487,21 @@ export function EstimateCalcTables({
   form: EstimateInputs;
   onPanelChange: (panelName: string) => void;
 }) {
-  const summerEvn = useMemo(() => kwhFromBill(amountExclVat(form.summerBillAuto)), [form.summerBillAuto]);
-  const winterEvn = useMemo(() => kwhFromBill(amountExclVat(form.winterBillAuto)), [form.winterBillAuto]);
+  const summerEvn = useMemo(
+    () => kwhFromBill(amountExclVat(form.summerBillAuto)),
+    [form.summerBillAuto],
+  );
+  const winterEvn = useMemo(
+    () => kwhFromBill(amountExclVat(form.winterBillAuto)),
+    [form.winterBillAuto],
+  );
 
   return (
     <section className="min-h-0 min-w-0 overflow-x-hidden rounded-none border border-border bg-card">
       <div className="bg-brand-dark px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-brand-foreground sm:px-4 sm:py-2">
         Bảng tính tự động tiền điện
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="grid grid-cols-1 xl:grid-cols-2">
         <EvnTable title="Tính kWh từ tiền điện mùa hè" result={summerEvn} />
         <EvnTable title="Tính kWh từ tiền điện mùa đông" result={winterEvn} winter />
       </div>
@@ -434,7 +519,9 @@ function EvnTable({
   winter?: boolean;
 }) {
   return (
-    <div className={winter ? "" : "border-b border-border lg:border-b-0 lg:border-r"}>
+    <div
+      className={winter ? "min-w-0" : "min-w-0 border-b border-border xl:border-b-0 xl:border-r"}
+    >
       <SubHead>{title}</SubHead>
       <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-xs">
         <span className="text-muted-foreground">Tiền điện tháng (VNĐ)</span>
@@ -443,39 +530,48 @@ function EvnTable({
       <p className="px-2 pb-1.5 text-[10px] text-muted-foreground sm:px-3 sm:pb-2 sm:text-[11px]">
         Đang lấy dữ liệu từ: Số tiền điện
       </p>
-      <table className={`w-full table-fixed border-collapse text-[11px] sm:text-xs ${colLine}`}>
-        <thead>
-          <YellowHead cols={["Bậc", "Điện tiêu thụ", "Giá chưa VAT", "Số kWh", "Tiền (đ)"]} />
-        </thead>
-        <tbody>
-          {result.rows.map((row) => (
-            <tr key={row.bac} className="border-t border-border">
-              <td className="px-1.5 py-1 sm:px-3 sm:py-1.5">Bậc {row.bac}</td>
-              <td className="px-1.5 py-1 text-center whitespace-nowrap sm:px-3 sm:py-1.5">{row.consumption}</td>
-              <td className="px-1.5 py-1 text-right tabular-nums whitespace-nowrap sm:px-3 sm:py-1.5">
-                {money(row.price)} đ/kWh
+      <p className="border-t border-border px-2 py-1 text-right text-[10px] text-muted-foreground sm:hidden">
+        Vuốt ngang để xem đủ cột
+      </p>
+      <div className="touch-pan-x overflow-x-auto overscroll-x-contain">
+        <table
+          className={`w-full min-w-[520px] table-fixed border-collapse text-[11px] sm:min-w-0 sm:text-xs ${colLine}`}
+        >
+          <thead>
+            <YellowHead cols={["Bậc", "Điện tiêu thụ", "Giá chưa VAT", "Số kWh", "Tiền (đ)"]} />
+          </thead>
+          <tbody>
+            {result.rows.map((row) => (
+              <tr key={row.bac} className="border-t border-border">
+                <td className="px-1.5 py-1.5 sm:px-3">Bậc {row.bac}</td>
+                <td className="whitespace-nowrap px-1.5 py-1.5 text-center sm:px-3">
+                  {row.consumption}
+                </td>
+                <td className="whitespace-nowrap px-1.5 py-1.5 text-right tabular-nums sm:px-3">
+                  {money(row.price)} đ/kWh
+                </td>
+                <td className="px-1.5 py-1.5 text-right sm:px-3">
+                  <Calc>{row.kwh}</Calc>
+                </td>
+                <td className="px-1.5 py-1.5 text-right sm:px-3">
+                  <Calc>{money(row.cost)}</Calc>
+                </td>
+              </tr>
+            ))}
+            <tr className="border-t border-border bg-secondary/50">
+              <td colSpan={3} className="px-1.5 py-1.5 font-semibold sm:px-3">
+                Giá trị tổng
               </td>
-              <td className="px-1.5 py-1 text-right sm:px-3 sm:py-1.5">
-                <Calc>{row.kwh}</Calc>
+              <td className="px-1.5 py-1.5 text-right sm:px-3">
+                <Calc>{result.totalKwh}</Calc>
               </td>
-              <td className="px-1.5 py-1 text-right sm:px-3 sm:py-1.5">
-                <Calc>{money(row.cost)}</Calc>
+              <td className="px-1.5 py-1.5 text-right sm:px-3">
+                <Calc>{money(result.totalCost)}</Calc>
               </td>
             </tr>
-          ))}
-          <tr className="border-t border-border bg-secondary/50">
-            <td colSpan={3} className="px-1.5 py-1 font-semibold sm:px-3 sm:py-1.5">
-              Giá trị tổng
-            </td>
-            <td className="px-1.5 py-1 text-right sm:px-3 sm:py-1.5">
-              <Calc>{result.totalKwh}</Calc>
-            </td>
-            <td className="px-1.5 py-1 text-right sm:px-3 sm:py-1.5">
-              <Calc>{money(result.totalCost)}</Calc>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -505,18 +601,18 @@ function SubHead({ children }: { children: ReactNode }) {
   );
 }
 
-function YellowHead({
-  cols,
-}: {
-  cols: Array<string | { label: string; span?: number }>;
-}) {
+function YellowHead({ cols }: { cols: Array<string | { label: string; span?: number }> }) {
   return (
     <tr className="bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
       {cols.map((c) => {
         const label = typeof c === "string" ? c : c.label;
         const span = typeof c === "string" ? 1 : (c.span ?? 1);
         return (
-          <th key={label} colSpan={span} className="overflow-hidden px-1.5 py-1 text-left leading-tight">
+          <th
+            key={label}
+            colSpan={span}
+            className="overflow-hidden px-1.5 py-1 text-left leading-tight"
+          >
             {label}
           </th>
         );

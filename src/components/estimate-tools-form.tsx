@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { FileText, ImageOff } from "lucide-react";
-import { AC_WIRES, autoAcWire, autoCabinetType, loadEstimateInputs, saveEstimateInputs, type EstimateInputs } from "@/data/estimate";
+import {
+  AC_WIRES,
+  autoAcWire,
+  autoCabinetType,
+  loadEstimateInputs,
+  saveEstimateInputs,
+  type EstimateInputs,
+} from "@/data/estimate";
 import { buildEstimateQuote } from "@/data/estimate-quote";
 import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -60,29 +67,37 @@ export function EstimateToolsForm() {
 
   return (
     <Tabs defaultValue="du-toan" className="flex h-full min-h-0 min-w-0 flex-col">
-      <div className="flex h-9 shrink-0 items-center justify-between gap-2 border-b border-border sm:h-8 sm:gap-3">
-        <TabsList className="h-9 min-w-0 flex-1 justify-start rounded-none bg-transparent p-0 sm:h-8 sm:flex-none">
+      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border sm:h-9 sm:gap-3">
+        <TabsList className="h-11 min-w-0 flex-1 justify-start rounded-none bg-transparent p-0 sm:h-9 sm:flex-none">
           <TabsTrigger
             value="du-toan"
-            className="rounded-none border-b-2 border-transparent px-2.5 text-[13px] shadow-none data-[state=active]:border-brand-dark data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-4 sm:text-sm"
+            className="h-11 rounded-none border-b-2 border-transparent px-2.5 text-[13px] shadow-none data-[state=active]:border-brand-dark data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:h-9 sm:px-4 sm:text-sm"
           >
             Dự toán
           </TabsTrigger>
           <TabsTrigger
             value="bang-tinh-tien-dien"
-            className="rounded-none border-b-2 border-transparent px-2.5 text-[13px] shadow-none data-[state=active]:border-brand-dark data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-4 sm:text-sm"
+            className="h-11 rounded-none border-b-2 border-transparent px-2.5 text-[13px] shadow-none data-[state=active]:border-brand-dark data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:h-9 sm:px-4 sm:text-sm"
           >
             Bảng tính tiền điện
           </TabsTrigger>
         </TabsList>
-        <Button type="button" size="sm" className="h-7 shrink-0 rounded-none px-3" onClick={save}>
+        <Button
+          type="button"
+          size="sm"
+          className="h-9 shrink-0 touch-manipulation rounded-none px-4 sm:h-7 sm:px-3"
+          onClick={save}
+        >
           Lưu
         </Button>
       </div>
 
-      <TabsContent value="du-toan" className="mt-0 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-1.5">
-        <section className="grid min-h-0 min-w-0 gap-2 lg:h-full lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.68fr)] lg:items-stretch">
-          <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card lg:h-full">
+      <TabsContent
+        value="du-toan"
+        className="mt-0 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      >
+        <section className="grid min-h-0 min-w-0 grid-cols-1 gap-3 xl:h-full xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.68fr)] xl:items-stretch">
+          <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full">
             <div className="shrink-0 bg-brand-dark px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-foreground sm:px-4 sm:py-1.5">
               Bảng tính AUTO
             </div>
@@ -101,9 +116,12 @@ export function EstimateToolsForm() {
 
       <TabsContent
         value="bang-tinh-tien-dien"
-        className="mt-0 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-2"
+        className="mt-0 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
-        <EstimateCalcTables form={form} onPanelChange={(panelName) => patch("panelTypeAuto", panelName)} />
+        <EstimateCalcTables
+          form={form}
+          onPanelChange={(panelName) => patch("panelTypeAuto", panelName)}
+        />
       </TabsContent>
     </Tabs>
   );
@@ -119,20 +137,20 @@ function QuoteEstimatePanel({
   const { rows: quoteRows, total: quoteTotal } = useMemo(() => buildEstimateQuote(form), [form]);
 
   return (
-    <aside className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card lg:h-full">
+    <aside className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full">
       <div className="shrink-0 bg-brand-dark px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-foreground sm:px-4 sm:py-1.5">
         Dự toán báo giá
       </div>
 
-      <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
-        <section className="grid grid-cols-1 gap-1 rounded-none border border-border bg-secondary/25 p-1.5 lg:grid-cols-3">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-brand-dark lg:col-span-3">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2 sm:p-2.5">
+        <section className="grid grid-cols-1 gap-2 rounded-none border border-border bg-secondary/25 p-2 sm:grid-cols-3 sm:gap-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-brand-dark sm:col-span-3 sm:text-[10px]">
             <FileText className="h-3.5 w-3.5" />
             Thông tin khách hàng
           </div>
           <Field label="Tên khách hàng">
             <Input
-              className="h-7 min-w-0 px-2 text-xs"
+              className="h-10 min-w-0 px-3 text-sm sm:h-8 sm:px-2 sm:text-xs"
               value={form.customer}
               onChange={(e) => onPatch("customer", e.target.value)}
               placeholder="Tên khách hàng"
@@ -140,7 +158,7 @@ function QuoteEstimatePanel({
           </Field>
           <Field label="Địa chỉ">
             <Input
-              className="h-7 min-w-0 px-2 text-xs"
+              className="h-10 min-w-0 px-3 text-sm sm:h-8 sm:px-2 sm:text-xs"
               value={form.address}
               onChange={(e) => onPatch("address", e.target.value)}
               placeholder="Địa chỉ"
@@ -148,7 +166,7 @@ function QuoteEstimatePanel({
           </Field>
           <Field label="SĐT">
             <Input
-              className="h-7 min-w-0 px-2 text-xs"
+              className="h-10 min-w-0 px-3 text-sm sm:h-8 sm:px-2 sm:text-xs"
               value={form.phone}
               onChange={(e) => onPatch("phone", e.target.value)}
               placeholder="Số điện thoại"
@@ -156,8 +174,11 @@ function QuoteEstimatePanel({
           </Field>
         </section>
 
-        <div className="overflow-hidden rounded-none border-2 border-brand-dark">
-          <table className="w-full table-fixed border-collapse text-[10px] [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 sm:text-[11px]">
+        <p className="text-right text-[10px] text-muted-foreground sm:hidden">
+          Vuốt ngang để xem đủ cột
+        </p>
+        <div className="touch-pan-x overflow-x-auto overscroll-x-contain rounded-none border-2 border-brand-dark">
+          <table className="w-full min-w-[620px] table-fixed border-collapse text-[10px] [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 md:min-w-0 sm:text-[11px]">
             <colgroup>
               <col className="w-[6%]" />
               <col className="w-[24%]" />
@@ -186,20 +207,32 @@ function QuoteEstimatePanel({
                       <ImageOff className="h-3.5 w-3.5" />
                     </div>
                   </td>
-                  <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>{row.unit}</td>
+                  <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>
+                    {row.unit}
+                  </td>
                   {row.priceRowSpan ? (
                     <>
-                      <td rowSpan={row.priceRowSpan} className="px-1 py-1.5 text-right align-middle tabular-nums">
+                      <td
+                        rowSpan={row.priceRowSpan}
+                        className="px-1 py-1.5 text-right align-middle tabular-nums"
+                      >
                         {formatVnd(row.unitPrice)}
                       </td>
-                      <td rowSpan={row.priceRowSpan} className="px-1 py-1.5 text-right align-middle font-semibold tabular-nums">
+                      <td
+                        rowSpan={row.priceRowSpan}
+                        className="px-1 py-1.5 text-right align-middle font-semibold tabular-nums"
+                      >
                         {formatVnd(row.total)}
                       </td>
                     </>
                   ) : row.hidePrices ? null : (
                     <>
-                      <td className="px-1 py-1.5 text-right tabular-nums">{formatVnd(row.unitPrice)}</td>
-                      <td className="px-1 py-1.5 text-right font-semibold tabular-nums">{formatVnd(row.total)}</td>
+                      <td className="px-1 py-1.5 text-right tabular-nums">
+                        {formatVnd(row.unitPrice)}
+                      </td>
+                      <td className="px-1 py-1.5 text-right font-semibold tabular-nums">
+                        {formatVnd(row.total)}
+                      </td>
                     </>
                   )}
                 </tr>
@@ -210,7 +243,10 @@ function QuoteEstimatePanel({
                 <td colSpan={4} className="border-r border-border px-2 py-1.5 text-left uppercase">
                   Tổng tiền
                 </td>
-                <td colSpan={2} className="whitespace-nowrap px-1 py-1.5 text-right tabular-nums text-destructive">
+                <td
+                  colSpan={2}
+                  className="whitespace-nowrap px-1 py-1.5 text-right tabular-nums text-destructive"
+                >
                   {formatVnd(quoteTotal)}
                 </td>
               </tr>
