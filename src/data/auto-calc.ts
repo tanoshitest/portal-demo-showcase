@@ -1,4 +1,5 @@
 import { autoInverterKw, BATTERY_TYPES, PANEL_TYPES } from "@/data/estimate";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const AUTO_CALC_KEY = "hv_auto_calc_v1";
 export const DEFAULT_TARIFF_VND = 2954;
@@ -152,5 +153,5 @@ export function loadAutoCalcInputs(): AutoCalcInputs {
 
 export function saveAutoCalcInputs(form: AutoCalcInputs) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(AUTO_CALC_KEY, JSON.stringify(form));
+  persistLocalAndCloud(AUTO_CALC_KEY, form);
 }

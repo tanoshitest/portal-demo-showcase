@@ -1,4 +1,5 @@
 import { materialCategories, materials, type Material } from "@/data/materials";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const MATERIALS_STORAGE_KEY = "hv_admin_materials_v2";
 
@@ -91,7 +92,7 @@ export function loadAdminMaterials(): Material[] {
 
 export function saveAdminMaterials(list: Material[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(MATERIALS_STORAGE_KEY, JSON.stringify(list));
+  persistLocalAndCloud(MATERIALS_STORAGE_KEY, list);
 }
 
 export function upsertAdminMaterial(list: Material[], next: Material): Material[] {

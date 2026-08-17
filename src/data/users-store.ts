@@ -14,7 +14,9 @@ function roleLabel(role: PortalUser["role"]) {
 function isUser(value: unknown): value is PortalUser {
   if (!value || typeof value !== "object") return false;
   const u = value as Partial<PortalUser>;
-  return typeof u.email === "string" && typeof u.password === "string" && typeof u.name === "string";
+  return (
+    typeof u.email === "string" && typeof u.password === "string" && typeof u.name === "string"
+  );
 }
 
 function readStored(): PortalUser[] | null {
@@ -88,4 +90,70 @@ export function findPortalUser(email: string, password?: string) {
   if (!found) return null;
   if (password != null && found.password !== password) return null;
   return found;
+}
+
+type UsersApiResponse = {
+  ok: boolean;
+  users?: PortalUser[];
+  message?: string;
+};
+
+async function parseUsersResponse(response: Response): Promise<PortalUser[] | string | null> {
+  if (response.status === 503) return null;
+  const result = (await response.json().catch(() => null)) as UsersApiResponse | null;
+  if (!response.ok || !result?.ok || !result.users) {
+    return result?.message ?? "Không thể cập nhật tài khoản trên cloud.";
+  }
+  return result.users;
+}
+
+export async function loadCloudPortalUsers(): Promise<PortalUser[] | null> {
+  try {
+    const response = await fetch("/api/users", { credentials: "include" });
+    const result = await parseUsersResponse(response);
+    return Array.isArray(result) ? result : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function upsertCloudPortalUser(
+  currentEmail: string,
+  next: PortalUser,
+): Promise<PortalUser[] | string | null> {
+  try {
+    const response = await fetch(`/api/users/${encodeURIComponent(currentEmail)}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(next),
+    });
+    return await parseUsersResponse(response);
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteCloudPortalUser(email: string): Promise<PortalUser[] | string | null> {
+  try {
+    const response = await fetch(`/api/users/${encodeURIComponent(email)}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    return await parseUsersResponse(response);
+  } catch {
+    return null;
+  }
+}
+
+const USERS_MIGRATED_KEY = "hv_users_cloud_migrated_v1";
+
+export async function migrateLegacyUsersToCloud() {
+  if (typeof window === "undefined" || localStorage.getItem(USERS_MIGRATED_KEY) === "1") return;
+  const users = loadPortalUsers();
+  for (const user of users) {
+    const result = await upsertCloudPortalUser(user.email, user);
+    if (!Array.isArray(result)) return;
+  }
+  localStorage.setItem(USERS_MIGRATED_KEY, "1");
 }

@@ -1,3 +1,6 @@
+import { inverterCatalogItems } from "./inverter-catalog";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
+
 export const ESTIMATE_STORAGE_KEY = "hv_solar_estimate_v1";
 
 export const PANEL_AREA_M2 = 2.75;
@@ -61,11 +64,50 @@ export type EstimateInputs = {
   panelTypeManual: string;
   panelCountManual: number;
   inverterKwManual: number;
+  inverterTypeAuto: string;
   batteryTypeAuto: string;
   batteryTypeManual: string;
   batteryQtyManual: number;
   cabinetType: string;
 };
+
+export const INVERTER_TYPES = inverterCatalogItems.filter(
+  (item): item is (typeof inverterCatalogItems)[number] & { id: string; capacityKw: number } =>
+    Boolean(item.id) && typeof item.capacityKw === "number",
+);
+
+export function inverterOptionsForPhase(phase: EstimateInputs["phase"]) {
+  const phaseToken = phase === "Điện 1 pha" ? /(?:1\s*PHA|\b1P\b)/i : /(?:3\s*PHA|\b3P\b)/i;
+
+  return INVERTER_TYPES.filter((item) => phaseToken.test(item.inverterGroup ?? "")).sort(
+    (a, b) => a.capacityKw - b.capacityKw,
+  );
+}
+
+export function inverterById(id: string) {
+  return INVERTER_TYPES.find((item) => item.id === id);
+}
+
+export function inverterLabel(id: string) {
+  const item = inverterById(id);
+  if (!item) return "Chọn biến tần";
+  return `${item.code.split("\n")[0]?.trim()} - ${item.capacityKw} kW`;
+}
+
+export function autoInverterType(phase: EstimateInputs["phase"], recommendedKw: number) {
+  const options = inverterOptionsForPhase(phase);
+  const pricedOptions = options.filter(
+    (item) => (item.customerPrice ?? item.referencePrice ?? 0) > 0,
+  );
+  const candidates = pricedOptions.length ? pricedOptions : options;
+
+  return (
+    candidates.find((item) => item.capacityKw >= recommendedKw)?.id ??
+    candidates.at(-1)?.id ??
+    INVERTER_TYPES[0]?.id ??
+    ""
+  );
+}
 
 export function autoCabinetType(phase: EstimateInputs["phase"]) {
   return phase === "Điện 1 pha" ? "Tủ điện AC 1 pha" : "Tủ điện AC 3 pha";
@@ -221,6 +263,7 @@ export function defaultEstimateInputs(): EstimateInputs {
     panelTypeManual: "VSUN 580",
     panelCountManual: 20,
     inverterKwManual: 8,
+    inverterTypeAuto: "",
     batteryTypeAuto: "EJOR 16 - BH7",
     batteryTypeManual: "SOFAR 16 - BH10",
     batteryQtyManual: 1,
@@ -301,6 +344,12 @@ export function loadEstimateInputs(): EstimateInputs {
     if (!ROOF_TYPES.includes(merged.roof as (typeof ROOF_TYPES)[number])) {
       merged.roof = seed.roof;
     }
+    const inverterMatchesPhase = inverterOptionsForPhase(merged.phase).some(
+      (item) => item.id === merged.inverterTypeAuto,
+    );
+    if (!parsed.inverterTypeAuto || !inverterMatchesPhase) {
+      merged.inverterTypeAuto = "";
+    }
     return merged;
   } catch {
     return seed;
@@ -309,5 +358,5 @@ export function loadEstimateInputs(): EstimateInputs {
 
 export function saveEstimateInputs(form: EstimateInputs) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(ESTIMATE_STORAGE_KEY, JSON.stringify(form));
+  persistLocalAndCloud(ESTIMATE_STORAGE_KEY, form);
 }

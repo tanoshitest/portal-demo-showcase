@@ -1,13 +1,11 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { products, type PortalUser } from "@/data/mock";
-import { findPortalUser, loadPortalUsers } from "@/data/users-store";
+import { migrateLegacyUsersToCloud } from "@/data/users-store";
+import {
+  clearCloudSyncReloadFlag,
+  reloadOnceAfterCloudSync,
+  syncCloudStateWithLocal,
+} from "@/lib/cloud-state-client";
 
 export type CartItem = {
   productSlug: string;
@@ -16,6 +14,8 @@ export type CartItem = {
   price: number;
   quantity: number;
 };
+
+type LoginResult = { ok: boolean; message?: string };
 
 type Store = {
   cart: CartItem[];
@@ -26,75 +26,137 @@ type Store = {
   removeFromCart: (sku: string) => void;
   clearCart: () => void;
   user: PortalUser | null;
-  login: (email: string, password: string) => { ok: boolean; message?: string };
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
 };
 
 const StoreContext = createContext<Store | null>(null);
 
 const CART_KEY = "hv_cart";
-const USER_KEY = "hv_portal_user";
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<PortalUser | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     try {
       const rawCart = localStorage.getItem(CART_KEY);
       if (rawCart) setCart(JSON.parse(rawCart));
-      const rawUser = localStorage.getItem(USER_KEY);
-      if (rawUser) {
-        const email = JSON.parse(rawUser) as string;
-        const found = loadPortalUsers().find((u) => u.email === email);
-        if (found) setUser(found);
-      }
     } catch {
-      /* bỏ qua dữ liệu lỗi */
+      // Ignore malformed browser cache and let the cloud session restore it.
     }
+
+    void fetch("/api/auth/session", { credentials: "include" })
+      .then(async (response) => {
+        if (response.status === 503) return;
+        if (!response.ok) {
+          if (!cancelled) setUser(null);
+          return;
+        }
+        const result = (await response.json()) as { user?: PortalUser };
+        if (!result.user || cancelled) return;
+        setUser(result.user);
+        if (result.user.role === "admin") await migrateLegacyUsersToCloud();
+        const syncResult = await syncCloudStateWithLocal();
+        if (syncResult === "changed") reloadOnceAfterCloudSync();
+        else clearCloudSyncReloadFlag();
+      })
+      .catch(() => {
+        // Keep using the browser cache while the Worker is unavailable.
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
   }, [cart]);
 
+  useEffect(() => {
+    if (!user) return;
+    let syncing = false;
+    const sync = async () => {
+      if (syncing) return;
+      syncing = true;
+      const result = await syncCloudStateWithLocal();
+      syncing = false;
+      if (result === "changed") reloadOnceAfterCloudSync();
+      else if (result === "unchanged") clearCloudSyncReloadFlag();
+    };
+    const handleFocus = () => void sync();
+    const interval = window.setInterval(() => void sync(), 60_000);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [user]);
+
   const value = useMemo<Store>(() => {
-    const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     return {
       cart,
-      cartCount: cart.reduce((sum, i) => sum + i.quantity, 0),
+      cartCount: cart.reduce((sum, item) => sum + item.quantity, 0),
       cartTotal,
       addToCart: (item) =>
-        setCart((prev) => {
-          const existing = prev.find((i) => i.sku === item.sku);
+        setCart((previous) => {
+          const existing = previous.find((entry) => entry.sku === item.sku);
           if (existing) {
-            return prev.map((i) =>
-              i.sku === item.sku ? { ...i, quantity: i.quantity + item.quantity } : i,
+            return previous.map((entry) =>
+              entry.sku === item.sku
+                ? { ...entry, quantity: entry.quantity + item.quantity }
+                : entry,
             );
           }
-          return [...prev, item];
+          return [...previous, item];
         }),
       updateQuantity: (sku, quantity) =>
-        setCart((prev) =>
-          prev.map((i) => (i.sku === sku ? { ...i, quantity: Math.max(1, quantity) } : i)),
+        setCart((previous) =>
+          previous.map((item) =>
+            item.sku === sku ? { ...item, quantity: Math.max(1, quantity) } : item,
+          ),
         ),
-      removeFromCart: (sku) => setCart((prev) => prev.filter((i) => i.sku !== sku)),
+      removeFromCart: (sku) => setCart((previous) => previous.filter((item) => item.sku !== sku)),
       clearCart: () => setCart([]),
       user,
-      login: (email, password) => {
-        const found = findPortalUser(email, password);
-        if (!found) {
-          const exists = findPortalUser(email);
-          if (!exists) return { ok: false, message: "Email không tồn tại trong hệ thống Portal." };
-          return { ok: false, message: "Mật khẩu không đúng." };
+      login: async (email, password) => {
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            credentials: "include",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          if (response.ok) {
+            const result = (await response.json()) as { user: PortalUser };
+            setUser(result.user);
+            if (result.user.role === "admin") await migrateLegacyUsersToCloud();
+            const syncResult = await syncCloudStateWithLocal();
+            if (syncResult === "changed") reloadOnceAfterCloudSync();
+            else clearCloudSyncReloadFlag();
+            return { ok: true };
+          }
+          if (response.status !== 503) {
+            const result = (await response.json().catch(() => null)) as {
+              message?: string;
+            } | null;
+            return { ok: false, message: result?.message ?? "Đăng nhập không thành công." };
+          }
+        } catch {
+          return { ok: false, message: "Không thể kết nối Cloudflare. Vui lòng thử lại." };
         }
-        setUser(found);
-        localStorage.setItem(USER_KEY, JSON.stringify(found.email));
-        return { ok: true };
+        return { ok: false, message: "Cloudflare D1 chưa được cấu hình cho môi trường này." };
       },
       logout: () => {
         setUser(null);
-        localStorage.removeItem(USER_KEY);
+        clearCloudSyncReloadFlag();
+        void fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => undefined);
       },
     };
   }, [cart, user]);
@@ -103,10 +165,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 }
 
 export function useStore() {
-  const ctx = useContext(StoreContext);
-  if (!ctx) throw new Error("useStore phải dùng bên trong StoreProvider");
-  return ctx;
+  const context = useContext(StoreContext);
+  if (!context) throw new Error("useStore phải dùng bên trong StoreProvider");
+  return context;
 }
 
 export const productBySku = (sku: string) =>
-  products.find((p) => p.sku === sku || p.variants.some((v) => v.sku === sku));
+  products.find(
+    (product) => product.sku === sku || product.variants.some((variant) => variant.sku === sku),
+  );

@@ -4,6 +4,7 @@ import {
   AC_WIRES,
   autoAcWire,
   autoCabinetType,
+  autoInverterType,
   loadEstimateInputs,
   saveEstimateInputs,
   type EstimateInputs,
@@ -44,6 +45,7 @@ export function EstimateToolsForm() {
       phase,
       acWire: autoAcWire(phase),
       cabinetType: autoCabinetType(phase),
+      inverterTypeAuto: autoInverterType(phase, buildEstimateQuote(prev).calc.inverterKw),
     }));
   };
 
@@ -104,6 +106,7 @@ export function EstimateToolsForm() {
             <AutoCalcGrid
               form={form}
               onPanelChange={(panelName) => patch("panelTypeAuto", panelName)}
+              onInverterChange={(inverterId) => patch("inverterTypeAuto", inverterId)}
               onBatteryChange={(batteryName) => patch("batteryTypeAuto", batteryName)}
               onPatch={patch}
               onPhaseChange={setPhase}

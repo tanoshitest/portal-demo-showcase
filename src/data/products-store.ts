@@ -1,4 +1,5 @@
 import { products, type Product } from "@/data/mock";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const PRODUCTS_STORAGE_KEY = "hv_admin_products";
 
@@ -111,7 +112,7 @@ export function loadAdminProducts(): Product[] {
 
 export function saveAdminProducts(list: Product[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(list));
+  persistLocalAndCloud(PRODUCTS_STORAGE_KEY, list);
 }
 
 export function upsertAdminProduct(list: Product[], next: Product): Product[] {

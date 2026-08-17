@@ -1,6 +1,12 @@
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { computeAutoCalc } from "@/data/auto-calc";
-import { PANEL_TYPES, type EstimateInputs } from "@/data/estimate";
+import {
+  autoInverterType,
+  inverterLabel,
+  inverterOptionsForPhase,
+  PANEL_TYPES,
+  type EstimateInputs,
+} from "@/data/estimate";
 import { kwhFromBill, amountExclVat, type EvnBillResult } from "@/data/evn-bill";
 import { formatVnd } from "@/lib/format";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -40,12 +46,14 @@ const mobileInputCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-
 export function AutoCalcGrid({
   form,
   onPanelChange,
+  onInverterChange,
   onBatteryChange,
   onPatch,
   onPhaseChange,
 }: {
   form: EstimateInputs;
   onPanelChange: (panelName: string) => void;
+  onInverterChange: (inverterId: string) => void;
   onBatteryChange: (batteryName: string) => void;
   onPatch: <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => void;
   onPhaseChange: (phase: EstimateInputs["phase"]) => void;
@@ -54,6 +62,7 @@ export function AutoCalcGrid({
   const winterNet = amountExclVat(form.winterBillAuto);
   const summerEvn = useMemo(() => kwhFromBill(summerNet), [summerNet]);
   const winterEvn = useMemo(() => kwhFromBill(winterNet), [winterNet]);
+  const inverterOptions = useMemo(() => inverterOptionsForPhase(form.phase), [form.phase]);
   const r = useMemo(
     () =>
       computeAutoCalc({
@@ -73,6 +82,11 @@ export function AutoCalcGrid({
       }),
     [form, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh],
   );
+
+  useEffect(() => {
+    if (inverterOptions.some((item) => item.id === form.inverterTypeAuto)) return;
+    onInverterChange(autoInverterType(form.phase, r.inverterKw));
+  }, [form.inverterTypeAuto, form.phase, inverterOptions, onInverterChange, r.inverterKw]);
 
   const setCrane = (enabled: 0 | 1) => {
     onPatch("crane", enabled);
@@ -413,6 +427,29 @@ export function AutoCalcGrid({
                 <td className="px-1.5 py-1 sm:px-2.5">Công suất biến tần đề xuất</td>
                 <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
                   <CalcDark>{Math.round(r.inverterKw)}</CalcDark>
+                </td>
+              </tr>
+              <tr className="border-t border-border text-[11px] text-destructive sm:text-xs">
+                <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Biến tần đã chọn</td>
+                <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                  <Select value={form.inverterTypeAuto} onValueChange={onInverterChange}>
+                    <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none [&>span]:text-destructive">
+                      <SelectValue className="text-destructive">
+                        {inverterLabel(form.inverterTypeAuto)}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {inverterOptions.map((inverter) => (
+                        <SelectItem
+                          key={inverter.id}
+                          value={inverter.id}
+                          className="text-destructive"
+                        >
+                          {inverterLabel(inverter.id)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </td>
               </tr>
             </tbody>

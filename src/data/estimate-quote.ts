@@ -1,5 +1,5 @@
 import { computeAutoCalc } from "@/data/auto-calc";
-import { type EstimateInputs } from "@/data/estimate";
+import { inverterById, inverterLabel, type EstimateInputs } from "@/data/estimate";
 import { amountExclVat, kwhFromBill } from "@/data/evn-bill";
 
 export type EstimateQuoteRow = {
@@ -49,10 +49,13 @@ export function buildEstimateQuote(form: EstimateInputs) {
   });
 
   const panelUnitPrice = PANEL_PRICES[calc.panel.name] ?? 3_200_000;
-  const inverterUnitPrice = Math.round(
+  const selectedInverter = inverterById(form.inverterTypeAuto);
+  const fallbackInverterPrice = Math.round(
     (form.phase === "Điện 3 pha" ? 18_000_000 : 12_000_000) +
       calc.inverterKw * (form.phase === "Điện 3 pha" ? 1_150_000 : 900_000),
   );
+  const inverterUnitPrice =
+    selectedInverter?.customerPrice ?? selectedInverter?.referencePrice ?? fallbackInverterPrice;
   const cabinetUnitPrice = CABINET_PRICES[form.cabinetType] ?? 8_000_000;
 
   const accessoryPerPanel =
@@ -85,7 +88,9 @@ export function buildEstimateQuote(form: EstimateInputs) {
     },
     {
       no: "2",
-      name: `Biến tần ${Math.round(calc.inverterKw)} kW`,
+      name: selectedInverter
+        ? `Biến tần ${inverterLabel(selectedInverter.id)}`
+        : `Biến tần ${Math.round(calc.inverterKw)} kW`,
       unit: "bộ",
       qty: 1,
       unitPrice: inverterUnitPrice,

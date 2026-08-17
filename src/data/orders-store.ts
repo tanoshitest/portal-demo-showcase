@@ -1,3 +1,5 @@
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
+
 export const ORDERS_STORAGE_KEY = "hv_site_orders_v1";
 
 export const ORDER_STATUSES = ["Mới", "Đã xác nhận", "Đang giao", "Hoàn tất", "Đã hủy"] as const;
@@ -134,12 +136,17 @@ export function loadSiteOrders(): SiteOrder[] {
 
 export function saveSiteOrders(list: SiteOrder[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(list));
+  persistLocalAndCloud(ORDERS_STORAGE_KEY, list);
 }
 
 export function addSiteOrder(order: SiteOrder): SiteOrder[] {
   const next = [order, ...loadSiteOrders().filter((o) => o.id !== order.id)];
   saveSiteOrders(next);
+  void fetch("/api/public/orders", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(order),
+  }).catch(() => undefined);
   return next;
 }
 

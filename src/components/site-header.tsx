@@ -1,9 +1,27 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, Search, ShoppingCart, User, Phone, ChevronDown, LayoutDashboard, LogOut, FileText } from "lucide-react";
+import {
+  Menu,
+  Search,
+  ShoppingCart,
+  User,
+  Phone,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  LoaderCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { company, portalUsers, type PortalUser } from "@/data/mock";
+import { company } from "@/data/mock";
 import { useStore } from "@/context/store";
 import { toast } from "sonner";
 
@@ -22,24 +40,28 @@ const navItems = [
   { to: "/lien-he", label: "Liên hệ" },
 ] as const;
 
-const loginRoles: { role: PortalUser["role"]; label: string }[] = [
-  { role: "admin", label: "Admin" },
-  { role: "sale", label: "Sale" },
-];
-
 export function SiteHeader() {
   const { cartCount, user, login, logout } = useStore();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const loginAs = (role: PortalUser["role"]) => {
-    const account = portalUsers.find((u) => u.role === role);
-    if (!account) return;
-    const res = login(account.email, account.password);
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoggingIn(true);
+    const res = await login(email, password);
+    setIsLoggingIn(false);
     if (res.ok) {
       setOpen(false);
+      setLoginOpen(false);
+      setPassword("");
       toast.success("Đăng nhập thành công");
       navigate({ to: "/portal/dashboard" });
+    } else if (res.message) {
+      toast.error(res.message);
     }
   };
 
@@ -121,23 +143,15 @@ export function SiteHeader() {
                   <DropdownMenuItem onSelect={() => navigate({ to: "/portal/dashboard" })}>
                     <LayoutDashboard className="h-4 w-4" /> Vào Portal
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate({ to: "/portal/tai-lieu" })}>
-                    <FileText className="h-4 w-4" /> Tài liệu hãng
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate({ to: "/portal/tai-khoan" })}>
-                    <User className="h-4 w-4" /> Tài khoản
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={handleLogout}>
                     <LogOut className="h-4 w-4" /> Đăng xuất
                   </DropdownMenuItem>
                 </>
               ) : (
-                loginRoles.map((r) => (
-                  <DropdownMenuItem key={r.role} onSelect={() => loginAs(r.role)}>
-                    {r.label}
-                  </DropdownMenuItem>
-                ))
+                <DropdownMenuItem onSelect={() => setLoginOpen(true)}>
+                  <User className="h-4 w-4" /> Đăng nhập
+                </DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -170,20 +184,6 @@ export function SiteHeader() {
                     >
                       Vào Portal
                     </Link>
-                    <Link
-                      to="/portal/tai-lieu"
-                      onClick={() => setOpen(false)}
-                      className="rounded-md px-3 py-3 text-sm font-semibold hover:bg-secondary"
-                    >
-                      Tài liệu hãng
-                    </Link>
-                    <Link
-                      to="/portal/tai-khoan"
-                      onClick={() => setOpen(false)}
-                      className="rounded-md px-3 py-3 text-sm font-semibold hover:bg-secondary"
-                    >
-                      Tài khoản
-                    </Link>
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -193,19 +193,16 @@ export function SiteHeader() {
                     </button>
                   </>
                 ) : (
-                  <>
-                    <p className="px-3 pt-2 text-xs font-bold uppercase text-muted-foreground">Đăng nhập</p>
-                    {loginRoles.map((r) => (
-                      <button
-                        key={r.role}
-                        type="button"
-                        onClick={() => loginAs(r.role)}
-                        className="rounded-md px-3 py-3 text-left text-sm font-semibold hover:bg-secondary"
-                      >
-                        {r.label}
-                      </button>
-                    ))}
-                  </>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      setLoginOpen(true);
+                    }}
+                    className="rounded-md px-3 py-3 text-left text-sm font-semibold hover:bg-secondary"
+                  >
+                    Đăng nhập Portal
+                  </button>
                 )}
                 <Button asChild className="mt-3">
                   <a href={`tel:${company.hotline.replace(/\s/g, "")}`}>
@@ -217,6 +214,44 @@ export function SiteHeader() {
           </Sheet>
         </div>
       </div>
+
+      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Đăng nhập Portal</DialogTitle>
+            <DialogDescription>Dùng tài khoản Admin hoặc Sale đã được cấp.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleLogin}>
+            <div className="space-y-2">
+              <Label htmlFor="portal-login-email">Email</Label>
+              <Input
+                id="portal-login-email"
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="email@hoangvinhvkt.vn"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="portal-login-password">Mật khẩu</Label>
+              <Input
+                id="portal-login-password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoggingIn}>
+              {isLoggingIn && <LoaderCircle className="h-4 w-4 animate-spin" />}
+              Đăng nhập
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

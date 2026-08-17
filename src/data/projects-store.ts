@@ -1,4 +1,5 @@
 import { projects, type Project } from "@/data/mock";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const PROJECTS_STORAGE_KEY = "hv_admin_projects";
 
@@ -110,7 +111,7 @@ export function loadAdminProjects(): Project[] {
 
 export function saveAdminProjects(list: Project[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(list));
+  persistLocalAndCloud(PROJECTS_STORAGE_KEY, list);
 }
 
 export function upsertAdminProject(list: Project[], next: Project): Project[] {

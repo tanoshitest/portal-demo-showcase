@@ -15,6 +15,7 @@ import {
   type Quote,
   type SolarProduct,
 } from "@/data/solar";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 type SolarStore = {
   products: SolarProduct[];
@@ -69,7 +70,7 @@ export function SolarProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(KEY, JSON.stringify({ products, tariffs, rules, quotes }));
+    persistLocalAndCloud(KEY, { products, tariffs, rules, quotes });
   }, [hydrated, products, tariffs, rules, quotes]);
 
   const value = useMemo<SolarStore>(

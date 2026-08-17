@@ -33,8 +33,11 @@ import {
 } from "@/components/ui/table";
 import { type PortalUser } from "@/data/mock";
 import {
+  deleteCloudPortalUser,
   deletePortalUser,
+  loadCloudPortalUsers,
   loadPortalUsers,
+  upsertCloudPortalUser,
   upsertPortalUser,
   USER_ROLES,
 } from "@/data/users-store";
@@ -78,7 +81,7 @@ function fromUser(user: PortalUser): FormState {
     phone: user.phone,
     company: user.company,
     role: user.role,
-    password: user.password,
+    password: "",
   };
 }
 
@@ -91,10 +94,22 @@ function PortalUsersPage() {
   const [form, setForm] = useState<FormState>(() => blankForm());
 
   useEffect(() => {
-    setList(loadPortalUsers());
+    void loadCloudPortalUsers().then((cloudUsers) => {
+      setList(cloudUsers ?? loadPortalUsers());
+    });
   }, []);
 
   if (!user) return <PortalGate />;
+  if (user.role !== "admin") {
+    return (
+      <div className="p-8">
+        <h1 className="text-xl font-bold">Không có quyền truy cập</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Chỉ tài khoản Admin được quản lý người dùng.
+        </p>
+      </div>
+    );
+  }
 
   const patch = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -114,14 +129,18 @@ function PortalUsersPage() {
     setOpen(true);
   };
 
-  const handleSave = (event?: FormEvent) => {
+  const handleSave = async (event?: FormEvent) => {
     event?.preventDefault();
     if (form.name.trim().length < 2) return toast.error("Nhập họ tên.");
     if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) return toast.error("Email không hợp lệ.");
-    if (form.password.trim().length < 6) return toast.error("Mật khẩu tối thiểu 6 ký tự.");
+    if ((isCreate || form.password) && form.password.trim().length < 6) {
+      return toast.error("Mật khẩu tối thiểu 6 ký tự.");
+    }
     const email = form.email.trim();
     const taken = list.some(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.email.toLowerCase() !== editingEmail?.toLowerCase(),
+      (u) =>
+        u.email.toLowerCase() === email.toLowerCase() &&
+        u.email.toLowerCase() !== editingEmail?.toLowerCase(),
     );
     if (taken) return toast.error("Email đã được dùng.");
 
@@ -135,18 +154,25 @@ function PortalUsersPage() {
       phone: form.phone.trim(),
       brandSlugs: "all",
     };
-    setList((prev) => upsertPortalUser(prev, next));
+    const cloudResult = await upsertCloudPortalUser(editingEmail ?? email, next);
+    if (typeof cloudResult === "string") {
+      toast.error(cloudResult);
+      return;
+    }
+    if (cloudResult) setList(cloudResult);
+    else setList((prev) => upsertPortalUser(prev, next));
     toast.success(isCreate ? "Đã tạo tài khoản" : "Đã lưu tài khoản", { description: next.email });
     setOpen(false);
   };
 
-  const handleDelete = (item: PortalUser) => {
+  const handleDelete = async (item: PortalUser) => {
     if (item.email.toLowerCase() === user.email.toLowerCase()) {
       toast.error("Không thể xóa tài khoản đang đăng nhập.");
       return;
     }
     if (!window.confirm(`Xóa tài khoản ${item.email}?`)) return;
-    const result = deletePortalUser(list, item.email);
+    const cloudResult = await deleteCloudPortalUser(item.email);
+    const result = cloudResult ?? deletePortalUser(list, item.email);
     if (typeof result === "string") {
       toast.error(result);
       return;
@@ -161,7 +187,7 @@ function PortalUsersPage() {
         <div>
           <h1 className="text-2xl font-black sm:text-3xl">Quản lý người dùng</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tạo tài khoản Admin hoặc Sale. {list.length} người dùng. Demo lưu trên trình duyệt.
+            Tạo tài khoản Admin hoặc Sale. {list.length} người dùng. Dữ liệu lưu trên Cloudflare D1.
           </p>
         </div>
         <Button onClick={openCreate}>
@@ -187,7 +213,9 @@ function PortalUsersPage() {
                 <TableCell className="font-mono text-xs">{item.email}</TableCell>
                 <TableCell className="text-muted-foreground">{item.phone || "—"}</TableCell>
                 <TableCell>
-                  <Badge variant={item.role === "admin" ? "default" : "secondary"}>{item.roleLabel}</Badge>
+                  <Badge variant={item.role === "admin" ? "default" : "secondary"}>
+                    {item.roleLabel}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
@@ -215,7 +243,9 @@ function PortalUsersPage() {
         <SheetContent className="flex h-full w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
           <SheetHeader className="space-y-1 border-b border-border px-6 py-4 pr-12 text-left">
             <SheetTitle>{isCreate ? "Thêm người dùng" : "Sửa người dùng"}</SheetTitle>
-            <SheetDescription>Chọn vai trò Admin hoặc Sale. Tài khoản dùng để đăng nhập Portal.</SheetDescription>
+            <SheetDescription>
+              Chọn vai trò Admin hoặc Sale. Tài khoản dùng để đăng nhập Portal.
+            </SheetDescription>
           </SheetHeader>
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
@@ -275,13 +305,15 @@ function PortalUsersPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="user-password">Mật khẩu</Label>
+                <Label htmlFor="user-password">
+                  {isCreate ? "Mật khẩu" : "Mật khẩu mới (không bắt buộc)"}
+                </Label>
                 <Input
                   id="user-password"
                   type="password"
                   value={form.password}
                   onChange={(e) => patch("password", e.target.value)}
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder={isCreate ? "Tối thiểu 6 ký tự" : "Để trống nếu không đổi"}
                 />
               </div>
             </div>

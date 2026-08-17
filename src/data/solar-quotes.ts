@@ -1,4 +1,5 @@
 import { materialSpecLines, materials } from "@/data/materials";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export type SolarSolution = "Hòa lưới bám tải" | "Hybrid";
 
@@ -485,7 +486,7 @@ export function loadSolarQuotes(): SolarQuote[] {
 
 export function saveSolarQuotes(quotes: SolarQuote[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes));
+  persistLocalAndCloud(QUOTES_KEY, quotes);
 }
 
 export function loadSolarCatalog(): SolarCatalogItem[] {
@@ -500,5 +501,5 @@ export function loadSolarCatalog(): SolarCatalogItem[] {
 
 export function saveSolarCatalog(catalog: SolarCatalogItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(CATALOG_KEY, JSON.stringify(catalog));
+  persistLocalAndCloud(CATALOG_KEY, catalog);
 }

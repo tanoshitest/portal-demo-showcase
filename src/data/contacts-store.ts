@@ -1,3 +1,5 @@
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
+
 export const CONTACTS_STORAGE_KEY = "hv_site_contacts_v1";
 
 export const CONTACT_STATUSES = ["Mới", "Đã liên hệ", "Đã xử lý"] as const;
@@ -86,7 +88,7 @@ export function loadSiteContacts(): SiteContact[] {
 
 export function saveSiteContacts(list: SiteContact[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(list));
+  persistLocalAndCloud(CONTACTS_STORAGE_KEY, list);
 }
 
 export function addSiteContact(contact: Omit<SiteContact, "id" | "createdAt" | "status">): SiteContact[] {
@@ -98,6 +100,11 @@ export function addSiteContact(contact: Omit<SiteContact, "id" | "createdAt" | "
   };
   const next = [item, ...loadSiteContacts()];
   saveSiteContacts(next);
+  void fetch("/api/public/contacts", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(item),
+  }).catch(() => undefined);
   return next;
 }
 

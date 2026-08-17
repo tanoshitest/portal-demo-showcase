@@ -1,4 +1,5 @@
 import { documents, type PortalDoc } from "@/data/mock";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const DOCUMENTS_STORAGE_KEY = "hv_admin_documents";
 
@@ -69,7 +70,7 @@ function readStored(): PortalDoc[] | null {
 function saveAdminDocuments(list: PortalDoc[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(list));
+    persistLocalAndCloud(DOCUMENTS_STORAGE_KEY, list);
   } catch {
     const slim = list.map((d) => {
       if (d.fileUrl && d.fileUrl.length > 40_000) {
@@ -78,7 +79,7 @@ function saveAdminDocuments(list: PortalDoc[]): void {
       return d;
     });
     try {
-      localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(slim));
+      persistLocalAndCloud(DOCUMENTS_STORAGE_KEY, slim);
     } catch {
       /* quota vẫn đầy — bỏ qua persist, không crash */
     }

@@ -1,4 +1,5 @@
 import { solutions, type Solution } from "@/data/mock";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const SOLUTIONS_STORAGE_KEY = "hv_admin_solutions";
 
@@ -106,7 +107,7 @@ export function loadAdminSolutions(): Solution[] {
 
 export function saveAdminSolutions(list: Solution[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(SOLUTIONS_STORAGE_KEY, JSON.stringify(list));
+  persistLocalAndCloud(SOLUTIONS_STORAGE_KEY, list);
 }
 
 export function upsertAdminSolution(list: Solution[], next: Solution): Solution[] {

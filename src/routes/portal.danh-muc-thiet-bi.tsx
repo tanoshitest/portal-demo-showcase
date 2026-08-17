@@ -23,6 +23,7 @@ import {
 } from "@/data/equipment-catalog";
 import { useStore } from "@/context/store";
 import { formatVnd } from "@/lib/format";
+import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 const EQUIPMENT_CATALOG_STORAGE_KEY = "portal-equipment-catalog-v5";
 
@@ -135,7 +136,7 @@ function EquipmentCatalogPage() {
   }, []);
 
   useEffect(() => {
-    if (catalogReady) localStorage.setItem(EQUIPMENT_CATALOG_STORAGE_KEY, JSON.stringify(groups));
+    if (catalogReady) persistLocalAndCloud(EQUIPMENT_CATALOG_STORAGE_KEY, groups);
   }, [catalogReady, groups]);
 
   const openCreate = (groupId: string) => {
