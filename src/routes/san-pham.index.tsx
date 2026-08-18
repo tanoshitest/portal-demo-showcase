@@ -346,17 +346,18 @@ function ProductListing() {
                 </div>
               ) : (
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
-                  <div className="grid gap-2 border-b border-border p-2 sm:gap-3 sm:p-3 md:grid-cols-3">
+                  <div className="grid gap-2 border-b border-border p-2 sm:gap-3 sm:p-3 md:grid-cols-[10rem_repeat(3,minmax(0,1fr))]">
+                    <div className="hidden md:block" aria-hidden="true" />
                     {compareProducts.map((product) => {
                       const brand = brands.find((b) => b.slug === product.brandSlug);
                       const price = product.salePrice ?? product.price;
                       return (
-                        <div key={product.id} className="rounded-lg border border-border p-2 sm:p-3">
-                          <div className="flex items-start gap-2 sm:gap-3">
+                        <div key={product.id} className="min-w-0 rounded-lg border border-border p-2 sm:p-3">
+                          <div className="flex min-w-0 items-start gap-2 sm:gap-3">
                             <img
                               src={product.image}
                               alt={product.name}
-                              className="h-16 w-16 rounded-lg border border-border object-cover sm:h-20 sm:w-20"
+                              className="h-16 w-16 flex-none rounded-lg border border-border object-cover sm:h-20 sm:w-20"
                             />
                             <div className="min-w-0 flex-1">
                               <div className="text-[11px] font-semibold uppercase tracking-wide text-brand sm:text-xs">
