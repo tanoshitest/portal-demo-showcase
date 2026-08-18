@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CheckSquare2 } from "lucide-react";
+import { CheckSquare2, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { brands, type Product } from "@/data/mock";
@@ -47,19 +47,24 @@ export function ProductCard({
           <button
             type="button"
             aria-pressed={compareChecked}
+            aria-label={compareChecked ? "Bỏ chọn so sánh" : "Chọn để so sánh"}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               onCompareToggle(product);
             }}
-            className={`absolute right-2 top-2 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold shadow-sm transition ${
+            className={`absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-sm transition ${
               compareChecked
                 ? "border-brand bg-brand text-white"
                 : "border-border bg-background/95 text-foreground hover:border-brand"
             }`}
           >
-            <CheckSquare2 className="h-3.5 w-3.5" />
-            So sánh
+            {compareChecked ? (
+              <CheckSquare2 className="h-3.5 w-3.5" />
+            ) : (
+              <Square className="h-3.5 w-3.5" />
+            )}
+            <span>So sánh</span>
           </button>
         )}
       </Link>

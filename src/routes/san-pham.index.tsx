@@ -17,6 +17,7 @@ import {
 import { ProductCard } from "@/components/product-card";
 import { brands, categories, products } from "@/data/mock";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/san-pham/")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -115,7 +116,10 @@ function ProductListing() {
   const toggleCompare = (slug: string) => {
     setCompareSlugs((prev) => {
       if (prev.includes(slug)) return prev.filter((item) => item !== slug);
-      if (prev.length >= 3) return prev;
+      if (prev.length >= 3) {
+        toast.info("Chỉ so sánh tối đa 3 sản phẩm.");
+        return prev;
+      }
       return [...prev, slug];
     });
   };
@@ -316,6 +320,7 @@ function ProductListing() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setShowComparePanel((prev) => !prev)}
                 >
                   {showComparePanel ? (
@@ -328,7 +333,7 @@ function ProductListing() {
                     </>
                   )}
                 </Button>
-                <Button variant="outline" size="sm" onClick={clearCompare}>
+                <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={clearCompare}>
                   Xóa tất cả
                 </Button>
               </div>
@@ -341,37 +346,41 @@ function ProductListing() {
                 </div>
               ) : (
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
-                  <div className="grid gap-3 border-b border-border p-3 md:grid-cols-3">
+                  <div className="grid gap-2 border-b border-border p-2 sm:gap-3 sm:p-3 md:grid-cols-3">
                     {compareProducts.map((product) => {
                       const brand = brands.find((b) => b.slug === product.brandSlug);
                       const price = product.salePrice ?? product.price;
                       return (
-                        <div key={product.id} className="rounded-lg border border-border p-3">
-                          <div className="flex items-start gap-3">
+                        <div key={product.id} className="rounded-lg border border-border p-2 sm:p-3">
+                          <div className="flex items-start gap-2 sm:gap-3">
                             <img
                               src={product.image}
                               alt={product.name}
-                              className="h-20 w-20 rounded-lg border border-border object-cover"
+                              className="h-16 w-16 rounded-lg border border-border object-cover sm:h-20 sm:w-20"
                             />
                             <div className="min-w-0 flex-1">
-                              <div className="text-xs font-semibold uppercase tracking-wide text-brand">
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-brand sm:text-xs">
                                 {brand?.name}
                               </div>
-                              <div className="mt-1 line-clamp-2 text-sm font-bold">{product.name}</div>
-                              <div className="mt-2 flex flex-wrap gap-2">
+                              <div className="mt-1 line-clamp-2 text-sm font-bold leading-snug">
+                                {product.name}
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-1.5">
                                 <Badge variant="outline" className={stockBadgeClass(product.stock)}>
                                   {formatStock(product.stock)}
                                 </Badge>
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className="text-[11px] sm:text-xs">
                                   {product.categorySlug}
                                 </Badge>
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 flex items-baseline gap-2">
-                            <span className="text-lg font-black text-brand">{formatVnd(price)}</span>
+                          <div className="mt-2 flex items-baseline gap-2 sm:mt-3">
+                            <span className="text-base font-black text-brand sm:text-lg">
+                              {formatVnd(price)}
+                            </span>
                             {product.salePrice && (
-                              <span className="text-xs text-muted-foreground line-through">
+                              <span className="text-[11px] text-muted-foreground line-through sm:text-xs">
                                 {formatVnd(product.price)}
                               </span>
                             )}
@@ -390,7 +399,7 @@ function ProductListing() {
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full min-w-[760px] border-collapse text-sm">
+                    <table className="w-full min-w-[760px] border-collapse text-xs sm:text-sm">
                       <tbody>
                         <CompareRow label="SKU" values={compareProducts.map((p) => p.sku)} />
                         <CompareRow
