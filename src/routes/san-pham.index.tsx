@@ -346,54 +346,59 @@ function ProductListing() {
                 </div>
               ) : (
                 <div className="overflow-hidden rounded-xl border border-border bg-card">
-                  <div className="grid gap-2 border-b border-border p-2 sm:gap-3 sm:p-3 md:grid-cols-[10rem_repeat(3,minmax(0,1fr))]">
+                  <div className="grid gap-0 border-b border-border md:grid-cols-[10rem_repeat(3,minmax(0,1fr))]">
                     <div className="hidden md:block" aria-hidden="true" />
                     {compareProducts.map((product) => {
                       const brand = brands.find((b) => b.slug === product.brandSlug);
                       const price = product.salePrice ?? product.price;
                       return (
-                        <div key={product.id} className="min-w-0 rounded-lg border border-border p-2 sm:p-3">
-                          <div className="flex min-w-0 items-start gap-2 sm:gap-3">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="h-16 w-16 flex-none rounded-lg border border-border object-cover sm:h-20 sm:w-20"
-                            />
-                            <div className="min-w-0 flex-1">
-                              <div className="text-[11px] font-semibold uppercase tracking-wide text-brand sm:text-xs">
-                                {brand?.name}
-                              </div>
-                              <div className="mt-1 line-clamp-2 text-sm font-bold leading-snug">
-                                {product.name}
-                              </div>
-                              <div className="mt-2 flex flex-wrap gap-1.5">
-                                <Badge variant="outline" className={stockBadgeClass(product.stock)}>
-                                  {formatStock(product.stock)}
-                                </Badge>
-                                <Badge variant="secondary" className="text-[11px] sm:text-xs">
-                                  {product.categorySlug}
-                                </Badge>
+                        <div
+                          key={product.id}
+                          className="min-w-0 border-border p-2 sm:p-3 md:border-l md:first:border-l-0"
+                        >
+                          <div className="rounded-lg border border-border p-2 sm:p-3">
+                            <div className="flex min-w-0 items-start gap-2 sm:gap-3">
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="h-16 w-16 flex-none rounded-lg border border-border object-cover sm:h-20 sm:w-20"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="text-[11px] font-semibold uppercase tracking-wide text-brand sm:text-xs">
+                                  {brand?.name}
+                                </div>
+                                <div className="mt-1 line-clamp-2 text-sm font-bold leading-snug">
+                                  {product.name}
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  <Badge variant="outline" className={stockBadgeClass(product.stock)}>
+                                    {formatStock(product.stock)}
+                                  </Badge>
+                                  <Badge variant="secondary" className="text-[11px] sm:text-xs">
+                                    {product.categorySlug}
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="mt-2 flex items-baseline gap-2 sm:mt-3">
-                            <span className="text-base font-black text-brand sm:text-lg">
-                              {formatVnd(price)}
-                            </span>
-                            {product.salePrice && (
-                              <span className="text-[11px] text-muted-foreground line-through sm:text-xs">
-                                {formatVnd(product.price)}
+                            <div className="mt-2 flex items-baseline gap-2 sm:mt-3">
+                              <span className="text-base font-black text-brand sm:text-lg">
+                                {formatVnd(price)}
                               </span>
-                            )}
+                              {product.salePrice && (
+                                <span className="text-[11px] text-muted-foreground line-through sm:text-xs">
+                                  {formatVnd(product.price)}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 h-8 px-2 text-xs"
+                              onClick={() => toggleCompare(product.slug)}
+                            >
+                              Bỏ chọn
+                            </Button>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="mt-2 h-8 px-2 text-xs"
-                            onClick={() => toggleCompare(product.slug)}
-                          >
-                            Bỏ chọn
-                          </Button>
                         </div>
                       );
                     })}
@@ -448,7 +453,7 @@ function ProductListing() {
 function CompareRow({ label, values }: { label: string; values: string[] }) {
   return (
     <tr className="border-t border-border first:border-t-0">
-      <th className="w-40 bg-secondary/40 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <th className="w-40 min-w-40 bg-secondary/40 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </th>
       {values.map((value, index) => (
