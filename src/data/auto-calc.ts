@@ -1,5 +1,7 @@
-import { autoInverterKw, BATTERY_TYPES, PANEL_TYPES } from "@/data/estimate";
+import { autoInverterKw, BATTERY_TYPES } from "@/data/estimate";
+import { findPanelTypeByName } from "@/data/panel-catalog";
 import { persistLocalAndCloud } from "@/lib/cloud-state-client";
+import { getCatalogBatteryTypes, type CatalogBatteryType } from "@/data/panel-catalog";
 
 export const AUTO_CALC_KEY = "hv_auto_calc_v1";
 export const DEFAULT_TARIFF_VND = 2954;
@@ -52,16 +54,123 @@ function round2(n: number) {
 }
 
 function panelByName(name: string) {
-  return PANEL_TYPES.find((p) => p.name === name) ?? PANEL_TYPES[0];
+  return findPanelTypeByName(name);
 }
 
 function batteryByName(name: string) {
   return BATTERY_TYPES.find((b) => b.name === name) ?? BATTERY_TYPES[0];
 }
 
+export type BatteryComboItem = {
+  name: string;
+  kwh: number;
+  price: number;
+  qty: number;
+};
+
+export type BatteryCombo = {
+  totalKwh: number;
+  totalPrice: number;
+  items: BatteryComboItem[];
+  label: string;
+  primary: CatalogBatteryType | null;
+};
+
+function roundCapacityKey(kwh: number) {
+  return Math.round(kwh * 100);
+}
+
+function buildBatteryCombo(targetKwh: number, batteries: CatalogBatteryType[]): BatteryCombo {
+  const usable = batteries
+    .filter((battery) => battery.stock > 0 && battery.price > 0 && battery.kwh > 0)
+    .sort((a, b) => a.price / b.kwh - b.price / b.kwh || a.price - b.price);
+
+  if (!usable.length) {
+    const fallback = batteryByName("EJOR 16 - BH7");
+    const qty = Math.max(1, Math.ceil(targetKwh / fallback.kwh));
+    return {
+      totalKwh: roundCapacityKey(fallback.kwh * qty) / 100,
+      totalPrice: fallback.price * qty,
+      items: [{ name: fallback.name, kwh: fallback.kwh, price: fallback.price, qty }],
+      label: `${fallback.name} x ${qty}`,
+      primary: { id: fallback.id, name: fallback.name, kwh: fallback.kwh, price: fallback.price, stock: qty, group: "" },
+    };
+  }
+
+  const target = Math.max(1, roundCapacityKey(targetKwh));
+  const maxCapacity = usable.reduce((sum, item) => sum + roundCapacityKey(item.kwh) * item.stock, 0);
+  const limit = Math.max(target, maxCapacity);
+  const dp = Array.from({ length: limit + 1 }, () => ({
+    cost: Number.POSITIVE_INFINITY,
+    prev: -1,
+    item: -1,
+  }));
+  dp[0] = { cost: 0, prev: -1, item: -1 };
+
+  for (let i = 0; i < usable.length; i += 1) {
+    const battery = usable[i];
+    const cap = roundCapacityKey(battery.kwh);
+    for (let count = 0; count < battery.stock; count += 1) {
+      for (let total = limit - cap; total >= 0; total -= 1) {
+        if (!Number.isFinite(dp[total].cost)) continue;
+        const next = total + cap;
+        const nextCost = dp[total].cost + battery.price;
+        if (
+          nextCost < dp[next].cost ||
+          (nextCost === dp[next].cost && total + cap < dp[next].prev + (dp[next].item >= 0 ? cap : 0))
+        ) {
+          dp[next] = { cost: nextCost, prev: total, item: i };
+        }
+      }
+    }
+  }
+
+  let bestIndex = -1;
+  for (let total = target; total <= limit; total += 1) {
+    if (!Number.isFinite(dp[total].cost)) continue;
+    if (bestIndex === -1 || dp[total].cost < dp[bestIndex].cost) bestIndex = total;
+  }
+
+  if (bestIndex === -1) {
+    const fallback = usable[0];
+    const qty = Math.max(1, Math.ceil(targetKwh / fallback.kwh));
+    return {
+      totalKwh: roundCapacityKey(fallback.kwh * qty) / 100,
+      totalPrice: fallback.price * qty,
+      items: [{ name: fallback.name, kwh: fallback.kwh, price: fallback.price, qty }],
+      label: `${fallback.name} x ${qty}`,
+      primary: fallback,
+    };
+  }
+
+  const counts = new Map<number, number>();
+  let cursor = bestIndex;
+  while (cursor > 0) {
+    const node = dp[cursor];
+    if (node.item < 0 || node.prev < 0) break;
+    counts.set(node.item, (counts.get(node.item) ?? 0) + 1);
+    cursor = node.prev;
+  }
+
+  const items = [...counts.entries()]
+    .map(([index, qty]) => ({ ...usable[index], qty }))
+    .sort((a, b) => a.price / a.kwh - b.price / b.kwh || b.kwh - a.kwh);
+  const totalKwh = items.reduce((sum, item) => sum + item.kwh * item.qty, 0);
+  const totalPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const label = items.map((item) => `${item.name} x ${item.qty}`).join(" + ");
+
+  return {
+    totalKwh: roundCapacityKey(totalKwh) / 100,
+    totalPrice,
+    items,
+    label,
+    primary: items[0] ?? null,
+  };
+}
+
 export function computeAutoCalc(input: AutoCalcInputs) {
   const panel = panelByName(input.panelName);
-  const battery = batteryByName(input.batteryName);
+  const catalogBatteries = getCatalogBatteryTypes({ inStockOnly: true });
   const tariff = Math.max(1, input.tariff || DEFAULT_TARIFF_VND);
   const pshSummer = Math.max(0.1, input.pshSummer || PSH_SUMMER);
   const pshWinter = Math.max(0.1, input.pshWinter || PSH_WINTER);
@@ -98,14 +207,24 @@ export function computeAutoCalc(input: AutoCalcInputs) {
   const summerBatt = round2(summerNight / eff);
   const winterBatt = round2(winterNight / eff);
   const neededBatt = Math.max(summerBatt, winterBatt);
-  const suggestedQty = Math.max(1, Math.ceil(neededBatt / battery.kwh - 1e-9));
-  const batteryQty = input.batteryQty > 0 ? input.batteryQty : suggestedQty;
-  const totalBatt = round2(battery.kwh * batteryQty);
-  const lineTotal = battery.price * batteryQty;
+  const combo = buildBatteryCombo(neededBatt, catalogBatteries.length ? catalogBatteries : BATTERY_TYPES.map((battery) => ({
+    id: battery.id,
+    name: battery.name,
+    kwh: battery.kwh,
+    price: battery.price,
+    stock: 99,
+    group: "",
+  })));
+  const battery = combo.primary ?? batteryByName(input.batteryName);
+  const suggestedQty = combo.items.reduce((sum, item) => sum + item.qty, 0) || Math.max(1, Math.ceil(neededBatt / battery.kwh - 1e-9));
+  const batteryQty = suggestedQty;
+  const totalBatt = combo.totalKwh || round2(battery.kwh * batteryQty);
+  const lineTotal = combo.totalPrice || battery.price * batteryQty;
 
   return {
     panel,
     battery,
+    batteryCombo: combo,
     panelKwp,
     summerKwh,
     winterKwh,

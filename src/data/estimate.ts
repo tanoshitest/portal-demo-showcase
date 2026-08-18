@@ -1,18 +1,11 @@
-import { inverterCatalogItems } from "./inverter-catalog";
+import { DEFAULT_PANEL_TYPES, findPanelTypeByName, getCatalogInverterTypes } from "./panel-catalog";
 import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const ESTIMATE_STORAGE_KEY = "hv_solar_estimate_v1";
 
 export const PANEL_AREA_M2 = 2.75;
 
-export const PANEL_TYPES = [
-  { id: "trina-630", name: "TRINA 630", watt: 630, areaM2: 2.84 },
-  { id: "longi-650", name: "LONGI 650", watt: 650, areaM2: 2.84 },
-  { id: "aiko-650", name: "AIKO 650", watt: 650, areaM2: 2.84 },
-  { id: "vsun-580", name: "VSUN 580", watt: 580, areaM2: 2.7 },
-  { id: "jinko-625", name: "JINKO 625", watt: 625, areaM2: 2.75 },
-  { id: "tcl-620", name: "TCL 620", watt: 620, areaM2: 2.8 },
-] as const;
+export const PANEL_TYPES = DEFAULT_PANEL_TYPES;
 
 export const BATTERY_TYPES = [
   { id: "ejor-16", name: "EJOR 16 - BH7", kwh: 16, price: 36_500_000 },
@@ -71,8 +64,8 @@ export type EstimateInputs = {
   cabinetType: string;
 };
 
-export const INVERTER_TYPES = inverterCatalogItems.filter(
-  (item): item is (typeof inverterCatalogItems)[number] & { id: string; capacityKw: number } =>
+export const INVERTER_TYPES = getCatalogInverterTypes({ inStockOnly: false }).filter(
+  (item): item is (typeof getCatalogInverterTypes)[number] & { id: string; capacityKw: number } =>
     Boolean(item.id) && typeof item.capacityKw === "number",
 );
 
@@ -82,6 +75,46 @@ export function inverterOptionsForPhase(phase: EstimateInputs["phase"]) {
   return INVERTER_TYPES.filter((item) => phaseToken.test(item.inverterGroup ?? "")).sort(
     (a, b) => a.capacityKw - b.capacityKw,
   );
+}
+
+function inverterStock(item: (typeof INVERTER_TYPES)[number]) {
+  const stock = Number(item.stockQuantity ?? 0);
+  return Number.isFinite(stock) ? stock : 0;
+}
+
+function inverterPrice(item: (typeof INVERTER_TYPES)[number]) {
+  return item.customerPrice ?? item.referencePrice ?? Number.POSITIVE_INFINITY;
+}
+
+function inverterBrandKey(item: (typeof INVERTER_TYPES)[number]) {
+  const group = (item.inverterGroup ?? "").trim();
+  const normalized = group.replace(/^\d+\.?\s*/, "");
+  const brandMatch = normalized.match(
+    /(SOLIS|LUXPOWER|SENEGRY|SOLAX|DEYE|SUNGROW|SOFAR|XINPZ|EJOR|HEROEE|VALLEY|CFE|LV\s*TOP\s*SUN|BATT?ENERGY|TCL)/i,
+  );
+  if (brandMatch?.[1]) return brandMatch[1].replace(/\s+/g, " ").toUpperCase();
+  const words = normalized.split(/\s+/).filter(Boolean);
+  return (words[0] ?? normalized).toUpperCase();
+}
+
+export function recommendedInverterOptionsForPhase(
+  phase: EstimateInputs["phase"],
+  recommendedKw: number,
+) {
+  const phaseOptions = inverterOptionsForPhase(phase).filter(
+    (item) => inverterStock(item) > 0 && item.capacityKw >= recommendedKw,
+  );
+  const grouped = new Map<string, (typeof INVERTER_TYPES)[number]>();
+
+  for (const item of phaseOptions) {
+    const key = inverterBrandKey(item);
+    const current = grouped.get(key);
+    if (!current || inverterPrice(item) < inverterPrice(current)) {
+      grouped.set(key, item);
+    }
+  }
+
+  return [...grouped.values()].sort((a, b) => inverterPrice(a) - inverterPrice(b));
 }
 
 export function inverterById(id: string) {
@@ -95,18 +128,7 @@ export function inverterLabel(id: string) {
 }
 
 export function autoInverterType(phase: EstimateInputs["phase"], recommendedKw: number) {
-  const options = inverterOptionsForPhase(phase);
-  const pricedOptions = options.filter(
-    (item) => (item.customerPrice ?? item.referencePrice ?? 0) > 0,
-  );
-  const candidates = pricedOptions.length ? pricedOptions : options;
-
-  return (
-    candidates.find((item) => item.capacityKw >= recommendedKw)?.id ??
-    candidates.at(-1)?.id ??
-    INVERTER_TYPES[0]?.id ??
-    ""
-  );
+  return recommendedInverterOptionsForPhase(phase, recommendedKw)[0]?.id ?? "";
 }
 
 export function autoCabinetType(phase: EstimateInputs["phase"]) {
@@ -272,7 +294,7 @@ export function defaultEstimateInputs(): EstimateInputs {
 }
 
 function panelByName(name: string) {
-  return PANEL_TYPES.find((p) => p.name === name) ?? PANEL_TYPES[0];
+  return findPanelTypeByName(name);
 }
 
 function batteryByName(name: string) {
@@ -315,7 +337,7 @@ export function scenarioFrom(form: EstimateInputs, mode: "auto" | "manual"): Est
     panelWatt: panel.watt,
     panelCount,
     capacityKw,
-    areaM2: Math.round(panelCount * PANEL_AREA_M2),
+    areaM2: Math.round(panelCount * panel.areaM2),
     inverterKw,
     batteryName: battery.name,
     batteryKwh: battery.kwh,

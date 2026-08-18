@@ -3,7 +3,6 @@ import {
   AC_WIRES,
   BATTERY_TYPES,
   INVERTER_KW_OPTIONS,
-  PANEL_TYPES,
   PRICE_PACKAGES,
   ROOF_TYPES,
   autoInverterKw,
@@ -15,6 +14,7 @@ import {
   scenarioFrom,
   type EstimateInputs,
 } from "@/data/estimate";
+import { getAvailablePanelTypes } from "@/data/panel-catalog";
 import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -189,10 +189,7 @@ export function EstimateWorksheet() {
           <tbody>
             <Row label="Chi phí cẩu pin" auto={form.crane ? "Có" : "Không"}>
               <div className="flex items-center gap-2">
-                <Select
-                  value={String(form.crane)}
-                  onValueChange={(v) => patch("crane", Number(v))}
-                >
+                <Select value={String(form.crane)} onValueChange={(v) => patch("crane", Number(v))}>
                   <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs shadow-none">
                     <SelectValue />
                   </SelectTrigger>
@@ -311,7 +308,7 @@ export function EstimateWorksheet() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {PANEL_TYPES.map((p) => (
+                  {getAvailablePanelTypes().map((p) => (
                     <SelectItem key={p.id} value={p.name}>
                       {p.name}
                     </SelectItem>
@@ -449,23 +446,15 @@ export function EstimateWorksheet() {
         </div>
         <p className="px-3 py-2 text-[11px] text-muted-foreground">
           Auto dùng {autoPanelCount(form.summerBillAuto)} tấm {auto.panelType} · biến tần{" "}
-          {autoInverterKw(auto.capacityKw)} kW. Cột thủ công (ô xanh) là thông số đang chọn. Giá demo
-          theo bảng dự toán.
+          {autoInverterKw(auto.capacityKw)} kW. Cột thủ công (ô xanh) là thông số đang chọn. Giá
+          demo theo bảng dự toán.
         </p>
       </section>
     </div>
   );
 }
 
-function Row({
-  label,
-  auto,
-  children,
-}: {
-  label: string;
-  auto: string;
-  children: ReactNode;
-}) {
+function Row({ label, auto, children }: { label: string; auto: string; children: ReactNode }) {
   return (
     <tr className="border-t border-border">
       <td className="px-3 py-1.5">{label}</td>

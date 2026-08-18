@@ -3,10 +3,10 @@ import { computeAutoCalc } from "@/data/auto-calc";
 import {
   autoInverterType,
   inverterLabel,
-  inverterOptionsForPhase,
-  PANEL_TYPES,
+  recommendedInverterOptionsForPhase,
   type EstimateInputs,
 } from "@/data/estimate";
+import type { EstimatePanelType } from "@/data/panel-catalog";
 import { kwhFromBill, amountExclVat, type EvnBillResult } from "@/data/evn-bill";
 import { formatVnd } from "@/lib/format";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,6 +45,7 @@ const mobileInputCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-
 
 export function AutoCalcGrid({
   form,
+  panelOptions,
   onPanelChange,
   onInverterChange,
   onBatteryChange,
@@ -52,6 +53,7 @@ export function AutoCalcGrid({
   onPhaseChange,
 }: {
   form: EstimateInputs;
+  panelOptions: EstimatePanelType[];
   onPanelChange: (panelName: string) => void;
   onInverterChange: (inverterId: string) => void;
   onBatteryChange: (batteryName: string) => void;
@@ -62,7 +64,6 @@ export function AutoCalcGrid({
   const winterNet = amountExclVat(form.winterBillAuto);
   const summerEvn = useMemo(() => kwhFromBill(summerNet), [summerNet]);
   const winterEvn = useMemo(() => kwhFromBill(winterNet), [winterNet]);
-  const inverterOptions = useMemo(() => inverterOptionsForPhase(form.phase), [form.phase]);
   const r = useMemo(
     () =>
       computeAutoCalc({
@@ -81,6 +82,10 @@ export function AutoCalcGrid({
         winterKwh: winterEvn.totalKwh,
       }),
     [form, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh],
+  );
+  const inverterOptions = useMemo(
+    () => recommendedInverterOptionsForPhase(form.phase, r.inverterKw),
+    [form.phase, r.inverterKw],
   );
 
   useEffect(() => {
@@ -364,12 +369,19 @@ export function AutoCalcGrid({
               <tr className="border-t border-border text-[11px] sm:text-xs text-destructive">
                 <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Tấm pin đã chọn</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
-                  <Select value={form.panelTypeAuto} onValueChange={onPanelChange}>
+                  <Select
+                    value={form.panelTypeAuto}
+                    onValueChange={onPanelChange}
+                    disabled={panelOptions.length === 0}
+                  >
                     <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none [&>span]:text-destructive">
-                      <SelectValue className="text-destructive" />
+                      <SelectValue
+                        className="text-destructive"
+                        placeholder="Không có pin còn hàng"
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {PANEL_TYPES.map((panel) => (
+                      {panelOptions.map((panel) => (
                         <SelectItem key={panel.id} value={panel.name} className="text-destructive">
                           {panel.name}
                         </SelectItem>
@@ -430,7 +442,7 @@ export function AutoCalcGrid({
                 </td>
               </tr>
               <tr className="border-t border-border text-[11px] text-destructive sm:text-xs">
-                <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Biến tần đã chọn</td>
+                <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Biến tần phù hợp</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
                   <Select value={form.inverterTypeAuto} onValueChange={onInverterChange}>
                     <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none [&>span]:text-destructive">
@@ -486,29 +498,31 @@ export function AutoCalcGrid({
               <tr className="border-t border-border text-[11px] sm:text-xs">
                 <td className="px-1.5 py-1 sm:px-2.5">Hãng pin đã chọn</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
-                  <Select value={form.batteryTypeAuto} onValueChange={onBatteryChange}>
-                    <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs shadow-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "EJOR 16 - BH7",
-                        "SOFAR 16 - BH10",
-                        "Pylontech 10.65",
-                        "Dyness 10.24",
-                        "DEYE 15.36",
-                      ].map((battery) => (
-                        <SelectItem key={battery} value={battery}>
-                          {battery}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs text-emerald-900">
+                    <div className="space-y-1">
+                      {(r.batteryCombo.items.length ? r.batteryCombo.items : [r.battery]).map(
+                        (item, index) => (
+                          <div key={`${item.name}-${index}`} className="font-semibold leading-snug">
+                            <span className="mr-1 tabular-nums">{index + 1}.</span>
+                            <span>
+                              {item.name} x {(item as { qty?: number }).qty ?? r.batteryQty}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
                 </td>
               </tr>
               <KVRow label="Dung tích pin (kWh/bộ)" value={r.battery.kwh} calc span />
               <KVRow label="Số lượng" value={r.batteryQty} calc span />
               <KVRow label="Tổng dung tích (kWh)" value={r.totalBatt} calc strong span />
+              <tr className="border-t border-border text-[11px] sm:text-xs">
+                <td className="px-1.5 py-1 sm:px-2.5">Tổng giá pin</td>
+                <td colSpan={2} className="px-1.5 py-1 text-right sm:px-2.5">
+                  <Calc>{formatVnd(r.lineTotal)}</Calc>
+                </td>
+              </tr>
             </tbody>
           </table>
         </CalcPane>

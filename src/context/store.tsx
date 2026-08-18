@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { products, type PortalUser } from "@/data/mock";
-import { migrateLegacyUsersToCloud } from "@/data/users-store";
+import { loadPortalUsers, migrateLegacyUsersToCloud } from "@/data/users-store";
 import {
   clearCloudSyncReloadFlag,
   reloadOnceAfterCloudSync,
@@ -33,6 +33,39 @@ type Store = {
 const StoreContext = createContext<Store | null>(null);
 
 const CART_KEY = "hv_cart";
+const LOCAL_SESSION_KEY = "hv_local_session_user_v1";
+
+function readLocalSessionUser(): PortalUser | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LOCAL_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PortalUser>;
+    if (
+      typeof parsed.email !== "string" ||
+      typeof parsed.password !== "string" ||
+      typeof parsed.name !== "string" ||
+      (parsed.role !== "admin" && parsed.role !== "sale") ||
+      typeof parsed.roleLabel !== "string" ||
+      typeof parsed.company !== "string" ||
+      typeof parsed.phone !== "string"
+    ) {
+      return null;
+    }
+    return parsed as PortalUser;
+  } catch {
+    return null;
+  }
+}
+
+function saveLocalSessionUser(user: PortalUser | null) {
+  if (typeof window === "undefined") return;
+  if (!user) {
+    localStorage.removeItem(LOCAL_SESSION_KEY);
+    return;
+  }
+  localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(user));
+}
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -49,9 +82,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     void fetch("/api/auth/session", { credentials: "include" })
       .then(async (response) => {
-        if (response.status === 503) return;
+        if (response.status === 503) {
+          if (!cancelled) setUser(readLocalSessionUser());
+          return;
+        }
         if (!response.ok) {
-          if (!cancelled) setUser(null);
+          if (!cancelled) setUser(readLocalSessionUser());
           return;
         }
         const result = (await response.json()) as { user?: PortalUser };
@@ -63,7 +99,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         else clearCloudSyncReloadFlag();
       })
       .catch(() => {
-        // Keep using the browser cache while the Worker is unavailable.
+        if (!cancelled) setUser(readLocalSessionUser());
       });
 
     return () => {
@@ -137,21 +173,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             if (syncResult === "changed") reloadOnceAfterCloudSync();
             else clearCloudSyncReloadFlag();
             setUser(result.user);
+            saveLocalSessionUser(result.user);
             return { ok: true };
           }
           if (response.status !== 503) {
             const result = (await response.json().catch(() => null)) as {
               message?: string;
             } | null;
-            return { ok: false, message: result?.message ?? "Đăng nhập không thành công." };
+            return { ok: false, message: result?.message ?? "Dang nhap khong thanh cong." };
           }
         } catch {
-          return { ok: false, message: "Không thể kết nối Cloudflare. Vui lòng thử lại." };
+          // Fall through to local auth below.
         }
-        return { ok: false, message: "Cloudflare D1 chưa được cấu hình cho môi trường này." };
+
+        const localUser = loadPortalUsers().find(
+          (entry) =>
+            entry.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+            entry.password === password,
+        );
+        if (localUser) {
+          setUser(localUser);
+          saveLocalSessionUser(localUser);
+          return { ok: true };
+        }
+
+        return {
+          ok: false,
+          message:
+            "Khong the dang nhap bang Cloudflare o moi truong nay. Hay chay `npm run cloud:dev` hoac dung tai khoan mock local.",
+        };
       },
       logout: () => {
         setUser(null);
+        saveLocalSessionUser(null);
         clearCloudSyncReloadFlag();
         void fetch("/api/auth/logout", {
           method: "POST",
@@ -166,7 +220,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 export function useStore() {
   const context = useContext(StoreContext);
-  if (!context) throw new Error("useStore phải dùng bên trong StoreProvider");
+  if (!context) throw new Error("useStore phai dung ben trong StoreProvider");
   return context;
 }
 

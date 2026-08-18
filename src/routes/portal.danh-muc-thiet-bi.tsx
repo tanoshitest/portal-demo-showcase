@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type FormEvent, type ReactNode } from "react";
+﻿import { Fragment, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -21,11 +21,10 @@ import {
   type EquipmentCatalogGroup,
   type EquipmentCatalogItem,
 } from "@/data/equipment-catalog";
+import { EQUIPMENT_CATALOG_STORAGE_KEY, panelStockQuantity } from "@/data/panel-catalog";
 import { useStore } from "@/context/store";
 import { formatVnd } from "@/lib/format";
 import { persistLocalAndCloud } from "@/lib/cloud-state-client";
-
-const EQUIPMENT_CATALOG_STORAGE_KEY = "portal-equipment-catalog-v5";
 
 type CatalogFormValues = {
   code: string;
@@ -68,7 +67,7 @@ function cloneCatalogGroups(groups: EquipmentCatalogGroup[]) {
   }));
 }
 
-function itemToForm(item?: EquipmentCatalogItem): CatalogFormValues {
+function itemToForm(item?: EquipmentCatalogItem, groupId?: string): CatalogFormValues {
   return {
     code: item?.code ?? "",
     name: item?.name ?? "",
@@ -83,7 +82,12 @@ function itemToForm(item?: EquipmentCatalogItem): CatalogFormValues {
     batteryGroup: item?.batteryGroup ?? "",
     capacityKwh: item?.capacityKwh == null ? "" : String(item.capacityKwh),
     warrantyYears: item?.warrantyYears == null ? "" : String(item.warrantyYears),
-    stockQuantity: item?.stockQuantity == null ? "" : String(item.stockQuantity),
+    stockQuantity:
+      groupId === "pin" && item
+        ? String(panelStockQuantity(item))
+        : item?.stockQuantity == null
+          ? ""
+          : String(item.stockQuantity),
     inverterGroup: item?.inverterGroup ?? "",
     catalogStt: item?.catalogStt == null ? "" : String(item.catalogStt),
     capacityKw: item?.capacityKw == null ? "" : String(item.capacityKw),
@@ -109,10 +113,7 @@ function parseOptionalMoney(value: string) {
 
 export const Route = createFileRoute("/portal/danh-muc-thiet-bi")({
   head: () => ({
-    meta: [
-      { title: "Danh mục thiết bị | Hoàng Vĩnh VKT" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Danh mục thiết bị | Hoàng Vĩnh VKT" }, { name: "robots", content: "noindex" }],
   }),
   component: EquipmentCatalogPage,
 });
@@ -140,13 +141,17 @@ function EquipmentCatalogPage() {
   }, [catalogReady, groups]);
 
   const openCreate = (groupId: string) => {
-    const values = itemToForm();
+    const values = itemToForm(undefined, groupId);
     values.unit = groupId === "pin" ? "Tấm" : "bộ";
+    if (groupId === "pin") values.stockQuantity = "0";
+    if (groupId === "bien-tan") values.stockQuantity = "1";
     setEditor({ groupId, originalItemId: null, values });
   };
 
   const openEdit = (groupId: string, item: EquipmentCatalogItem) => {
-    setEditor({ groupId, originalItemId: catalogItemId(item), values: itemToForm(item) });
+    const values = itemToForm(item, groupId);
+    if (groupId === "bien-tan" && !values.stockQuantity) values.stockQuantity = "1";
+    setEditor({ groupId, originalItemId: catalogItemId(item), values });
   };
 
   const patchEditor = <K extends keyof CatalogFormValues>(key: K, value: CatalogFormValues[K]) => {
@@ -176,7 +181,6 @@ function EquipmentCatalogPage() {
       toast.error("Vui lòng nhập đủ mã, tên, diễn giải và đơn vị tính");
       return;
     }
-
     const referencePrice = parseOptionalMoney(editor.values.referencePrice);
     const capacityKwp = parseOptionalNumber(editor.values.capacityKwp);
     const lengthMm = parseOptionalNumber(editor.values.lengthMm);
@@ -208,12 +212,20 @@ function EquipmentCatalogPage() {
       toast.error("Các trường số đang có giá trị không hợp lệ");
       return;
     }
+    if (
+      (editor.groupId === "pin" || editor.groupId === "pin-luu-tru") &&
+      (stockQuantity ?? 0) < 0
+    ) {
+      toast.error("Tồn kho không được nhỏ hơn 0");
+      return;
+    }
 
     const group = groups.find((item) => item.id === editor.groupId);
     const duplicateCode = code
       ? group?.items.some(
           (item) =>
-            item.code.toLowerCase() === code.toLowerCase() && catalogItemId(item) !== editor.originalItemId,
+            item.code.toLowerCase() === code.toLowerCase() &&
+            catalogItemId(item) !== editor.originalItemId,
         )
       : false;
     if (duplicateCode) {
@@ -222,7 +234,8 @@ function EquipmentCatalogPage() {
     }
 
     const nextItem: EquipmentCatalogItem = {
-      id: editor.originalItemId ?? `catalog-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id:
+        editor.originalItemId ?? `catalog-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       code,
       name,
       specification,
@@ -235,6 +248,7 @@ function EquipmentCatalogPage() {
             lengthMm,
             widthMm,
             areaM2,
+            stockQuantity: Math.trunc(stockQuantity ?? 0),
           }
         : {}),
       ...(editor.groupId === "pin-luu-tru"
@@ -252,6 +266,7 @@ function EquipmentCatalogPage() {
             capacityKw,
             profit: profit ?? null,
             customerPrice: customerPrice ?? null,
+            stockQuantity,
           }
         : {}),
       ...(editor.groupId === "phu-kien"
@@ -313,7 +328,11 @@ function EquipmentCatalogPage() {
           </TabsList>
 
           {groups.map((group) => (
-            <TabsContent key={group.id} value={group.id} className="mt-2 min-h-0 flex-1 overflow-hidden">
+            <TabsContent
+              key={group.id}
+              value={group.id}
+              className="mt-2 min-h-0 flex-1 overflow-hidden"
+            >
               <CatalogTable
                 group={group}
                 onAdd={() => openCreate(group.id)}
@@ -420,12 +439,26 @@ function EquipmentCatalogPage() {
                           onChange={(event) => patchEditor("areaM2", event.target.value)}
                         />
                       </CatalogField>
+                      <CatalogField label="Tồn kho" htmlFor="catalog-panel-stock-quantity">
+                        <Input
+                          id="catalog-panel-stock-quantity"
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={editor.values.stockQuantity}
+                          onChange={(event) => patchEditor("stockQuantity", event.target.value)}
+                        />
+                      </CatalogField>
                     </>
                   ) : null}
 
                   {isBatteryEditor ? (
                     <>
-                      <CatalogField label="Nhóm pin" htmlFor="catalog-battery-group" className="sm:col-span-2">
+                      <CatalogField
+                        label="Nhóm pin"
+                        htmlFor="catalog-battery-group"
+                        className="sm:col-span-2"
+                      >
                         <Input
                           id="catalog-battery-group"
                           value={editor.values.batteryGroup}
@@ -462,7 +495,11 @@ function EquipmentCatalogPage() {
 
                   {isInverterEditor ? (
                     <>
-                      <CatalogField label="Nhóm biến tần" htmlFor="catalog-inverter-group" className="sm:col-span-2">
+                      <CatalogField
+                        label="Nhóm biến tần"
+                        htmlFor="catalog-inverter-group"
+                        className="sm:col-span-2"
+                      >
                         <Input
                           id="catalog-inverter-group"
                           value={editor.values.inverterGroup}
@@ -502,12 +539,24 @@ function EquipmentCatalogPage() {
                           onChange={(event) => patchEditor("customerPrice", event.target.value)}
                         />
                       </CatalogField>
+                      <CatalogField label="Tồn kho" htmlFor="catalog-inverter-stock-quantity">
+                        <Input
+                          id="catalog-inverter-stock-quantity"
+                          inputMode="numeric"
+                          value={editor.values.stockQuantity}
+                          onChange={(event) => patchEditor("stockQuantity", event.target.value)}
+                        />
+                      </CatalogField>
                     </>
                   ) : null}
 
                   {isAccessoryEditor ? (
                     <>
-                      <CatalogField label="Nhóm phụ kiện" htmlFor="catalog-accessory-group" className="sm:col-span-2">
+                      <CatalogField
+                        label="Nhóm phụ kiện"
+                        htmlFor="catalog-accessory-group"
+                        className="sm:col-span-2"
+                      >
                         <Input
                           id="catalog-accessory-group"
                           value={editor.values.accessoryGroup}
@@ -648,7 +697,13 @@ function CatalogTable({
 
 const sourceNumberFormat = new Intl.NumberFormat("en-US");
 
-function EditButton({ item, onEdit }: { item: EquipmentCatalogItem; onEdit: (item: EquipmentCatalogItem) => void }) {
+function EditButton({
+  item,
+  onEdit,
+}: {
+  item: EquipmentCatalogItem;
+  onEdit: (item: EquipmentCatalogItem) => void;
+}) {
   return (
     <Button
       type="button"
@@ -672,38 +727,51 @@ function PanelCatalogTable({
   onEdit: (item: EquipmentCatalogItem) => void;
 }) {
   return (
-    <table className="w-full min-w-[1180px] table-fixed border-collapse text-[11px]">
+    <table className="w-full min-w-[1250px] table-fixed border-collapse text-[11px]">
       <colgroup>
         <col className="w-[4%]" />
-        <col className="w-[11%]" />
-        <col className="w-[9%]" />
-        <col className="w-[28%]" />
-        <col className="w-[7%]" />
-        <col className="w-[11%]" />
-        <col className="w-[7%]" />
-        <col className="w-[7%]" />
-        <col className="w-[9%]" />
-        <col className="w-[7%]" />
+        <col className="w-[10%]" />
+        <col className="w-[8%]" />
+        <col className="w-[26%]" />
+        <col className="w-[6%]" />
+        <col className="w-[10%]" />
+        <col className="w-[10%]" />
+        <col className="w-[6%]" />
+        <col className="w-[6%]" />
+        <col className="w-[8%]" />
+        <col className="w-[8%]" />
+        <col className="w-[8%]" />
       </colgroup>
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
           <th className="border-b border-r border-border px-1.5 py-2 text-center">STT</th>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Mã hàng</th>
+          <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Mã hàng</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">Công suất (W)</th>
-          <th className="border-b border-r border-border px-2 py-2 text-left">Tên hàng, diễn giải sản phẩm</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">
+            Tên hàng, diễn giải sản phẩm
+          </th>
           <th className="border-b border-r border-border px-2 py-2 text-center">ĐVT</th>
           <th className="border-b border-r border-border px-2 py-2 text-right">Giá gốc</th>
+          <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-right text-amber-950">Giá khách</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">Dài</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">Rộng</th>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Tổng diện tích</th>
+          <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Tổng diện tích</th>
+          <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-center text-amber-950">Tồn kho</th>
           <th className="border-b border-border px-2 py-2 text-center">Sửa</th>
         </tr>
       </thead>
       <tbody>
         {items.map((item, index) => (
-          <tr key={catalogItemId(item)} className="border-b border-border align-middle hover:bg-secondary/30">
-            <td className="border-r border-border px-1.5 py-1.5 text-center font-semibold tabular-nums">{index + 1}</td>
-            <td className="border-r border-border px-2 py-1.5 text-center font-semibold">{item.code}</td>
+          <tr
+            key={catalogItemId(item)}
+            className="border-b border-border align-middle hover:bg-secondary/30"
+          >
+            <td className="border-r border-border px-1.5 py-1.5 text-center font-semibold tabular-nums">
+              {index + 1}
+            </td>
+            <td className="border-r border-border bg-amber-50 px-2 py-1.5 text-center font-bold tabular-nums text-amber-950">
+              {item.code}
+            </td>
             <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">
               {item.capacityKwp?.toFixed(3) ?? ""}
             </td>
@@ -722,9 +790,25 @@ function PanelCatalogTable({
             <td className="border-r border-border px-2 py-1.5 text-right font-semibold tabular-nums text-destructive">
               {item.referencePrice == null ? "" : sourceNumberFormat.format(item.referencePrice)}
             </td>
-            <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">{item.lengthMm ?? ""}</td>
-            <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">{item.widthMm ?? ""}</td>
-            <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">{item.areaM2 ?? ""}</td>
+            <td className="border-r border-border bg-amber-50 px-2 py-1.5 text-right font-bold tabular-nums text-amber-950">
+              {item.customerPrice == null
+                ? item.referencePrice == null
+                  ? ""
+                  : sourceNumberFormat.format(item.referencePrice)
+                : sourceNumberFormat.format(item.customerPrice)}
+            </td>
+            <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">
+              {item.lengthMm ?? ""}
+            </td>
+            <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">
+              {item.widthMm ?? ""}
+            </td>
+            <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">
+              {item.areaM2 ?? ""}
+            </td>
+            <td className="border-r border-border bg-amber-50 px-2 py-1.5 text-center font-semibold tabular-nums text-amber-950">
+              {panelStockQuantity(item)}
+            </td>
             <td className="px-2 py-1.5 text-center">
               <EditButton item={item} onEdit={onEdit} />
             </td>
@@ -753,18 +837,22 @@ function InverterCatalogTable({
         <col className="w-[9%]" />
         <col className="w-[8%]" />
         <col className="w-[10%]" />
+        <col className="w-[8%]" />
         <col className="w-[7%]" />
       </colgroup>
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
           <th className="border-b border-r border-border px-1.5 py-2 text-center">STT</th>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Mã</th>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Công suất</th>
-          <th className="border-b border-r border-border px-2 py-2 text-left">Mã SP / Thông số kỹ thuật</th>
+          <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Mã</th>
+          <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Công suất</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">
+            Mã SP / Thông số kỹ thuật
+          </th>
           <th className="border-b border-r border-border px-2 py-2 text-center">ĐVT</th>
           <th className="border-b border-r border-border px-2 py-2 text-right">Giá gốc</th>
           <th className="border-b border-r border-border px-2 py-2 text-right">Lợi nhuận</th>
-          <th className="border-b border-r border-border px-2 py-2 text-right">Giá khách hàng</th>
+          <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-right text-amber-950">Giá khách hàng</th>
+          <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-center text-amber-950">Tồn kho</th>
           <th className="border-b border-border px-2 py-2 text-center">Sửa</th>
         </tr>
       </thead>
@@ -775,7 +863,10 @@ function InverterCatalogTable({
             <Fragment key={catalogItemId(item)}>
               {showGroup ? (
                 <tr className="bg-[#c0504d] text-white">
-                  <td colSpan={9} className="border-b border-r border-[#8f3937] px-3 py-2 text-center text-xs font-bold">
+                  <td
+                    colSpan={10}
+                    className="border-b border-r border-[#8f3937] px-3 py-2 text-center text-xs font-bold"
+                  >
                     {item.inverterGroup || "BẢNG GIÁ BIẾN TẦN"}
                   </td>
                 </tr>
@@ -784,24 +875,31 @@ function InverterCatalogTable({
                 <td className="border-b border-r border-border px-1.5 py-2 text-center font-semibold tabular-nums">
                   {item.catalogStt ?? ""}
                 </td>
-                <td className="whitespace-pre-line border-b border-r border-border px-2 py-2 text-center font-semibold">
+                <td className="whitespace-pre-line border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold text-amber-950">
                   {item.code}
                 </td>
-                <td className="border-b border-r border-border px-2 py-2 text-center font-semibold tabular-nums">
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
                   {item.capacityKw ?? ""}
                 </td>
                 <td className="whitespace-pre-line border-b border-r border-border px-2 py-2 leading-snug">
                   {item.specification}
                 </td>
-                <td className="border-b border-r border-border px-2 py-2 text-center">{item.unit}</td>
+                <td className="border-b border-r border-border px-2 py-2 text-center">
+                  {item.unit}
+                </td>
                 <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums text-destructive">
-                  {item.referencePrice == null ? "" : sourceNumberFormat.format(item.referencePrice)}
+                  {item.referencePrice == null
+                    ? ""
+                    : sourceNumberFormat.format(item.referencePrice)}
                 </td>
                 <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums">
                   {item.profit == null ? "" : sourceNumberFormat.format(item.profit)}
                 </td>
-                <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums">
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-right font-bold tabular-nums text-amber-950">
                   {item.customerPrice == null ? "" : sourceNumberFormat.format(item.customerPrice)}
+                </td>
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
+                  {item.stockQuantity ?? ""}
                 </td>
                 <td className="border-b border-border px-2 py-2 text-center">
                   <EditButton item={item} onEdit={onEdit} />
@@ -831,16 +929,17 @@ function BatteryCatalogTable({
         <col className="w-[13%]" />
         <col className="w-[7%]" />
         <col className="w-[6%]" />
+        <col className="w-[6%]" />
         <col className="w-[5%]" />
       </colgroup>
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Mã hàng</th>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Dung lượng</th>
+          <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Mã hàng</th>
+          <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Dung lượng</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">Tên pin</th>
-          <th className="border-b border-r border-border px-2 py-2 text-right">Giá gốc</th>
+          <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-right text-amber-950">Giá khách</th>
+          <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-center text-amber-950">Tồn kho</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">Bảo hành</th>
-          <th className="border-b border-r border-border px-2 py-2 text-center">Tồn kho</th>
           <th className="border-b border-border px-2 py-2 text-center">Sửa</th>
         </tr>
       </thead>
@@ -851,31 +950,43 @@ function BatteryCatalogTable({
             <Fragment key={catalogItemId(item)}>
               {showGroup ? (
                 <tr className="bg-[#4f81bd] text-white">
-                  <td colSpan={7} className="border-b border-r border-[#315f96] px-3 py-1.5 text-center text-xs font-bold">
+                  <td
+                    colSpan={8}
+                    className="border-b border-r border-[#315f96] px-3 py-1.5 text-center text-xs font-bold"
+                  >
                     {item.batteryGroup || "PIN LƯU TRỮ"}
                   </td>
                 </tr>
               ) : null}
-              <tr className={index % 2 === 0 ? "bg-white" : "bg-[#d9edf2]"}>
-                <td className="border-b border-r border-border px-2 py-2 text-center font-semibold">{item.code}</td>
-                <td className="border-b border-r border-border px-2 py-2 text-center font-semibold tabular-nums">
+              <tr className="bg-white">
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
+                  {item.code}
+                </td>
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
                   {item.capacityKwh ?? ""}
                 </td>
                 <td className="border-b border-r border-border px-2 py-2 leading-snug">
                   <p className="font-semibold text-[#3f83d1]">{item.name}</p>
-                  {item.specification.split("\n").filter(Boolean).map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                  {item.note ? <p className="mt-1 italic text-muted-foreground">{item.note}</p> : null}
+                  {item.specification
+                    .split("\n")
+                    .filter(Boolean)
+                    .map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  {item.note ? (
+                    <p className="mt-1 italic text-muted-foreground">{item.note}</p>
+                  ) : null}
                 </td>
-                <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums text-destructive">
-                  {item.referencePrice == null ? "" : sourceNumberFormat.format(item.referencePrice)}
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-right font-bold tabular-nums text-amber-950">
+                  {item.referencePrice == null
+                    ? ""
+                    : sourceNumberFormat.format(item.referencePrice)}
+                </td>
+                <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
+                  {item.stockQuantity ?? ""}
                 </td>
                 <td className="border-b border-r border-border px-2 py-2 text-center font-semibold tabular-nums">
                   {item.warrantyYears ?? ""}
-                </td>
-                <td className="border-b border-r border-border px-2 py-2 text-center font-semibold tabular-nums">
-                  {item.stockQuantity ?? ""}
                 </td>
                 <td className="border-b border-border px-2 py-2 text-center">
                   <EditButton item={item} onEdit={onEdit} />
@@ -926,7 +1037,10 @@ function AccessoryCatalogTable({
             <Fragment key={catalogItemId(item)}>
               {showGroup ? (
                 <tr className="bg-[#ffd966] text-[#2b2100]">
-                  <td colSpan={7} className="border-b border-border px-3 py-1.5 text-left text-xs font-bold uppercase">
+                  <td
+                    colSpan={7}
+                    className="border-b border-border px-3 py-1.5 text-left text-xs font-bold uppercase"
+                  >
                     {item.accessoryGroup || "PHỤ KIỆN"}
                   </td>
                 </tr>
@@ -938,15 +1052,21 @@ function AccessoryCatalogTable({
                 <td className="border-b border-r border-border px-2 py-2 leading-snug">
                   <p className="font-medium">{item.name}</p>
                   {item.specification ? (
-                    <p className="mt-0.5 whitespace-pre-line italic text-muted-foreground">({item.specification})</p>
+                    <p className="mt-0.5 whitespace-pre-line italic text-muted-foreground">
+                      ({item.specification})
+                    </p>
                   ) : null}
                 </td>
-                <td className="border-b border-r border-border px-2 py-2 text-center">{item.unit}</td>
+                <td className="border-b border-r border-border px-2 py-2 text-center">
+                  {item.unit}
+                </td>
                 <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums">
                   {sourceNumberFormat.format(item.quantity ?? 0)}
                 </td>
                 <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums">
-                  {item.referencePrice == null ? "" : sourceNumberFormat.format(item.referencePrice)}
+                  {item.referencePrice == null
+                    ? ""
+                    : sourceNumberFormat.format(item.referencePrice)}
                 </td>
                 <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums">
                   {sourceNumberFormat.format(total)}
@@ -986,19 +1106,29 @@ function GenericCatalogTable({
         <tr>
           <th className="border-b border-r border-border px-2 py-2 text-center">STT</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">Mã</th>
-          <th className="border-b border-r border-border px-2 py-2 text-left">Tên thiết bị / dịch vụ</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">
+            Tên thiết bị / dịch vụ
+          </th>
           <th className="border-b border-r border-border px-2 py-2 text-left">Thông số</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">ĐVT</th>
-          <th className="border-b border-r border-border px-2 py-2 text-right">Đơn giá tham khảo</th>
-          <th className="border-b border-r border-border px-2 py-2 text-left">Bảo hành / ghi chú</th>
+          <th className="border-b border-r border-border px-2 py-2 text-right">
+            Đơn giá tham khảo
+          </th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">
+            Bảo hành / ghi chú
+          </th>
           <th className="border-b border-border px-2 py-2 text-center">Sửa</th>
         </tr>
       </thead>
       <tbody>
         {items.map((item, index) => (
           <tr key={catalogItemId(item)} className="border-b border-border hover:bg-secondary/30">
-            <td className="border-r border-border px-2 py-2.5 text-center font-semibold tabular-nums">{index + 1}</td>
-            <td className="border-r border-border px-2 py-2.5 font-medium text-muted-foreground">{item.code}</td>
+            <td className="border-r border-border px-2 py-2.5 text-center font-semibold tabular-nums">
+              {index + 1}
+            </td>
+            <td className="border-r border-border px-2 py-2.5 font-medium text-muted-foreground">
+              {item.code}
+            </td>
             <td className="border-r border-border px-2 py-2.5 font-semibold">{item.name}</td>
             <td className="whitespace-pre-line border-r border-border px-2 py-2.5 leading-snug text-muted-foreground">
               {item.specification}
@@ -1007,7 +1137,9 @@ function GenericCatalogTable({
             <td className="border-r border-border px-2 py-2.5 text-right font-semibold tabular-nums">
               {item.referencePrice == null ? "" : formatVnd(item.referencePrice)}
             </td>
-            <td className="border-r border-border px-2 py-2.5 text-muted-foreground">{item.note}</td>
+            <td className="border-r border-border px-2 py-2.5 text-muted-foreground">
+              {item.note}
+            </td>
             <td className="px-2 py-2.5 text-center">
               <EditButton item={item} onEdit={onEdit} />
             </td>
@@ -1017,3 +1149,5 @@ function GenericCatalogTable({
     </table>
   );
 }
+
+

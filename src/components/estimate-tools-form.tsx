@@ -10,6 +10,7 @@ import {
   type EstimateInputs,
 } from "@/data/estimate";
 import { buildEstimateQuote } from "@/data/estimate-quote";
+import { getAvailablePanelTypes } from "@/data/panel-catalog";
 import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -30,10 +31,29 @@ import { loadSolarQuotes, makeEstimateQuote, saveSolarQuotes } from "@/data/sola
 
 export function EstimateToolsForm() {
   const [form, setForm] = useState<EstimateInputs>(() => loadEstimateInputs());
+  const [panelOptions] = useState(getAvailablePanelTypes);
 
   useEffect(() => {
     saveEstimateInputs(form);
   }, [form]);
+
+  useEffect(() => {
+    const fallbackPanel = panelOptions[0];
+    if (!fallbackPanel) return;
+    const availableNames = new Set(panelOptions.map((panel) => panel.name));
+    setForm((current) => {
+      const panelTypeAuto = availableNames.has(current.panelTypeAuto)
+        ? current.panelTypeAuto
+        : fallbackPanel.name;
+      const panelTypeManual = availableNames.has(current.panelTypeManual)
+        ? current.panelTypeManual
+        : fallbackPanel.name;
+      if (panelTypeAuto === current.panelTypeAuto && panelTypeManual === current.panelTypeManual) {
+        return current;
+      }
+      return { ...current, panelTypeAuto, panelTypeManual };
+    });
+  }, [panelOptions]);
 
   const patch = <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -105,6 +125,7 @@ export function EstimateToolsForm() {
             </div>
             <AutoCalcGrid
               form={form}
+              panelOptions={panelOptions}
               onPanelChange={(panelName) => patch("panelTypeAuto", panelName)}
               onInverterChange={(inverterId) => patch("inverterTypeAuto", inverterId)}
               onBatteryChange={(batteryName) => patch("batteryTypeAuto", batteryName)}
@@ -225,6 +246,21 @@ function QuoteEstimatePanel({
                         rowSpan={row.priceRowSpan}
                         className="px-1 py-1.5 text-right align-middle font-semibold tabular-nums"
                       >
+                        {formatVnd(row.total)}
+                      </td>
+                    </>
+                  ) : row.unitPriceLines ? (
+                    <>
+                      <td className="px-1 py-1.5 text-right tabular-nums">
+                        <div className="space-y-0.5">
+                          {row.unitPriceLines.map((line) => (
+                            <div key={line} className="whitespace-pre-line">
+                              {line}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-1 py-1.5 text-right font-semibold tabular-nums">
                         {formatVnd(row.total)}
                       </td>
                     </>

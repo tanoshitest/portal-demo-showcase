@@ -515,12 +515,12 @@ export type PortalUser = {
 
 export const portalUsers: PortalUser[] = [
   {
-    email: "admin@hoangvinhvkt.vn", password: "", name: "Lê Hoàng Vĩnh", role: "admin",
+    email: "admin@hoangvinhvkt.vn", password: "123456", name: "Lê Hoàng Vĩnh", role: "admin",
     roleLabel: "Admin", company: "Hoàng Vĩnh VKT", phone: "0901 234 567",
     brandSlugs: "all",
   },
   {
-    email: "sale@hoangvinhvkt.vn", password: "", name: "Nguyễn Thị Mai Anh", role: "sale",
+    email: "sale@hoangvinhvkt.vn", password: "123456", name: "Nguyễn Thị Mai Anh", role: "sale",
     roleLabel: "Sale", company: "Hoàng Vĩnh VKT – Phòng Kinh doanh", phone: "0908 111 222",
     brandSlugs: "all",
   },

@@ -11,6 +11,7 @@ export type EstimateQuoteRow = {
   total: number;
   priceRowSpan?: number;
   hidePrices?: boolean;
+  unitPriceLines?: string[];
 };
 
 const PANEL_PRICES: Record<string, number> = {
@@ -77,6 +78,19 @@ export function buildEstimateQuote(form: EstimateInputs) {
     (form.crane ? form.cranePrice * Math.max(0, form.craneShifts) : 0) +
     (form.remote ? form.remotePrice * Math.max(0, form.remoteDays) : 0);
 
+  const batteryLines = (calc.batteryCombo.items.length ? calc.batteryCombo.items : [calc.battery]).map(
+    (item, index) => {
+      const qty = (item as { qty?: number }).qty ?? calc.batteryQty;
+      return `${index + 1}. ${item.name} x ${qty}`;
+    },
+  );
+  const batteryPriceLines = (calc.batteryCombo.items.length ? calc.batteryCombo.items : [calc.battery]).map(
+    (item, index) => {
+      const unitPrice = (item as { price?: number }).price ?? calc.unitPrice;
+      return `${index + 1}. ${new Intl.NumberFormat("vi-VN").format(Math.round(unitPrice))} đ`;
+    },
+  );
+
   const rows: EstimateQuoteRow[] = [
     {
       no: "1",
@@ -106,11 +120,12 @@ export function buildEstimateQuote(form: EstimateInputs) {
     },
     {
       no: "4",
-      name: `Pin lưu trữ ${calc.battery.name} x ${calc.batteryQty}`,
+      name: `Pin lưu trữ\n${batteryLines.join("\n")}`,
       unit: "bộ",
-      qty: calc.batteryQty,
-      unitPrice: calc.battery.price,
-      total: calc.battery.price * calc.batteryQty,
+      qty: 1,
+      unitPrice: calc.lineTotal,
+      total: calc.lineTotal,
+      unitPriceLines: batteryPriceLines,
     },
     {
       no: "5",
