@@ -208,8 +208,9 @@ function QuoteEstimatePanel({
               <col className="w-[24%]" />
               <col className="w-[16%]" />
               <col className="w-[14%]" />
-              <col className="w-[20%]" />
-              <col className="w-[20%]" />
+              <col className="w-[10%]" />
+              <col className="w-[15%]" />
+              <col className="w-[15%]" />
             </colgroup>
             <thead>
               <tr className="bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
@@ -217,6 +218,7 @@ function QuoteEstimatePanel({
                 <th className="border border-border px-1 py-1 text-left">Sản phẩm</th>
                 <th className="border border-border px-1 py-1 text-center">Ảnh</th>
                 <th className="border border-border px-1 py-1 text-center">ĐVT</th>
+                <th className="border border-border px-1 py-1 text-center">Số lượng</th>
                 <th className="border border-border px-1 py-1 text-right">Đơn giá</th>
                 <th className="border border-border px-1 py-1 text-right">Thành tiền</th>
               </tr>
@@ -234,6 +236,7 @@ function QuoteEstimatePanel({
                   <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>
                     {row.unit}
                   </td>
+                  <td className="px-1 py-1.5 text-center tabular-nums">{row.qty}</td>
                   {row.priceRowSpan ? (
                     <>
                       <td
@@ -283,7 +286,7 @@ function QuoteEstimatePanel({
                   Tổng tiền
                 </td>
                 <td
-                  colSpan={2}
+                  colSpan={3}
                   className="whitespace-nowrap px-1 py-1.5 text-right tabular-nums text-destructive"
                 >
                   {formatVnd(quoteTotal)}

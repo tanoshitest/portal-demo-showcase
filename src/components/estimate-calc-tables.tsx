@@ -2,6 +2,7 @@ import { useEffect, useMemo, type ReactNode } from "react";
 import { computeAutoCalc } from "@/data/auto-calc";
 import {
   autoInverterType,
+  CABINET_TYPES,
   inverterLabel,
   recommendedInverterOptionsForPhase,
   type EstimateInputs,
@@ -191,17 +192,15 @@ export function AutoCalcGrid({
               <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
                 Tủ điện
               </Label>
-              <Select value={form.cabinetType} onValueChange={(v) => onPatch("cabinetType", v)}>
+              <Select
+                value={form.cabinetType}
+                onValueChange={(v) => onPatch("cabinetType", v)}
+              >
                 <SelectTrigger className={mobileSelectCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[
-                    "Tủ điện AC 1 pha",
-                    "Tủ điện AC 3 pha",
-                    "Tủ điện DC",
-                    "Tủ điện hybrid AC/DC",
-                  ].map((cabinet) => (
+                  {CABINET_TYPES.map((cabinet) => (
                     <SelectItem key={cabinet} value={cabinet}>
                       {cabinet}
                     </SelectItem>

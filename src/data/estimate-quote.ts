@@ -80,14 +80,13 @@ export function buildEstimateQuote(form: EstimateInputs) {
 
   const batteryLines = (calc.batteryCombo.items.length ? calc.batteryCombo.items : [calc.battery]).map(
     (item, index) => {
-      const qty = (item as { qty?: number }).qty ?? calc.batteryQty;
-      return `${index + 1}. ${item.name} x ${qty}`;
+      return `${index + 1}. ${item.name}`;
     },
   );
   const batteryPriceLines = (calc.batteryCombo.items.length ? calc.batteryCombo.items : [calc.battery]).map(
     (item, index) => {
       const unitPrice = (item as { price?: number }).price ?? calc.unitPrice;
-      return `${index + 1}. ${new Intl.NumberFormat("vi-VN").format(Math.round(unitPrice))} đ`;
+      return `${index + 1}. ${new Intl.NumberFormat("vi-VN").format(Math.round(unitPrice))}`;
     },
   );
 

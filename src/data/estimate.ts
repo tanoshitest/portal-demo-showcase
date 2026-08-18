@@ -25,12 +25,7 @@ export const AC_WIRES = [
 
 export const INVERTER_KW_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 15];
 
-export const CABINET_TYPES = [
-  "Tủ điện AC 1 pha",
-  "Tủ điện AC 3 pha",
-  "Tủ điện DC",
-  "Tủ điện hybrid AC/DC",
-] as const;
+export const CABINET_TYPES = ["Tủ điện AC 1 pha", "Tủ điện AC 3 pha"] as const;
 
 export type EstimateInputs = {
   customer: string;
@@ -365,6 +360,16 @@ export function loadEstimateInputs(): EstimateInputs {
     const merged = { ...seed, ...parsed };
     if (!ROOF_TYPES.includes(merged.roof as (typeof ROOF_TYPES)[number])) {
       merged.roof = seed.roof;
+    }
+    const expectedCabinet = autoCabinetType(merged.phase);
+    if (merged.cabinetType !== "Tủ điện AC 1 pha" && merged.cabinetType !== "Tủ điện AC 3 pha") {
+      merged.cabinetType = expectedCabinet;
+    }
+    if (merged.phase === "Điện 1 pha" && merged.cabinetType !== "Tủ điện AC 1 pha") {
+      merged.cabinetType = "Tủ điện AC 1 pha";
+    }
+    if (merged.phase === "Điện 3 pha" && merged.cabinetType !== "Tủ điện AC 3 pha") {
+      merged.cabinetType = "Tủ điện AC 3 pha";
     }
     const inverterMatchesPhase = inverterOptionsForPhase(merged.phase).some(
       (item) => item.id === merged.inverterTypeAuto,
