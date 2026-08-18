@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BarChart3, SlidersHorizontal, X, PackageSearch } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronUp, SlidersHorizontal, X, PackageSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,7 @@ function ProductListing() {
   const [selectedRanges, setSelectedRanges] = useState<string[]>([]);
   const [sort, setSort] = useState("default");
   const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
+  const [showComparePanel, setShowComparePanel] = useState(true);
 
   const activeCategory = categories.find((c) => c.slug === danh_muc);
 
@@ -311,99 +312,120 @@ function ProductListing() {
                   So sánh sản phẩm ({compareProducts.length}/3)
                 </h2>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowComparePanel((prev) => !prev)}
+                >
+                  {showComparePanel ? (
+                    <>
+                      <ChevronDown className="h-4 w-4" /> Ẩn so sánh
+                    </>
+                  ) : (
+                    <>
+                      <ChevronUp className="h-4 w-4" /> Hiện so sánh
+                    </>
+                  )}
+                </Button>
                 <Button variant="outline" size="sm" onClick={clearCompare}>
                   Xóa tất cả
                 </Button>
               </div>
             </div>
 
-            {compareProducts.length < 2 ? (
-              <div className="rounded-xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
-                Chọn thêm ít nhất 1 sản phẩm nữa để bắt đầu so sánh.
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-xl border border-border bg-card">
-                <div className="grid gap-3 border-b border-border p-3 md:grid-cols-2 xl:grid-cols-3">
-                  {compareProducts.map((product) => {
-                    const brand = brands.find((b) => b.slug === product.brandSlug);
-                    const price = product.salePrice ?? product.price;
-                    return (
-                      <div key={product.id} className="rounded-lg border border-border p-3">
-                        <div className="flex items-start gap-3">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="h-20 w-20 rounded-lg border border-border object-cover"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-brand">
-                              {brand?.name}
-                            </div>
-                            <div className="mt-1 line-clamp-2 text-sm font-bold">{product.name}</div>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <Badge variant="outline" className={stockBadgeClass(product.stock)}>
-                                {formatStock(product.stock)}
-                              </Badge>
-                              <Badge variant="secondary" className="text-xs">
-                                {product.categorySlug}
-                              </Badge>
+            {showComparePanel ? (
+              compareProducts.length < 2 ? (
+                <div className="rounded-xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
+                  Chọn thêm ít nhất 1 sản phẩm nữa để bắt đầu so sánh.
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                  <div className="grid gap-3 border-b border-border p-3 md:grid-cols-3">
+                    {compareProducts.map((product) => {
+                      const brand = brands.find((b) => b.slug === product.brandSlug);
+                      const price = product.salePrice ?? product.price;
+                      return (
+                        <div key={product.id} className="rounded-lg border border-border p-3">
+                          <div className="flex items-start gap-3">
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="h-20 w-20 rounded-lg border border-border object-cover"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-semibold uppercase tracking-wide text-brand">
+                                {brand?.name}
+                              </div>
+                              <div className="mt-1 line-clamp-2 text-sm font-bold">{product.name}</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <Badge variant="outline" className={stockBadgeClass(product.stock)}>
+                                  {formatStock(product.stock)}
+                                </Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {product.categorySlug}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
+                          <div className="mt-3 flex items-baseline gap-2">
+                            <span className="text-lg font-black text-brand">{formatVnd(price)}</span>
+                            {product.salePrice && (
+                              <span className="text-xs text-muted-foreground line-through">
+                                {formatVnd(product.price)}
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 h-8 px-2 text-xs"
+                            onClick={() => toggleCompare(product.slug)}
+                          >
+                            Bỏ chọn
+                          </Button>
                         </div>
-                        <div className="mt-3 flex items-baseline gap-2">
-                          <span className="text-lg font-black text-brand">{formatVnd(price)}</span>
-                          {product.salePrice && (
-                            <span className="text-xs text-muted-foreground line-through">
-                              {formatVnd(product.price)}
-                            </span>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="mt-2 h-8 px-2 text-xs"
-                          onClick={() => toggleCompare(product.slug)}
-                        >
-                          Bỏ chọn
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-[760px] w-full border-collapse text-sm">
-                    <tbody>
-                      <CompareRow label="SKU" values={compareProducts.map((p) => p.sku)} />
-                      <CompareRow
-                        label="Giá"
-                        values={compareProducts.map((p) => formatVnd(p.salePrice ?? p.price))}
-                      />
-                      <CompareRow
-                        label="Tồn kho"
-                        values={compareProducts.map((p) => formatStock(p.stock))}
-                      />
-                      <CompareRow label="Bảo hành" values={compareProducts.map((p) => p.warranty)} />
-                      <CompareRow
-                        label="Đánh giá"
-                        values={compareProducts.map((p) => `${p.rating}/5 · ${p.reviewCount} đánh giá`)}
-                      />
-                      <CompareRow
-                        label="Thông số 1"
-                        values={compareProducts.map((p) => p.specs[0]?.value ?? "-")}
-                      />
-                      <CompareRow
-                        label="Thông số 2"
-                        values={compareProducts.map((p) => p.specs[1]?.value ?? "-")}
-                      />
-                      <CompareRow
-                        label="Thông số 3"
-                        values={compareProducts.map((p) => p.specs[2]?.value ?? "-")}
-                      />
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] border-collapse text-sm">
+                      <tbody>
+                        <CompareRow label="SKU" values={compareProducts.map((p) => p.sku)} />
+                        <CompareRow
+                          label="Giá"
+                          values={compareProducts.map((p) => formatVnd(p.salePrice ?? p.price))}
+                        />
+                        <CompareRow
+                          label="Tồn kho"
+                          values={compareProducts.map((p) => formatStock(p.stock))}
+                        />
+                        <CompareRow label="Bảo hành" values={compareProducts.map((p) => p.warranty)} />
+                        <CompareRow
+                          label="Đánh giá"
+                          values={compareProducts.map((p) => `${p.rating}/5 · ${p.reviewCount} đánh giá`)}
+                        />
+                        <CompareRow
+                          label="Thông số 1"
+                          values={compareProducts.map((p) => p.specs[0]?.value ?? "-")}
+                        />
+                        <CompareRow
+                          label="Thông số 2"
+                          values={compareProducts.map((p) => p.specs[1]?.value ?? "-")}
+                        />
+                        <CompareRow
+                          label="Thông số 3"
+                          values={compareProducts.map((p) => p.specs[2]?.value ?? "-")}
+                        />
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+              )
+            ) : (
+              <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+                Phần so sánh đang ẩn. Bấm <span className="font-semibold text-foreground">Hiện so sánh</span> để mở lại.
               </div>
             )}
           </div>
