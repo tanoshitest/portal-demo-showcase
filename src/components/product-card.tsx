@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { CheckSquare2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { brands, type Product } from "@/data/mock";
@@ -6,7 +7,15 @@ import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 import { toast } from "sonner";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  compareChecked,
+  onCompareToggle,
+}: {
+  product: Product;
+  compareChecked?: boolean;
+  onCompareToggle?: (product: Product) => void;
+}) {
   const { addToCart } = useStore();
   const brand = brands.find((b) => b.slug === product.brandSlug);
   const price = product.salePrice ?? product.price;
@@ -33,6 +42,25 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="absolute left-2 top-2 rounded-md bg-highlight px-2 py-1 text-xs font-bold text-highlight-foreground">
             -{discount}%
           </span>
+        )}
+        {onCompareToggle && (
+          <button
+            type="button"
+            aria-pressed={compareChecked}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onCompareToggle(product);
+            }}
+            className={`absolute right-2 top-2 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold shadow-sm transition ${
+              compareChecked
+                ? "border-brand bg-brand text-white"
+                : "border-border bg-background/95 text-foreground hover:border-brand"
+            }`}
+          >
+            <CheckSquare2 className="h-3.5 w-3.5" />
+            So sánh
+          </button>
         )}
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
