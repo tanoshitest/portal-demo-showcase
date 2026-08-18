@@ -827,18 +827,17 @@ function InverterCatalogTable({
   onEdit: (item: EquipmentCatalogItem) => void;
 }) {
   return (
-    <table className="w-full min-w-[1320px] table-fixed border-collapse text-[11px]">
+    <table className="w-full min-w-[1180px] table-fixed border-collapse text-[11px]">
       <colgroup>
         <col className="w-[4%]" />
         <col className="w-[15%]" />
         <col className="w-[7%]" />
         <col className="w-[34%]" />
         <col className="w-[6%]" />
-        <col className="w-[9%]" />
-        <col className="w-[8%]" />
+        <col className="w-[12%]" />
         <col className="w-[10%]" />
-        <col className="w-[8%]" />
-        <col className="w-[7%]" />
+        <col className="w-[10%]" />
+        <col className="w-[6%]" />
       </colgroup>
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
@@ -849,8 +848,6 @@ function InverterCatalogTable({
             Mã SP / Thông số kỹ thuật
           </th>
           <th className="border-b border-r border-border px-2 py-2 text-center">ĐVT</th>
-          <th className="border-b border-r border-border px-2 py-2 text-right">Giá gốc</th>
-          <th className="border-b border-r border-border px-2 py-2 text-right">Lợi nhuận</th>
           <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-right text-amber-950">Giá khách hàng</th>
           <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-center text-amber-950">Tồn kho</th>
           <th className="border-b border-border px-2 py-2 text-center">Sửa</th>
@@ -864,7 +861,7 @@ function InverterCatalogTable({
               {showGroup ? (
                 <tr className="bg-[#c0504d] text-white">
                   <td
-                    colSpan={10}
+                    colSpan={8}
                     className="border-b border-r border-[#8f3937] px-3 py-2 text-center text-xs font-bold"
                   >
                     {item.inverterGroup || "BẢNG GIÁ BIẾN TẦN"}
@@ -886,14 +883,6 @@ function InverterCatalogTable({
                 </td>
                 <td className="border-b border-r border-border px-2 py-2 text-center">
                   {item.unit}
-                </td>
-                <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums text-destructive">
-                  {item.referencePrice == null
-                    ? ""
-                    : sourceNumberFormat.format(item.referencePrice)}
-                </td>
-                <td className="border-b border-r border-border px-2 py-2 text-right font-semibold tabular-nums">
-                  {item.profit == null ? "" : sourceNumberFormat.format(item.profit)}
                 </td>
                 <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-right font-bold tabular-nums text-amber-950">
                   {item.customerPrice == null ? "" : sourceNumberFormat.format(item.customerPrice)}
