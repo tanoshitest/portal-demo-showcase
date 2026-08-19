@@ -216,7 +216,20 @@ function ProductListing() {
 
   return (
     <div className="pb-10">
-      <section className="relative overflow-hidden bg-brand-dark text-white">
+      <MobileProductCatalog
+        activeCategory={activeCategory}
+        danhMuc={danh_muc}
+        keyword={keyword}
+        setKeyword={setKeyword}
+        sort={sort}
+        setSort={setSort}
+        filtered={filtered}
+        activeCount={activeCount}
+        toggleCompare={toggleCompare}
+        compareSlugs={compareSlugs}
+        filters={Filters}
+      />
+      <section className="relative hidden overflow-hidden bg-brand-dark text-white md:block">
         <img src={images.solution2} alt="Sản phẩm chính hãng Hoàng Vĩnh IOT" className="absolute inset-0 h-full w-full object-cover opacity-35" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#05285f] via-[#063b86]/90 to-[#063b86]/30" />
         <div className="container-page relative py-8 sm:py-12">
@@ -225,7 +238,7 @@ function ProductListing() {
           <p className="mt-2 max-w-xl text-sm text-white/80">Tư vấn đúng nhu cầu, hỗ trợ kỹ thuật trước và sau bán hàng.</p>
         </div>
       </section>
-      <div className="container-page pt-5 lg:pt-8">
+      <div className="container-page hidden pt-5 md:block lg:pt-8">
       <nav className="text-xs text-muted-foreground">
         <Link to="/" className="hover:text-brand">
           Trang chủ
@@ -469,6 +482,71 @@ function ProductListing() {
     </div>
   );
 
+}
+
+function MobileProductCatalog({
+  activeCategory,
+  danhMuc,
+  keyword,
+  setKeyword,
+  sort,
+  setSort,
+  filtered,
+  activeCount,
+  toggleCompare,
+  compareSlugs,
+  filters,
+}: {
+  activeCategory: (typeof categories)[number] | undefined;
+  danhMuc: string;
+  keyword: string;
+  setKeyword: (value: string) => void;
+  sort: string;
+  setSort: (value: string) => void;
+  filtered: typeof products;
+  activeCount: number;
+  toggleCompare: (slug: string) => void;
+  compareSlugs: string[];
+  filters: React.ReactNode;
+}) {
+  return (
+    <div className="bg-[#f8fafc] pb-5 md:hidden">
+      <div className="border-b bg-white px-4 py-3">
+        <div className="flex items-center justify-between">
+          <Link to="/san-pham" search={{ danh_muc: "", q: "" }} className="text-lg font-bold text-[#071c4c]">
+            {activeCategory?.name ?? "Sản phẩm"}
+          </Link>
+          <div className="flex items-center gap-3 text-[#071c4c]"><Search className="h-5 w-5" /><ShoppingCart className="h-5 w-5" /></div>
+        </div>
+      </div>
+
+      <div className="bg-white px-3 pt-3">
+        <div className="hide-scrollbar flex gap-2 overflow-x-auto pb-3">
+          {categories.map((category, index) => {
+            const Icon = landingIcons[index] ?? Cpu;
+            const active = category.slug === danhMuc;
+            return <Link key={category.slug} to="/san-pham" search={{ danh_muc: category.slug, q: "" }} className={`flex w-[62px] shrink-0 flex-col items-center border-b-2 pb-2 text-center ${active ? "border-[#0758c9] text-[#0758c9]" : "border-transparent text-[#53647f]"}`}><span className={`grid h-9 w-9 place-items-center rounded-full ${active ? "bg-[#eaf2ff]" : "bg-[#f4f6f9]"}`}><Icon className="h-4 w-4" /></span><span className="mt-1 line-clamp-2 text-[8px] font-semibold leading-tight">{landingCategoryCopy[index]?.[0] ?? category.name}</span></Link>;
+          })}
+        </div>
+        <div className="relative overflow-hidden rounded-xl bg-[#0758c9] px-4 py-4 text-white">
+          <img src={images.solution2} alt="" className="absolute inset-0 h-full w-full object-cover opacity-35" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0758c9] via-[#0758c9]/90 to-transparent" />
+          <div className="relative max-w-[58%]"><h1 className="text-[13px] font-black">{activeCategory?.name ?? "Sản phẩm chính hãng"}</h1><p className="mt-1 text-[8px] leading-relaxed text-white/90">Giải pháp tốt, hàng chính hãng, bảo hành uy tín</p><div className="mt-2 flex gap-1 text-[7px]"><CheckCircle2 className="h-3 w-3" /> Tư vấn đúng nhu cầu</div></div>
+        </div>
+      </div>
+
+      <div className="px-3 pt-3">
+        <label className="flex h-10 items-center rounded-lg border bg-white px-3"><Search className="mr-2 h-4 w-4 text-[#60718b]" /><Input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Tìm trong sản phẩm..." className="h-auto border-0 p-0 text-xs shadow-none focus-visible:ring-0" /></label>
+        <div className="mt-3 flex gap-2">
+          <Select value={sort} onValueChange={setSort}><SelectTrigger className="h-9 flex-1 bg-white text-[10px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">Sắp xếp: Mới nhất</SelectItem><SelectItem value="newest">Mới nhất</SelectItem><SelectItem value="price_asc">Giá tăng dần</SelectItem><SelectItem value="price_desc">Giá giảm dần</SelectItem></SelectContent></Select>
+          <Sheet><SheetTrigger asChild><Button variant="outline" className="h-9 bg-white text-[10px]"><SlidersHorizontal className="h-3.5 w-3.5" /> Bộ lọc{activeCount ? ` (${activeCount})` : ""}</Button></SheetTrigger><SheetContent side="right" className="w-[88vw] overflow-y-auto"><SheetTitle>Bộ lọc sản phẩm</SheetTitle><div className="px-4 pb-8">{filters}</div></SheetContent></Sheet>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {filtered.map((product) => <ProductCard key={product.id} product={product} compareChecked={compareSlugs.includes(product.slug)} onCompareToggle={() => toggleCompare(product.slug)} />)}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const landingIcons = [SunMedium, Camera, BatteryCharging, Wifi, Cpu, Ellipsis];

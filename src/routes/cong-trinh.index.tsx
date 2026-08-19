@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, CalendarDays, Camera, ChevronDown, Cpu, MapPin, SlidersHorizontal, SunMedium, Wifi, Zap } from "lucide-react";
 import { projects, solutions, images } from "@/data/mock";
 
 export const Route = createFileRoute("/cong-trinh/")({
@@ -29,7 +29,8 @@ function ProjectListing() {
 
   return (
     <div className="pb-12">
-      <section className="relative overflow-hidden bg-brand-dark text-white">
+      <MobileProjects type={type} setType={setType} types={types} list={list} />
+      <section className="relative hidden overflow-hidden bg-brand-dark text-white md:block">
         <img src={images.project1} alt="Công trình thực tế" className="absolute inset-0 h-full w-full object-cover opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#05285f] via-[#063b86]/80 to-transparent" />
         <div className="container-page relative py-7 sm:py-16">
@@ -38,7 +39,7 @@ function ProjectListing() {
           <p className="mt-2 max-w-lg text-sm text-white/80">Những dự án Hoàng Vĩnh IOT đã khảo sát, thi công và đồng hành vận hành.</p>
         </div>
       </section>
-      <div className="container-page pt-6 lg:pt-10">
+      <div className="container-page hidden pt-6 md:block lg:pt-10">
       <nav className="text-xs text-muted-foreground">
         <Link to="/" className="hover:text-brand">
           Trang chủ
@@ -106,6 +107,40 @@ function ProjectListing() {
           );
         })}
       </div>
+      </div>
+    </div>
+  );
+}
+
+const projectIcons = [Cpu, SunMedium, Camera, Wifi, Zap];
+
+function MobileProjects({ type, setType, types, list }: {
+  type: string;
+  setType: (value: string) => void;
+  types: string[];
+  list: typeof projects;
+}) {
+  return (
+    <div className="bg-[#f8fafc] pb-5 md:hidden">
+      <section className="relative overflow-hidden bg-[#063b86] px-4 py-5 text-white">
+        <img src={images.project1} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#063b86] via-[#0758c9]/90 to-transparent" />
+        <div className="relative max-w-[62%]"><h1 className="text-[17px] font-black uppercase">Công trình thực tế</h1><p className="mt-1 text-[8px] leading-relaxed text-white/90">Những dự án mà Hoàng Vĩnh IOT đã thi công và bàn giao</p></div>
+      </section>
+
+      <div className="relative z-10 -mt-1 bg-white px-3 pt-2">
+        <div className="hide-scrollbar flex overflow-x-auto rounded-xl border bg-white px-1 shadow-sm">
+          {types.slice(0, 5).map((item, index) => { const Icon=projectIcons[index]??Cpu; const active=type===item; return <button key={item} onClick={()=>setType(item)} className={`flex w-[68px] shrink-0 flex-col items-center border-b-2 py-2 ${active?"border-[#0758c9] text-[#0758c9]":"border-transparent text-[#53647f]"}`}><Icon className="h-4 w-4"/><span className="mt-1 line-clamp-2 text-[7px] font-semibold leading-tight">{item==="all"?"Tất cả":item}</span></button>; })}
+        </div>
+      </div>
+
+      <div className="px-3 pt-3">
+        <div className="flex gap-2"><button className="flex h-9 flex-1 items-center justify-between rounded-lg border bg-white px-3 text-[9px]"><span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5"/>Tất cả khu vực</span><ChevronDown className="h-3 w-3"/></button><button className="flex h-9 flex-1 items-center justify-between rounded-lg border bg-white px-3 text-[9px]"><span className="flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5"/>Mới nhất</span><ChevronDown className="h-3 w-3"/></button><button className="grid h-9 w-9 place-items-center rounded-lg border bg-white"><SlidersHorizontal className="h-3.5 w-3.5"/></button></div>
+
+        <div className="mt-3 space-y-2">
+          {list.map((project, index) => <Link key={project.slug} to="/cong-trinh/$slug" params={{slug:project.slug}} className="flex min-h-[112px] overflow-hidden rounded-[9px] border border-[#e1e7ef] bg-white shadow-[0_2px_8px_rgba(16,52,100,.05)]"><div className="relative w-[39%] shrink-0"><img src={project.image} alt={project.name} className="h-full w-full object-cover"/><span className={`absolute left-1.5 top-1.5 rounded px-1.5 py-0.5 text-[6px] font-bold text-white ${index%3===0?"bg-[#18a85b]":index%3===1?"bg-[#0758c9]":"bg-[#8b3fd6]"}`}>{project.type}</span></div><div className="flex min-w-0 flex-1 flex-col p-2"><h2 className="line-clamp-2 text-[10px] font-black leading-snug text-[#071c4c]">{project.name}</h2><div className="mt-1 space-y-0.5 text-[7px] text-[#53647f]"><p className="flex items-center gap-1"><MapPin className="h-2.5 w-2.5"/>{project.location}</p><p className="flex items-center gap-1"><Zap className="h-2.5 w-2.5"/>{project.scale}</p><p className="flex items-center gap-1"><CalendarDays className="h-2.5 w-2.5"/>Hoàn thành: {project.year}</p></div><span className="ml-auto mt-auto rounded border border-[#0758c9] px-2 py-1 text-[7px] font-bold text-[#0758c9]">Xem chi tiết ›</span></div></Link>)}
+        </div>
+        <button className="mt-3 h-9 w-full rounded border bg-white text-[8px] font-bold text-[#0758c9]">Xem thêm công trình <ChevronDown className="ml-1 inline h-3 w-3" /></button>
       </div>
     </div>
   );

@@ -24,11 +24,11 @@ export function ProductCard({
     : 0;
 
   return (
-    <article className="card-hover group flex min-w-0 flex-col overflow-hidden rounded-xl border border-brand/10 bg-card shadow-card">
+    <article className="card-hover group flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-brand/10 bg-card shadow-card">
       <Link
         to="/san-pham/$slug"
         params={{ slug: product.slug }}
-        className="relative block aspect-square overflow-hidden bg-secondary"
+        className="relative block aspect-[1.08] overflow-hidden bg-white sm:aspect-square sm:bg-secondary"
       >
         <img
           src={product.image}
@@ -53,7 +53,7 @@ export function ProductCard({
               e.stopPropagation();
               onCompareToggle(product);
             }}
-            className={`absolute right-2 top-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-sm transition ${
+            className={`absolute right-1.5 top-1.5 inline-flex h-7 w-7 items-center justify-center rounded-full border p-0 text-xs font-semibold shadow-sm transition sm:right-2 sm:top-2 sm:h-auto sm:w-auto sm:px-2.5 sm:py-1 ${
               compareChecked
                 ? "border-brand bg-brand text-white"
                 : "border-border bg-background/95 text-foreground hover:border-brand"
@@ -64,30 +64,30 @@ export function ProductCard({
             ) : (
               <Square className="h-3.5 w-3.5" />
             )}
-            <span>So sánh</span>
+            <span className="hidden sm:inline">So sánh</span>
           </button>
         )}
       </Link>
-      <div className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
-        <span className="text-xs font-semibold uppercase tracking-wide text-brand">
+      <div className="flex flex-1 flex-col gap-1 p-2 sm:gap-1.5 sm:p-4">
+        <span className="text-[8px] font-bold uppercase tracking-wide text-brand sm:text-xs">
           {brand?.name}
         </span>
         <Link
           to="/san-pham/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 text-sm font-semibold leading-snug text-foreground hover:text-brand sm:text-base"
+          className="line-clamp-2 min-h-[2.25rem] text-[10px] font-bold leading-snug text-foreground hover:text-brand sm:min-h-0 sm:text-base"
         >
           {product.name}
         </Link>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-highlight-foreground"><Star className="h-3 w-3 fill-highlight text-highlight" />{product.rating}</span>
-          <Badge variant="outline" className={stockBadgeClass(product.stock)}>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-highlight-foreground sm:text-[11px]"><Star className="h-2.5 w-2.5 fill-highlight text-highlight sm:h-3 sm:w-3" />{product.rating}</span>
+          <Badge variant="outline" className={`${stockBadgeClass(product.stock)} h-4 px-1 text-[7px] sm:h-auto sm:text-xs`}>
             {formatStock(product.stock)}
           </Badge>
         </div>
         <div className="mt-auto">
           <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-base font-bold text-brand sm:text-lg">{formatVnd(price)}</span>
+            <span className="text-[12px] font-black text-[#e60012] sm:text-lg">{formatVnd(price)}</span>
             {product.salePrice && (
               <span className="text-xs text-muted-foreground line-through">
                 {formatVnd(product.price)}
@@ -97,7 +97,7 @@ export function ProductCard({
           <Button
             size="sm"
             aria-label={`Thêm ${product.name} vào giỏ`}
-            className="mt-3 w-full gap-1.5 sm:w-auto"
+            className="mt-1.5 h-7 w-full gap-1 text-[8px] sm:mt-3 sm:h-9 sm:w-auto sm:text-sm"
             onClick={() => {
               addToCart({
                 productSlug: product.slug,
