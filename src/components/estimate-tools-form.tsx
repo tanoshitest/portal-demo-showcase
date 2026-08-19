@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutoCalcGrid, EstimateCalcTables } from "@/components/estimate-calc-tables";
 import { loadSolarQuotes, makeEstimateQuote, saveSolarQuotes } from "@/data/solar-quotes";
 
-export function EstimateToolsForm() {
+export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" }) {
   const [form, setForm] = useState<EstimateInputs>(() => loadEstimateInputs());
   const [panelOptions] = useState(getAvailablePanelTypes);
 
@@ -66,18 +66,19 @@ export function EstimateToolsForm() {
       acWire: autoAcWire(phase),
       cabinetType: autoCabinetType(phase),
       inverterTypeAuto: autoInverterType(phase, buildEstimateQuote(prev).calc.inverterKw),
+      inverterTypeManual: "",
     }));
   };
 
   const save = () => {
     saveEstimateInputs(form);
-    const total = buildEstimateQuote(form).total;
+    const total = buildEstimateQuote(form, mode).total;
     const quote = makeEstimateQuote({
       customer: form.customer,
       phone: form.phone,
       address: form.address,
-      systemTitle: `${form.phase} · ${form.panelTypeManual} · ${form.roof}`,
-      summary: `Dự toán ${form.phase.toLowerCase()} · ${form.panelCountManual} tấm pin · ${form.inverterKwManual}kW`,
+      systemTitle: `${form.phase} · ${mode === "auto" ? form.panelTypeAuto : form.panelTypeManual} · ${form.roof}`,
+      summary: `Dự toán ${mode === "auto" ? "Auto" : "thủ công"} · ${form.phase.toLowerCase()}`,
       total,
     });
     const next = [quote, ...loadSolarQuotes()];
@@ -121,20 +122,21 @@ export function EstimateToolsForm() {
         <section className="grid min-h-0 min-w-0 grid-cols-1 gap-3 xl:h-full xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.68fr)] xl:items-stretch">
           <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full">
             <div className="shrink-0 bg-brand-dark px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-foreground sm:px-4 sm:py-1.5">
-              Bảng tính AUTO
+              {mode === "auto" ? "Bảng tính AUTO" : "Bảng tính thủ công"}
             </div>
             <AutoCalcGrid
+              mode={mode}
               form={form}
               panelOptions={panelOptions}
-              onPanelChange={(panelName) => patch("panelTypeAuto", panelName)}
-              onInverterChange={(inverterId) => patch("inverterTypeAuto", inverterId)}
-              onBatteryChange={(batteryName) => patch("batteryTypeAuto", batteryName)}
+              onPanelChange={(panelName) => patch(mode === "auto" ? "panelTypeAuto" : "panelTypeManual", panelName)}
+              onInverterChange={(inverterId) => patch(mode === "auto" ? "inverterTypeAuto" : "inverterTypeManual", inverterId)}
+              onBatteryChange={(batteryName) => patch(mode === "auto" ? "batteryTypeAuto" : "batteryTypeManual", batteryName)}
               onPatch={patch}
               onPhaseChange={setPhase}
             />
           </div>
 
-          <QuoteEstimatePanel form={form} onPatch={patch} />
+          <QuoteEstimatePanel form={form} mode={mode} onPatch={patch} />
         </section>
       </TabsContent>
 
@@ -143,8 +145,11 @@ export function EstimateToolsForm() {
         className="mt-0 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         <EstimateCalcTables
+          mode={mode}
           form={form}
-          onPanelChange={(panelName) => patch("panelTypeAuto", panelName)}
+          onPanelChange={(panelName) =>
+            patch(mode === "auto" ? "panelTypeAuto" : "panelTypeManual", panelName)
+          }
         />
       </TabsContent>
     </Tabs>
@@ -153,12 +158,17 @@ export function EstimateToolsForm() {
 
 function QuoteEstimatePanel({
   form,
+  mode,
   onPatch,
 }: {
   form: EstimateInputs;
+  mode: "auto" | "manual";
   onPatch: <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => void;
 }) {
-  const { rows: quoteRows, total: quoteTotal } = useMemo(() => buildEstimateQuote(form), [form]);
+  const { rows: quoteRows, total: quoteTotal } = useMemo(
+    () => buildEstimateQuote(form, mode),
+    [form, mode],
+  );
 
   return (
     <aside className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full">

@@ -77,7 +77,7 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-brand/10 bg-background/95 shadow-[0_8px_30px_-26px_rgba(0,42,120,.55)] backdrop-blur-xl">
       <div className="hidden bg-brand-dark text-brand-foreground lg:block">
         <div className="container-page flex h-9 items-center justify-between text-xs">
           <span>{company.slogan}</span>
@@ -89,17 +89,21 @@ export function SiteHeader() {
           </span>
         </div>
       </div>
-      <div className="container-page grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 lg:flex lg:gap-6">
+      <div className="container-page grid min-h-[70px] grid-cols-[32px_minmax(0,1fr)_44px] items-center gap-2 py-2 lg:flex lg:min-h-18 lg:gap-6">
+        <button type="button" onClick={() => setOpen(true)} className="grid h-8 w-8 place-items-center text-[#0a2a61] lg:hidden" aria-label="Mở menu">
+          <Menu className="h-5 w-5" strokeWidth={1.7} />
+        </button>
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-brand text-sm font-black text-brand-foreground">
-            HV
+          <span className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-highlight bg-brand-dark text-[10px] font-black italic text-white shadow-sm sm:h-11 sm:w-11 sm:text-[11px]">
+            <span className="absolute inset-x-0 bottom-1 h-2 -rotate-12 bg-highlight/90" />
+            <span className="relative">HV</span>
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-black uppercase leading-tight text-brand-dark sm:text-base">
-              Hoàng Vĩnh VKT
+            <span className="block truncate text-[12px] font-black uppercase leading-tight text-[#0758c9] sm:text-base">
+              Hoàng Vĩnh IOT
             </span>
-            <span className="hidden text-xs text-muted-foreground sm:block">
-              Thiết bị · Giải pháp · Công trình
+            <span className="block truncate text-[7px] font-semibold text-[#45577a] sm:text-xs">
+              Solar · Camera · Điện máy · Vận chuyển
             </span>
           </span>
         </Link>
@@ -124,8 +128,12 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <Button asChild variant="ghost" size="icon" aria-label="Giỏ hàng" className="relative">
+        <div className="flex shrink-0 items-center justify-end gap-1">
+          <a href={`tel:${company.hotline.replace(/\s/g, "")}`} aria-label="Gọi ngay" className="flex h-11 w-11 flex-col items-center justify-center gap-0 text-[#0758c9] lg:hidden">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0758c9] text-white"><Phone className="h-4 w-4 fill-current" /></span>
+            <span className="text-[7px] font-bold">Gọi ngay</span>
+          </a>
+          <Button asChild variant="ghost" size="icon" aria-label="Giỏ hàng" className="relative hidden sm:inline-flex lg:inline-flex">
             <Link to="/gio-hang">
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
@@ -164,7 +172,7 @@ export function SiteHeader() {
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Menu">
+              <Button variant="ghost" size="icon" className="hidden" aria-label="Menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>

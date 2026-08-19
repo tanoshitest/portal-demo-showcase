@@ -30,27 +30,31 @@ const CABINET_PRICES: Record<string, number> = {
   "Tủ điện hybrid AC/DC": 12_500_000,
 };
 
-export function buildEstimateQuote(form: EstimateInputs) {
-  const summerKwh = kwhFromBill(amountExclVat(form.summerBillAuto)).totalKwh;
-  const winterKwh = kwhFromBill(amountExclVat(form.winterBillAuto)).totalKwh;
+export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual" = "auto") {
+  const summerBill = mode === "auto" ? form.summerBillAuto : form.summerBillManual;
+  const winterBill = mode === "auto" ? form.winterBillAuto : form.winterBillManual;
+  const summerKwh = kwhFromBill(amountExclVat(summerBill)).totalKwh;
+  const winterKwh = kwhFromBill(amountExclVat(winterBill)).totalKwh;
   const calc = computeAutoCalc({
-    summerBill: amountExclVat(form.summerBillAuto),
-    winterBill: amountExclVat(form.winterBillAuto),
+    summerBill: amountExclVat(summerBill),
+    winterBill: amountExclVat(winterBill),
     tariff: 2954,
     pshSummer: 4.6,
     pshWinter: 2.3,
-    panelName: form.panelTypeAuto,
+    panelName: mode === "auto" ? form.panelTypeAuto : form.panelTypeManual,
     dayRate: form.dayRate,
     dischargeEff: 80,
-    batteryName: form.batteryTypeAuto,
-    panelCount: 0,
-    batteryQty: 0,
+    batteryName: mode === "auto" ? form.batteryTypeAuto : form.batteryTypeManual,
+    panelCount: mode === "auto" ? 0 : form.panelCountManual,
+    batteryQty: mode === "auto" ? 0 : form.batteryQtyManual,
     summerKwh,
     winterKwh,
   });
 
   const panelUnitPrice = PANEL_PRICES[calc.panel.name] ?? 3_200_000;
-  const selectedInverter = inverterById(form.inverterTypeAuto);
+  const selectedInverter = inverterById(
+    mode === "auto" ? form.inverterTypeAuto : form.inverterTypeManual,
+  );
   const fallbackInverterPrice = Math.round(
     (form.phase === "Điện 3 pha" ? 18_000_000 : 12_000_000) +
       calc.inverterKw * (form.phase === "Điện 3 pha" ? 1_150_000 : 900_000),
@@ -121,7 +125,7 @@ export function buildEstimateQuote(form: EstimateInputs) {
       no: "4",
       name: `Pin lưu trữ\n${batteryLines.join("\n")}`,
       unit: "bộ",
-      qty: 1,
+      qty: calc.batteryQty,
       unitPrice: calc.lineTotal,
       total: calc.lineTotal,
       unitPriceLines: batteryPriceLines,

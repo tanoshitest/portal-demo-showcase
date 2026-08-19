@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { ProductCard } from "@/components/product-card";
 import { ConsultForm } from "@/components/consult-form";
-import { getSolution, products, projects, type Solution } from "@/data/mock";
+import { getSolution, images, products, projects, type Solution } from "@/data/mock";
 
 export const Route = createFileRoute("/giai-phap/$slug")({
   loader: ({ params }) => {
@@ -53,7 +53,8 @@ function SolutionDetail() {
           height={900}
           className="absolute inset-0 h-full w-full object-cover opacity-30"
         />
-        <div className="container-page relative py-12 lg:py-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-dark via-brand-dark/80 to-transparent" />
+        <div className="container-page relative py-7 sm:py-10 lg:py-20">
           <nav className="text-xs opacity-80">
             <Link to="/" className="hover:underline">
               Trang chủ
@@ -66,7 +67,7 @@ function SolutionDetail() {
           <p className="mt-3 text-xs font-bold uppercase tracking-widest text-highlight">
             {solution.group}
           </p>
-          <h1 className="mt-2 max-w-3xl text-3xl font-black leading-tight sm:text-4xl">
+          <h1 className="mt-2 max-w-3xl text-[23px] font-black leading-tight sm:text-5xl">
             {solution.name}
           </h1>
           <p className="mt-3 max-w-2xl text-sm opacity-90 sm:text-base">{solution.short}</p>
@@ -76,19 +77,19 @@ function SolutionDetail() {
         </div>
       </section>
 
-      <section className="container-page py-12">
-        <h2 className="text-2xl font-black">Lợi ích</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+      <section className="container-page section-space">
+        <h2 className="text-[13px] font-black uppercase text-[#071c4c] sm:text-2xl">Lợi ích nổi bật</h2>
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-4">
           {solution.benefits.map((b) => (
-            <div key={b.title} className="rounded-xl border border-border bg-card p-5 shadow-card">
-              <CheckCircle2 className="h-6 w-6 text-success" />
-              <h3 className="mt-3 font-bold">{b.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{b.desc}</p>
+            <div key={b.title} className="rounded-[10px] border border-brand/10 bg-card p-3 text-center shadow-card sm:rounded-2xl sm:p-5">
+              <CheckCircle2 className="mx-auto h-5 w-5 text-[#0758c9] sm:h-6 sm:w-6" />
+              <h3 className="mt-2 text-[9px] font-bold sm:mt-3 sm:text-base">{b.title}</h3>
+              <p className="mt-1 hidden text-sm text-muted-foreground sm:block">{b.desc}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2">
+        <div className="mt-7 hidden gap-6 sm:grid sm:grid-cols-2">
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="flex items-center gap-2 font-bold">
               <Users className="h-5 w-5 text-brand" /> Đối tượng phù hợp
@@ -112,23 +113,30 @@ function SolutionDetail() {
         </div>
       </section>
 
-      <section className="bg-secondary/60 py-12">
+      <section className="container-page pb-8 sm:pb-12">
+        <div className="flex items-center justify-between"><h2 className="text-[13px] font-black text-[#071c4c] sm:text-2xl">Các loại hệ thống</h2><span className="text-[9px] font-bold text-[#0758c9]">Xem tất cả ›</span></div>
+        <div className="hide-scrollbar mt-3 flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:gap-4">
+          {solution.systems.slice(0,3).map((system,index)=><article key={system} className="w-[165px] shrink-0 overflow-hidden rounded-xl border border-brand/10 bg-white shadow-card sm:w-auto"><img src={[images.solution2,images.project1,images.project2][index]} alt={system} className="h-24 w-full object-cover sm:h-40"/><div className="p-3"><h3 className="text-[10px] font-bold text-[#071c4c] sm:text-sm">{system}</h3><p className="mt-1 text-[7px] leading-relaxed text-muted-foreground sm:text-xs">Giải pháp phù hợp nhu cầu thực tế, vận hành ổn định và bảo hành dài hạn.</p><span className="mt-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#0758c9] text-[9px] text-[#0758c9]">›</span></div></article>)}
+        </div>
+      </section>
+
+      <section className="bg-secondary/60 section-space">
         <div className="container-page">
-          <h2 className="text-2xl font-black">Gói giải pháp</h2>
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <div className="flex items-center justify-between"><h2 className="text-[13px] font-black text-[#071c4c] sm:text-2xl">Gói giải pháp phổ biến</h2><span className="text-[9px] font-bold text-[#0758c9]">Xem tất cả ›</span></div>
+          <div className="hide-scrollbar mt-3 flex gap-2 overflow-x-auto pb-2 sm:mt-5 sm:grid sm:gap-4 lg:grid-cols-3">
             {solution.packages.map((pk) => (
-              <div key={pk.id} className="flex flex-col rounded-xl border border-border bg-card p-5 shadow-card">
-                <h3 className="text-lg font-bold">{pk.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{pk.desc}</p>
-                <p className="mt-3 text-xl font-black text-brand">{pk.price}</p>
-                <ul className="mt-3 flex-1 space-y-1.5 text-sm text-muted-foreground">
+              <div key={pk.id} className="card-hover flex w-[175px] shrink-0 flex-col rounded-xl border border-brand/10 bg-card p-3 shadow-card sm:w-auto sm:rounded-2xl sm:p-5">
+                <h3 className="text-[12px] font-bold sm:text-lg">{pk.name}</h3>
+                <p className="mt-1 text-[8px] text-muted-foreground sm:text-sm">{pk.desc}</p>
+                <p className="mt-3 text-[14px] font-black text-[#e60000] sm:text-xl">{pk.price}</p>
+                <ul className="mt-3 flex-1 space-y-1.5 text-[8px] text-muted-foreground sm:text-sm">
                   {pk.items.map((i) => (
                     <li key={i} className="flex gap-2">
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-success" /> {i}
                     </li>
                   ))}
                 </ul>
-                <Button asChild variant="outline" className="mt-4">
+                <Button asChild variant="outline" size="sm" className="mt-3 h-7 text-[8px] sm:mt-4 sm:h-9 sm:text-sm">
                   <a href="#tu-van">Yêu cầu báo giá</a>
                 </Button>
               </div>
@@ -147,15 +155,15 @@ function SolutionDetail() {
       </section>
 
       <section className="container-page pb-12">
-        <h2 className="text-2xl font-black">Quy trình triển khai</h2>
-        <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <h2 className="text-[13px] font-black text-[#071c4c] sm:text-2xl">Quy trình triển khai</h2>
+        <ol className="mt-4 grid grid-cols-5 gap-1 sm:mt-5 sm:gap-4">
           {solution.process.map((p, i) => (
-            <li key={p.step} className="rounded-xl border border-border bg-card p-4">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-brand text-sm font-bold text-brand-foreground">
+            <li key={p.step} className="text-center sm:rounded-xl sm:border sm:border-border sm:bg-card sm:p-4">
+              <span className="mx-auto grid h-8 w-8 place-items-center rounded-full border border-[#cbd8eb] bg-white text-[10px] font-bold text-[#0758c9] sm:bg-gradient-brand sm:text-sm sm:text-brand-foreground">
                 {i + 1}
               </span>
-              <h3 className="mt-3 text-sm font-bold">{p.step}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{p.desc}</p>
+              <h3 className="mt-2 text-[7px] font-bold leading-tight sm:mt-3 sm:text-sm">{p.step}</h3>
+              <p className="mt-1 hidden text-xs text-muted-foreground sm:block">{p.desc}</p>
             </li>
           ))}
         </ol>

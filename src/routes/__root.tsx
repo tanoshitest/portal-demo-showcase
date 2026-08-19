@@ -84,13 +84,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Hoàng Vĩnh VKT – Thiết bị & giải pháp kỹ thuật điện" },
+      { title: "Hoàng Vĩnh IOT – Solar, Camera, Điện máy và Vận chuyển" },
       {
         name: "description",
         content:
-          "Cung cấp thiết bị điện – tự động hóa chính hãng, giải pháp kỹ thuật và thi công công trình cho nhà máy, tòa nhà.",
+          "Giải pháp điện mặt trời, camera an ninh, Wi-Fi, thiết bị điện và vận chuyển trọn gói cho gia đình, doanh nghiệp.",
       },
-      { name: "author", content: "Hoàng Vĩnh VKT" },
+      { name: "author", content: "Hoàng Vĩnh IOT" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

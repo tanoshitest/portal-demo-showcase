@@ -2,12 +2,14 @@ import { useEffect, useMemo, type ReactNode } from "react";
 import { computeAutoCalc } from "@/data/auto-calc";
 import {
   autoInverterType,
+  BATTERY_TYPES,
   CABINET_TYPES,
   inverterLabel,
+  inverterOptionsForPhase,
   recommendedInverterOptionsForPhase,
   type EstimateInputs,
 } from "@/data/estimate";
-import type { EstimatePanelType } from "@/data/panel-catalog";
+import { getCatalogBatteryTypes, type EstimatePanelType } from "@/data/panel-catalog";
 import { kwhFromBill, amountExclVat, type EvnBillResult } from "@/data/evn-bill";
 import { formatVnd } from "@/lib/format";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,6 +47,7 @@ const mobileSelectCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h
 const mobileInputCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
 
 export function AutoCalcGrid({
+  mode = "auto",
   form,
   panelOptions,
   onPanelChange,
@@ -53,6 +56,7 @@ export function AutoCalcGrid({
   onPatch,
   onPhaseChange,
 }: {
+  mode?: "auto" | "manual";
   form: EstimateInputs;
   panelOptions: EstimatePanelType[];
   onPanelChange: (panelName: string) => void;
@@ -61,8 +65,18 @@ export function AutoCalcGrid({
   onPatch: <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => void;
   onPhaseChange: (phase: EstimateInputs["phase"]) => void;
 }) {
-  const summerNet = amountExclVat(form.summerBillAuto);
-  const winterNet = amountExclVat(form.winterBillAuto);
+  const manual = mode === "manual";
+  const summerBill = manual ? form.summerBillManual : form.summerBillAuto;
+  const winterBill = manual ? form.winterBillManual : form.winterBillAuto;
+  const panelName = manual ? form.panelTypeManual : form.panelTypeAuto;
+  const inverterId = manual ? form.inverterTypeManual : form.inverterTypeAuto;
+  const batteryName = manual ? form.batteryTypeManual : form.batteryTypeAuto;
+  const batteryOptions = useMemo(() => {
+    const catalog = getCatalogBatteryTypes({ inStockOnly: true });
+    return catalog.length ? catalog : BATTERY_TYPES;
+  }, []);
+  const summerNet = amountExclVat(summerBill);
+  const winterNet = amountExclVat(winterBill);
   const summerEvn = useMemo(() => kwhFromBill(summerNet), [summerNet]);
   const winterEvn = useMemo(() => kwhFromBill(winterNet), [winterNet]);
   const r = useMemo(
@@ -73,26 +87,28 @@ export function AutoCalcGrid({
         tariff: 2954,
         pshSummer: 4.6,
         pshWinter: 2.3,
-        panelName: form.panelTypeAuto,
+        panelName,
         dayRate: form.dayRate,
         dischargeEff: 80,
-        batteryName: form.batteryTypeAuto,
-        panelCount: 0,
-        batteryQty: 0,
+        batteryName,
+        panelCount: manual ? form.panelCountManual : 0,
+        batteryQty: manual ? form.batteryQtyManual : 0,
         summerKwh: summerEvn.totalKwh,
         winterKwh: winterEvn.totalKwh,
       }),
-    [form, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh],
+    [form, manual, panelName, batteryName, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh],
   );
   const inverterOptions = useMemo(
-    () => recommendedInverterOptionsForPhase(form.phase, r.inverterKw),
-    [form.phase, r.inverterKw],
+    () => manual
+      ? inverterOptionsForPhase(form.phase)
+      : recommendedInverterOptionsForPhase(form.phase, r.inverterKw),
+    [form.phase, manual, r.inverterKw],
   );
 
   useEffect(() => {
-    if (inverterOptions.some((item) => item.id === form.inverterTypeAuto)) return;
+    if (manual || inverterOptions.some((item) => item.id === form.inverterTypeAuto)) return;
     onInverterChange(autoInverterType(form.phase, r.inverterKw));
-  }, [form.inverterTypeAuto, form.phase, inverterOptions, onInverterChange, r.inverterKw]);
+  }, [manual, form.inverterTypeAuto, form.phase, inverterOptions, onInverterChange, r.inverterKw]);
 
   const setCrane = (enabled: 0 | 1) => {
     onPatch("crane", enabled);
@@ -119,11 +135,11 @@ export function AutoCalcGrid({
                   min={0}
                   max={100_000_000}
                   step={50_000}
-                  value={[form.summerBillAuto]}
-                  onValueChange={([v]) => onPatch("summerBillAuto", v ?? 0)}
+                  value={[summerBill]}
+                  onValueChange={([v]) => onPatch(manual ? "summerBillManual" : "summerBillAuto", v ?? 0)}
                 />
                 <p className="min-w-[5.5rem] text-right text-[11px] font-semibold tabular-nums text-foreground">
-                  {money(form.summerBillAuto)} đ
+                  {money(summerBill)} đ
                 </p>
               </div>
             </div>
@@ -137,11 +153,11 @@ export function AutoCalcGrid({
                   min={0}
                   max={100_000_000}
                   step={50_000}
-                  value={[form.winterBillAuto]}
-                  onValueChange={([v]) => onPatch("winterBillAuto", v ?? 0)}
+                  value={[winterBill]}
+                  onValueChange={([v]) => onPatch(manual ? "winterBillManual" : "winterBillAuto", v ?? 0)}
                 />
                 <p className="min-w-[5.5rem] text-right text-[11px] font-semibold tabular-nums text-foreground">
-                  {money(form.winterBillAuto)} đ
+                  {money(winterBill)} đ
                 </p>
               </div>
             </div>
@@ -369,7 +385,7 @@ export function AutoCalcGrid({
                 <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Tấm pin đã chọn</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
                   <Select
-                    value={form.panelTypeAuto}
+                    value={panelName}
                     onValueChange={onPanelChange}
                     disabled={panelOptions.length === 0}
                   >
@@ -403,12 +419,29 @@ export function AutoCalcGrid({
                 valueClassName="text-destructive"
                 labelClassName="text-destructive"
               />
-              <AreaTr
-                label="Số tấm pin"
-                value={r.panelCount}
-                calc
-                labelClassName="text-foreground"
-              />
+              {manual ? (
+                <tr className="border-t border-border">
+                  <td className="px-1.5 py-1 sm:px-2.5">Số tấm pin</td>
+                  <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                    <Input
+                      className="h-7 text-right text-xs"
+                      type="number"
+                      min={1}
+                      value={form.panelCountManual}
+                      onChange={(event) =>
+                        onPatch("panelCountManual", Math.max(1, Number(event.target.value) || 1))
+                      }
+                    />
+                  </td>
+                </tr>
+              ) : (
+                <AreaTr
+                  label="Số tấm pin"
+                  value={r.panelCount}
+                  calc
+                  labelClassName="text-foreground"
+                />
+              )}
               <AreaTr
                 label="Tổng diện tích lắp đặt (m²)"
                 value={`${r.totalArea} m2`}
@@ -443,10 +476,10 @@ export function AutoCalcGrid({
               <tr className="border-t border-border text-[11px] text-destructive sm:text-xs">
                 <td className="whitespace-nowrap px-1.5 py-1 sm:px-2.5">Biến tần phù hợp</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
-                  <Select value={form.inverterTypeAuto} onValueChange={onInverterChange}>
+                  <Select value={inverterId} onValueChange={onInverterChange}>
                     <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none [&>span]:text-destructive">
                       <SelectValue className="text-destructive">
-                        {inverterLabel(form.inverterTypeAuto)}
+                        {inverterLabel(inverterId)}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-72">
@@ -497,7 +530,21 @@ export function AutoCalcGrid({
               <tr className="border-t border-border text-[11px] sm:text-xs">
                 <td className="px-1.5 py-1 sm:px-2.5">Hãng pin đã chọn</td>
                 <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
-                  <div className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs text-emerald-900">
+                  {manual ? (
+                    <Select value={batteryName} onValueChange={onBatteryChange}>
+                      <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none">
+                        <SelectValue placeholder="Chọn pin lưu trữ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {batteryOptions.map((battery) => (
+                          <SelectItem key={battery.id} value={battery.name}>
+                            {battery.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs text-emerald-900">
                     <div className="space-y-1">
                       {(r.batteryCombo.items.length ? r.batteryCombo.items : [r.battery]).map(
                         (item, index) => (
@@ -510,11 +557,29 @@ export function AutoCalcGrid({
                         ),
                       )}
                     </div>
-                  </div>
+                    </div>
+                  )}
                 </td>
               </tr>
               <KVRow label="Dung tích pin (kWh/bộ)" value={r.battery.kwh} calc span />
-              <KVRow label="Số lượng" value={r.batteryQty} calc span />
+              {manual ? (
+                <tr className="border-t border-border">
+                  <td className="px-1.5 py-1 sm:px-2.5">Số lượng</td>
+                  <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                    <Input
+                      className="h-7 text-right text-xs"
+                      type="number"
+                      min={1}
+                      value={form.batteryQtyManual}
+                      onChange={(event) =>
+                        onPatch("batteryQtyManual", Math.max(1, Number(event.target.value) || 1))
+                      }
+                    />
+                  </td>
+                </tr>
+              ) : (
+                <KVRow label="Số lượng" value={r.batteryQty} calc span />
+              )}
               <KVRow label="Tổng dung tích (kWh)" value={r.totalBatt} calc strong span />
               <tr className="border-t border-border text-[11px] sm:text-xs">
                 <td className="px-1.5 py-1 sm:px-2.5">Tổng giá pin</td>
@@ -531,19 +596,21 @@ export function AutoCalcGrid({
 }
 
 export function EstimateCalcTables({
+  mode = "auto",
   form,
   onPanelChange,
 }: {
+  mode?: "auto" | "manual";
   form: EstimateInputs;
   onPanelChange: (panelName: string) => void;
 }) {
   const summerEvn = useMemo(
-    () => kwhFromBill(amountExclVat(form.summerBillAuto)),
-    [form.summerBillAuto],
+    () => kwhFromBill(amountExclVat(mode === "auto" ? form.summerBillAuto : form.summerBillManual)),
+    [form.summerBillAuto, form.summerBillManual, mode],
   );
   const winterEvn = useMemo(
-    () => kwhFromBill(amountExclVat(form.winterBillAuto)),
-    [form.winterBillAuto],
+    () => kwhFromBill(amountExclVat(mode === "auto" ? form.winterBillAuto : form.winterBillManual)),
+    [form.winterBillAuto, form.winterBillManual, mode],
   );
 
   return (

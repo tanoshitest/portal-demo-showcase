@@ -53,6 +53,7 @@ export type EstimateInputs = {
   panelCountManual: number;
   inverterKwManual: number;
   inverterTypeAuto: string;
+  inverterTypeManual: string;
   batteryTypeAuto: string;
   batteryTypeManual: string;
   batteryQtyManual: number;
@@ -281,6 +282,7 @@ export function defaultEstimateInputs(): EstimateInputs {
     panelCountManual: 20,
     inverterKwManual: 8,
     inverterTypeAuto: "",
+    inverterTypeManual: "",
     batteryTypeAuto: "EJOR 16 - BH7",
     batteryTypeManual: "SOFAR 16 - BH10",
     batteryQtyManual: 1,
@@ -376,6 +378,12 @@ export function loadEstimateInputs(): EstimateInputs {
     );
     if (!parsed.inverterTypeAuto || !inverterMatchesPhase) {
       merged.inverterTypeAuto = "";
+    }
+    const manualInverterMatchesPhase = inverterOptionsForPhase(merged.phase).some(
+      (item) => item.id === merged.inverterTypeManual,
+    );
+    if (!parsed.inverterTypeManual || !manualInverterMatchesPhase) {
+      merged.inverterTypeManual = "";
     }
     return merged;
   } catch {

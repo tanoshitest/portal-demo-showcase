@@ -13,6 +13,7 @@ type PortalPath =
   | "/portal/san-pham"
   | "/portal/cong-cu"
   | "/portal/cong-cu-du-toan"
+  | "/portal/du-toan-thu-cong"
   | "/portal/quan-ly-bao-gia"
   | "/portal/cong-trinh-ql"
   | "/portal/giai-phap-ql"
@@ -54,7 +55,8 @@ export const portalMenuGroups: MenuGroup[] = [
     label: "Quản lý vận hành",
     items: [
       { id: "docs", label: "Tài liệu hãng", to: "/portal/tai-lieu", matchPrefix: "/portal/hang/" },
-      { id: "estimate-tools", label: "Công cụ dự toán", to: "/portal/cong-cu-du-toan" },
+      { id: "estimate-tools", label: "Dự toán Auto", to: "/portal/cong-cu-du-toan" },
+      { id: "manual-estimate", label: "Dự toán thủ công", to: "/portal/du-toan-thu-cong" },
       { id: "equipment", label: "Danh mục thiết bị", to: "/portal/danh-muc-thiet-bi" },
       { id: "quote-management", label: "Quản lý báo giá", to: "/portal/quan-ly-bao-gia" },
     ],

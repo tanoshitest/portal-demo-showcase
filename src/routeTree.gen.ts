@@ -27,6 +27,7 @@ import { Route as PortalDanhMucVatTuRouteImport } from './routes/portal.danh-muc
 import { Route as PortalDanhMucVatTuNhanCongRouteImport } from './routes/portal.danh-muc-vat-tu-nhan-cong'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalDonHangRouteImport } from './routes/portal.don-hang'
+import { Route as PortalDuToanThuCongRouteImport } from './routes/portal.du-toan-thu-cong'
 import { Route as PortalGiaiPhapQlRouteImport } from './routes/portal.giai-phap-ql'
 import { Route as PortalLienHeQlRouteImport } from './routes/portal.lien-he-ql'
 import { Route as PortalNguoiDungRouteImport } from './routes/portal.nguoi-dung'
@@ -135,6 +136,11 @@ const PortalDonHangRoute = PortalDonHangRouteImport.update({
   path: '/don-hang',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalDuToanThuCongRoute = PortalDuToanThuCongRouteImport.update({
+  id: '/du-toan-thu-cong',
+  path: '/du-toan-thu-cong',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalGiaiPhapQlRoute = PortalGiaiPhapQlRouteImport.update({
   id: '/giai-phap-ql',
   path: '/giai-phap-ql',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/portal/danh-muc-vat-tu-nhan-cong': typeof PortalDanhMucVatTuNhanCongRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/don-hang': typeof PortalDonHangRoute
+  '/portal/du-toan-thu-cong': typeof PortalDuToanThuCongRoute
   '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
   '/portal/lien-he-ql': typeof PortalLienHeQlRoute
   '/portal/nguoi-dung': typeof PortalNguoiDungRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/portal/danh-muc-vat-tu-nhan-cong': typeof PortalDanhMucVatTuNhanCongRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/don-hang': typeof PortalDonHangRoute
+  '/portal/du-toan-thu-cong': typeof PortalDuToanThuCongRoute
   '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
   '/portal/lien-he-ql': typeof PortalLienHeQlRoute
   '/portal/nguoi-dung': typeof PortalNguoiDungRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/portal/danh-muc-vat-tu-nhan-cong': typeof PortalDanhMucVatTuNhanCongRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/portal/don-hang': typeof PortalDonHangRoute
+  '/portal/du-toan-thu-cong': typeof PortalDuToanThuCongRoute
   '/portal/giai-phap-ql': typeof PortalGiaiPhapQlRoute
   '/portal/lien-he-ql': typeof PortalLienHeQlRoute
   '/portal/nguoi-dung': typeof PortalNguoiDungRoute
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/portal/danh-muc-vat-tu-nhan-cong'
     | '/portal/dashboard'
     | '/portal/don-hang'
+    | '/portal/du-toan-thu-cong'
     | '/portal/giai-phap-ql'
     | '/portal/lien-he-ql'
     | '/portal/nguoi-dung'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/portal/danh-muc-vat-tu-nhan-cong'
     | '/portal/dashboard'
     | '/portal/don-hang'
+    | '/portal/du-toan-thu-cong'
     | '/portal/giai-phap-ql'
     | '/portal/lien-he-ql'
     | '/portal/nguoi-dung'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/portal/danh-muc-vat-tu-nhan-cong'
     | '/portal/dashboard'
     | '/portal/don-hang'
+    | '/portal/du-toan-thu-cong'
     | '/portal/giai-phap-ql'
     | '/portal/lien-he-ql'
     | '/portal/nguoi-dung'
@@ -576,6 +588,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalDonHangRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/du-toan-thu-cong': {
+      id: '/portal/du-toan-thu-cong'
+      path: '/du-toan-thu-cong'
+      fullPath: '/portal/du-toan-thu-cong'
+      preLoaderRoute: typeof PortalDuToanThuCongRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/giai-phap-ql': {
       id: '/portal/giai-phap-ql'
       path: '/giai-phap-ql'
@@ -711,6 +730,7 @@ interface PortalRouteChildren {
   PortalDanhMucVatTuNhanCongRoute: typeof PortalDanhMucVatTuNhanCongRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalDonHangRoute: typeof PortalDonHangRoute
+  PortalDuToanThuCongRoute: typeof PortalDuToanThuCongRoute
   PortalGiaiPhapQlRoute: typeof PortalGiaiPhapQlRoute
   PortalLienHeQlRoute: typeof PortalLienHeQlRoute
   PortalNguoiDungRoute: typeof PortalNguoiDungRoute
@@ -736,6 +756,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalDanhMucVatTuNhanCongRoute: PortalDanhMucVatTuNhanCongRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalDonHangRoute: PortalDonHangRoute,
+  PortalDuToanThuCongRoute: PortalDuToanThuCongRoute,
   PortalGiaiPhapQlRoute: PortalGiaiPhapQlRoute,
   PortalLienHeQlRoute: PortalLienHeQlRoute,
   PortalNguoiDungRoute: PortalNguoiDungRoute,

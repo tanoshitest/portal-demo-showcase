@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BarChart3, ChevronDown, ChevronUp, SlidersHorizontal, X, PackageSearch } from "lucide-react";
+import { BarChart3, BatteryCharging, Camera, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Cpu, Ellipsis, Search, ShieldCheck, SlidersHorizontal, SunMedium, Wifi, X, PackageSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProductCard } from "@/components/product-card";
-import { brands, categories, products } from "@/data/mock";
+import { brands, categories, products, images } from "@/data/mock";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -210,8 +210,22 @@ function ProductListing() {
     </div>
   );
 
+  if (!danh_muc && !q && !keyword && selectedBrands.length === 0 && selectedRanges.length === 0) {
+    return <ProductLanding />;
+  }
+
   return (
-    <div className="container-page py-6 lg:py-10">
+    <div className="pb-10">
+      <section className="relative overflow-hidden bg-brand-dark text-white">
+        <img src={images.solution2} alt="Sản phẩm chính hãng Hoàng Vĩnh IOT" className="absolute inset-0 h-full w-full object-cover opacity-35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#05285f] via-[#063b86]/90 to-[#063b86]/30" />
+        <div className="container-page relative py-8 sm:py-12">
+          <p className="text-xs font-bold uppercase tracking-widest text-highlight">Sản phẩm chính hãng</p>
+          <h1 className="mt-2 max-w-xl text-3xl font-black sm:text-4xl">Đầy đủ thiết bị, giá tốt và bảo hành uy tín</h1>
+          <p className="mt-2 max-w-xl text-sm text-white/80">Tư vấn đúng nhu cầu, hỗ trợ kỹ thuật trước và sau bán hàng.</p>
+        </div>
+      </section>
+      <div className="container-page pt-5 lg:pt-8">
       <nav className="text-xs text-muted-foreground">
         <Link to="/" className="hover:text-brand">
           Trang chủ
@@ -226,9 +240,14 @@ function ProductListing() {
         )}
       </nav>
 
-      <h1 className="mt-2 text-2xl font-black sm:text-3xl">
+      <div className="hide-scrollbar mt-4 flex gap-2 overflow-x-auto pb-2">
+        <Link to="/san-pham" search={{ danh_muc: "", q: keyword }} className={`shrink-0 rounded-xl border px-4 py-3 text-xs font-bold ${!danh_muc ? "border-brand bg-brand text-white" : "bg-white"}`}>Tất cả</Link>
+        {categories.map((category) => <Link key={category.slug} to="/san-pham" search={{ danh_muc: category.slug, q: keyword }} className={`shrink-0 rounded-xl border px-4 py-3 text-xs font-bold ${danh_muc === category.slug ? "border-brand bg-brand text-white" : "bg-white"}`}>{category.name}</Link>)}
+      </div>
+
+      <h2 className="mt-4 text-2xl font-black sm:text-3xl">
         {activeCategory ? activeCategory.name : "Tất cả sản phẩm"}
-      </h1>
+      </h2>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         {activeCategory
           ? activeCategory.description
@@ -304,6 +323,7 @@ function ProductListing() {
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {compareProducts.length > 0 && (
@@ -448,6 +468,45 @@ function ProductListing() {
       )}
     </div>
   );
+
+}
+
+const landingIcons = [SunMedium, Camera, BatteryCharging, Wifi, Cpu, Ellipsis];
+const landingCategoryCopy = [
+  ["Điện mặt trời", "Tấm pin, biến tần, phụ kiện", "128 sản phẩm"],
+  ["Camera an ninh", "Camera, đầu ghi, ổ cứng, phụ kiện", "243 sản phẩm"],
+  ["Pin lưu trữ", "Pin lithium, pin lưu trữ năng lượng", "36 sản phẩm"],
+  ["Thiết bị mạng - Wi-Fi", "Router, access point, switch, phủ sóng", "67 sản phẩm"],
+  ["Điện máy - Thiết bị điện", "Điều hòa, quạt, thiết bị điện dân dụng", "95 sản phẩm"],
+  ["Khác", "Dây điện, tủ điện, phụ kiện, vật tư khác", "72 sản phẩm"],
+] as const;
+
+function ProductLanding() {
+  return <div className="bg-white pb-8">
+    <section className="relative isolate overflow-hidden bg-[#063b86] text-white">
+      <img src={images.solution2} alt="Sản phẩm chính hãng" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-65" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#063b86] via-[#0758c9]/90 to-transparent" />
+      <div className="mx-auto max-w-[1180px] px-[18px] py-7 sm:px-6 sm:py-14 lg:px-8">
+        <p className="text-[10px] font-bold uppercase tracking-wide sm:text-sm">Sản phẩm chính hãng</p>
+        <h1 className="mt-2 max-w-[300px] text-[23px] font-black uppercase leading-tight sm:max-w-xl sm:text-5xl">Đầy đủ - Giá tốt - Bảo hành uy tín</h1>
+        <ul className="mt-3 space-y-1 text-[8px] font-semibold sm:text-xs">{["Sản phẩm chính hãng 100%","Bảo hành chính hãng toàn quốc","Hỗ trợ kỹ thuật nhanh chóng"].map(x=><li key={x} className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3" />{x}</li>)}</ul>
+      </div>
+    </section>
+
+    <div className="mx-auto max-w-[1180px] px-[18px] sm:px-6 lg:px-8">
+      <label className="relative -mt-3 flex h-11 items-center gap-3 rounded-[9px] border border-[#e0e6ef] bg-white px-3.5 shadow-card sm:mx-auto sm:-mt-5 sm:max-w-2xl"><span className="text-[10px] text-[#8b98ac]">Bạn cần tìm sản phẩm nào?</span><Search className="ml-auto h-4 w-4 text-[#163a72]" /></label>
+
+      <div className="mt-5 grid grid-cols-6 gap-1.5 sm:gap-3">{categories.map((category,index)=>{const Icon=landingIcons[index] ?? Cpu; return <Link key={category.slug} to="/san-pham" search={{danh_muc:category.slug,q:""}} className="flex min-w-0 flex-col items-center text-center"><span className="grid h-10 w-10 place-items-center rounded-full bg-[#f2f6fb] sm:h-14 sm:w-14"><Icon className={`h-5 w-5 ${index===0?"text-[#ff7a00]":"text-[#0b3b78]"}`} /></span><strong className="mt-1.5 line-clamp-2 text-[7px] leading-tight text-[#102650] sm:text-[10px]">{landingCategoryCopy[index]?.[0] ?? category.name}</strong></Link>})}</div>
+
+      <section className="mt-7"><div className="flex items-center justify-between"><h2 className="text-[13px] font-black uppercase text-[#071c4c]">Danh mục sản phẩm</h2><span className="text-[9px] font-bold text-[#0758c9]">Xem tất cả <ChevronRight className="inline h-3 w-3" /></span></div><div className="mt-3 divide-y divide-[#edf0f4] rounded-xl border border-[#e5e9f0] bg-white px-3 shadow-[0_2px_10px_rgba(16,52,100,.05)]">{categories.map((category,index)=>{const Icon=landingIcons[index]??Cpu; const copy=landingCategoryCopy[index]; return <Link key={category.slug} to="/san-pham" search={{danh_muc:category.slug,q:""}} className="flex items-center gap-3 py-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f2f6fb]"><Icon className="h-5 w-5 text-[#153c77]" /></span><span className="min-w-0 flex-1"><strong className="block text-[10px] text-[#071c4c] sm:text-xs">{copy?.[0] ?? category.name}</strong><span className="mt-0.5 block truncate text-[7px] text-muted-foreground sm:text-[9px]">{copy?.[1] ?? category.description}</span><span className="text-[7px] font-semibold text-[#0758c9]">{copy?.[2] ?? "Sản phẩm"}</span></span><ChevronRight className="h-4 w-4 text-[#526789]" /></Link>})}</div></section>
+
+      <section className="mt-7"><div className="flex items-center justify-between"><h2 className="text-[13px] font-black uppercase text-[#071c4c]">Sản phẩm nổi bật</h2><Link to="/san-pham" search={{danh_muc:categories[0]?.slug??"",q:""}} className="text-[9px] font-bold text-[#0758c9]">Xem tất cả <ChevronRight className="inline h-3 w-3" /></Link></div><div className="hide-scrollbar mt-3 flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-4">{products.slice(0,4).map(product=><div key={product.id} className="w-[135px] shrink-0 sm:w-auto"><ProductCard product={product} /></div>)}</div></section>
+
+      <section className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">{[[ShieldCheck,"Sản phẩm chính hãng"],[SunMedium,"Giá tốt nhất"],[BatteryCharging,"Bảo hành uy tín"],[Wifi,"Giao hàng toàn quốc"]].map(([I,text])=>{const Icon=I as typeof ShieldCheck;return <div key={text as string} className="flex items-center gap-2 rounded-lg bg-[#f5f8fe] p-3"><Icon className="h-5 w-5 text-[#0758c9]"/><span className="text-[8px] font-bold text-[#102650] sm:text-[10px]">{text as string}</span></div>})}</section>
+
+      <section className="mt-5 flex items-center justify-between rounded-xl bg-gradient-to-r from-[#063b86] to-[#0758c9] p-4 text-white"><div><h2 className="text-[12px] font-black uppercase">Cần tư vấn chọn sản phẩm phù hợp?</h2><p className="mt-1 text-[8px] text-white/75">Đội ngũ Hoàng Vĩnh IOT luôn sẵn sàng hỗ trợ!</p></div><div className="flex gap-1"><a href="tel:19006868" className="rounded bg-[#ff7a00] px-2 py-1.5 text-[7px] font-bold">Gọi ngay</a><a href="https://zalo.me" className="rounded bg-[#0879e8] px-2 py-1.5 text-[7px] font-bold">Chat Zalo</a></div></section>
+    </div>
+  </div>;
 }
 
 function CompareRow({ label, values }: { label: string; values: string[] }) {

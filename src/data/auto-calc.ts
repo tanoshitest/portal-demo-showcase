@@ -207,17 +207,29 @@ export function computeAutoCalc(input: AutoCalcInputs) {
   const summerBatt = round2(summerNight / eff);
   const winterBatt = round2(winterNight / eff);
   const neededBatt = Math.max(summerBatt, winterBatt);
-  const combo = buildBatteryCombo(neededBatt, catalogBatteries.length ? catalogBatteries : BATTERY_TYPES.map((battery) => ({
+  const availableBatteries = catalogBatteries.length ? catalogBatteries : BATTERY_TYPES.map((battery) => ({
     id: battery.id,
     name: battery.name,
     kwh: battery.kwh,
     price: battery.price,
     stock: 99,
     group: "",
-  })));
+  }));
+  const selectedBattery = availableBatteries.find((item) => item.name === input.batteryName) ??
+    (input.batteryQty > 0 ? batteryByName(input.batteryName) : undefined);
+  const manualBatteryQty = Math.max(0, Math.round(input.batteryQty));
+  const combo = manualBatteryQty > 0 && selectedBattery
+    ? {
+        totalKwh: round2(selectedBattery.kwh * manualBatteryQty),
+        totalPrice: selectedBattery.price * manualBatteryQty,
+        items: [{ ...selectedBattery, qty: manualBatteryQty }],
+        label: `${selectedBattery.name} x ${manualBatteryQty}`,
+        primary: selectedBattery,
+      }
+    : buildBatteryCombo(neededBatt, availableBatteries);
   const battery = combo.primary ?? batteryByName(input.batteryName);
   const suggestedQty = combo.items.reduce((sum, item) => sum + item.qty, 0) || Math.max(1, Math.ceil(neededBatt / battery.kwh - 1e-9));
-  const batteryQty = suggestedQty;
+  const batteryQty = manualBatteryQty > 0 ? manualBatteryQty : suggestedQty;
   const totalBatt = combo.totalKwh || round2(battery.kwh * batteryQty);
   const lineTotal = combo.totalPrice || battery.price * batteryQty;
 

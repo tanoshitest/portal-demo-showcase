@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CheckSquare2, Square } from "lucide-react";
+import { CheckSquare2, Square, ShoppingCart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { brands, type Product } from "@/data/mock";
@@ -24,7 +24,7 @@ export function ProductCard({
     : 0;
 
   return (
-    <article className="card-hover group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card">
+    <article className="card-hover group flex min-w-0 flex-col overflow-hidden rounded-xl border border-brand/10 bg-card shadow-card">
       <Link
         to="/san-pham/$slug"
         params={{ slug: product.slug }}
@@ -36,7 +36,7 @@ export function ProductCard({
           loading="lazy"
           width={900}
           height={900}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {discount > 0 && (
           <span className="absolute left-2 top-2 rounded-md bg-highlight px-2 py-1 text-xs font-bold text-highlight-foreground">
@@ -68,7 +68,7 @@ export function ProductCard({
           </button>
         )}
       </Link>
-      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
+      <div className="flex flex-1 flex-col gap-1.5 p-3 sm:p-4">
         <span className="text-xs font-semibold uppercase tracking-wide text-brand">
           {brand?.name}
         </span>
@@ -79,7 +79,8 @@ export function ProductCard({
         >
           {product.name}
         </Link>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-highlight-foreground"><Star className="h-3 w-3 fill-highlight text-highlight" />{product.rating}</span>
           <Badge variant="outline" className={stockBadgeClass(product.stock)}>
             {formatStock(product.stock)}
           </Badge>
@@ -95,7 +96,8 @@ export function ProductCard({
           </div>
           <Button
             size="sm"
-            className="mt-3 w-full"
+            aria-label={`Thêm ${product.name} vào giỏ`}
+            className="mt-3 w-full gap-1.5 sm:w-auto"
             onClick={() => {
               addToCart({
                 productSlug: product.slug,
@@ -107,7 +109,7 @@ export function ProductCard({
               toast.success("Đã thêm vào giỏ hàng", { description: product.name });
             }}
           >
-            Thêm vào giỏ
+            <ShoppingCart className="h-4 w-4" /> Thêm vào giỏ
           </Button>
         </div>
       </div>
