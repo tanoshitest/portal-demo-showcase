@@ -24,11 +24,11 @@ export function ProductCard({
     : 0;
 
   return (
-    <article className="card-hover group flex min-w-0 flex-col overflow-hidden rounded-[10px] border border-brand/10 bg-card shadow-card">
+    <article className="card-hover group flex h-full min-w-0 flex-col overflow-hidden rounded-[10px] border border-brand/10 bg-card shadow-card">
       <Link
         to="/san-pham/$slug"
         params={{ slug: product.slug }}
-        className="relative block aspect-[1.08] overflow-hidden bg-white sm:aspect-square sm:bg-secondary"
+        className="relative block h-[126px] shrink-0 overflow-hidden bg-white sm:h-auto sm:aspect-square sm:bg-secondary"
       >
         <img
           src={product.image}
@@ -92,15 +92,13 @@ export function ProductCard({
           </Badge>
         </div>
         <div className="mt-auto">
-          <div className="flex flex-wrap items-baseline gap-2">
+          <div className="flex min-h-[38px] flex-col justify-end gap-0.5 sm:min-h-0 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-2">
             <span className="text-[12px] font-black text-[#e60012] sm:text-lg">
               {formatVnd(price)}
             </span>
-            {product.salePrice && (
-              <span className="text-xs text-muted-foreground line-through">
-                {formatVnd(product.price)}
-              </span>
-            )}
+            <span className={`text-[9px] text-muted-foreground line-through sm:text-xs ${product.salePrice ? "visible" : "invisible"}`}>
+              {formatVnd(product.price)}
+            </span>
           </div>
           <Button
             size="sm"
