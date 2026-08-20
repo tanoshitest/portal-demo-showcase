@@ -527,9 +527,13 @@ export function AutoCalcGrid({
                   <Calc>{r.neededBatt}</Calc>
                 </td>
               </tr>
+              <tr className="border-t border-border bg-secondary/20 text-[11px] sm:text-xs">
+                <td colSpan={3} className="px-2 py-1.5 font-semibold sm:px-2.5">
+                  Hãng pin đã chọn
+                </td>
+              </tr>
               <tr className="border-t border-border text-[11px] sm:text-xs">
-                <td className="px-1.5 py-1 sm:px-2.5">Hãng pin đã chọn</td>
-                <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                <td colSpan={3} className="px-2 py-1.5 sm:px-2.5">
                   {manual ? (
                     <Select value={batteryName} onValueChange={onBatteryChange}>
                       <SelectTrigger className="h-7 border-emerald-200 bg-emerald-50 text-xs text-destructive shadow-none">
@@ -647,12 +651,9 @@ function EvnTable({
       <p className="px-2 pb-1.5 text-[10px] text-muted-foreground sm:px-3 sm:pb-2 sm:text-[11px]">
         Đang lấy dữ liệu từ: Số tiền điện
       </p>
-      <p className="border-t border-border px-2 py-1 text-right text-[10px] text-muted-foreground sm:hidden">
-        Vuốt ngang để xem đủ cột
-      </p>
-      <div className="touch-pan-x overflow-x-auto overscroll-x-contain">
+      <div className="overflow-x-hidden border-t border-border">
         <table
-          className={`w-full min-w-[520px] table-fixed border-collapse text-[11px] sm:min-w-0 sm:text-xs ${colLine}`}
+          className={`w-full table-fixed border-collapse text-[8px] sm:text-xs ${colLine}`}
         >
           <thead>
             <YellowHead cols={["Bậc", "Điện tiêu thụ", "Giá chưa VAT", "Số kWh", "Tiền (đ)"]} />
@@ -660,17 +661,17 @@ function EvnTable({
           <tbody>
             {result.rows.map((row) => (
               <tr key={row.bac} className="border-t border-border">
-                <td className="px-1.5 py-1.5 sm:px-3">Bậc {row.bac}</td>
-                <td className="whitespace-nowrap px-1.5 py-1.5 text-center sm:px-3">
+                <td className="px-1 py-1.5 sm:px-3">Bậc {row.bac}</td>
+                <td className="px-1 py-1.5 text-center sm:px-3">
                   {row.consumption}
                 </td>
-                <td className="whitespace-nowrap px-1.5 py-1.5 text-right tabular-nums sm:px-3">
+                <td className="px-1 py-1.5 text-right tabular-nums sm:px-3">
                   {money(row.price)} đ/kWh
                 </td>
-                <td className="px-1.5 py-1.5 text-right sm:px-3">
+                <td className="px-1 py-1.5 text-right sm:px-3">
                   <Calc>{row.kwh}</Calc>
                 </td>
-                <td className="px-1.5 py-1.5 text-right sm:px-3">
+                <td className="px-1 py-1.5 text-right sm:px-3">
                   <Calc>{money(row.cost)}</Calc>
                 </td>
               </tr>

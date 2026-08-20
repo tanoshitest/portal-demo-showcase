@@ -208,15 +208,12 @@ function QuoteEstimatePanel({
           </Field>
         </section>
 
-        <p className="text-right text-[10px] text-muted-foreground sm:hidden">
-          Vuốt ngang để xem đủ cột
-        </p>
-        <div className="touch-pan-x overflow-x-auto overscroll-x-contain rounded-none border-2 border-brand-dark">
-          <table className="w-full min-w-[620px] table-fixed border-collapse text-[10px] [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 md:min-w-0 sm:text-[11px]">
+        <div className="overflow-x-hidden rounded-none border-2 border-brand-dark">
+          <table className="w-full table-fixed border-collapse text-[7px] [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 sm:text-[11px]">
             <colgroup>
               <col className="w-[6%]" />
               <col className="w-[24%]" />
-              <col className="w-[16%]" />
+              <col className="hidden w-[16%] sm:table-column" />
               <col className="w-[14%]" />
               <col className="w-[10%]" />
               <col className="w-[15%]" />
@@ -226,7 +223,7 @@ function QuoteEstimatePanel({
               <tr className="bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
                 <th className="border border-border px-1 py-1 text-center">STT</th>
                 <th className="border border-border px-1 py-1 text-left">Sản phẩm</th>
-                <th className="border border-border px-1 py-1 text-center">Ảnh</th>
+                <th className="hidden border border-border px-1 py-1 text-center sm:table-cell">Ảnh</th>
                 <th className="border border-border px-1 py-1 text-center">ĐVT</th>
                 <th className="border border-border px-1 py-1 text-center">Số lượng</th>
                 <th className="border border-border px-1 py-1 text-right">Đơn giá</th>
@@ -238,7 +235,7 @@ function QuoteEstimatePanel({
                 <tr key={row.no} className="border-t border-border align-top">
                   <td className="px-1 py-1.5 text-center tabular-nums font-semibold">{row.no}</td>
                   <td className="px-1 py-1.5 font-medium leading-tight">{row.name}</td>
-                  <td className="px-1 py-1.5">
+                  <td className="hidden px-1 py-1.5 sm:table-cell">
                     <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-none border border-dashed border-border bg-secondary/30 text-[10px] text-muted-foreground">
                       <ImageOff className="h-3.5 w-3.5" />
                     </div>
