@@ -209,35 +209,35 @@ function QuoteEstimatePanel({
         </section>
 
         <div className="overflow-x-hidden rounded-none border-2 border-brand-dark">
-          <table className="w-full table-fixed border-collapse text-[7px] [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 sm:text-[11px]">
+          <table className="w-full table-fixed border-collapse text-[6.5px] leading-tight [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 sm:text-[11px] sm:leading-normal">
             <colgroup>
               <col className="w-[6%]" />
-              <col className="w-[24%]" />
-              <col className="hidden w-[16%] sm:table-column" />
-              <col className="w-[14%]" />
-              <col className="w-[10%]" />
-              <col className="w-[15%]" />
-              <col className="w-[15%]" />
+              <col className="w-[27%]" />
+              <col className="w-[12%]" />
+              <col className="w-[8%]" />
+              <col className="w-[9%]" />
+              <col className="w-[18%]" />
+              <col className="w-[20%]" />
             </colgroup>
             <thead>
-              <tr className="bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
-                <th className="border border-border px-1 py-1 text-center">STT</th>
-                <th className="border border-border px-1 py-1 text-left">Sản phẩm</th>
-                <th className="hidden border border-border px-1 py-1 text-center sm:table-cell">Ảnh</th>
-                <th className="border border-border px-1 py-1 text-center">ĐVT</th>
-                <th className="border border-border px-1 py-1 text-center">Số lượng</th>
-                <th className="border border-border px-1 py-1 text-right">Đơn giá</th>
-                <th className="border border-border px-1 py-1 text-right">Thành tiền</th>
+              <tr className="bg-amber-100 text-[6.5px] font-bold uppercase leading-tight text-amber-950 sm:text-[10px]">
+                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">STT</th>
+                <th className="border border-border px-0.5 py-1.5 text-left sm:px-1 sm:py-1">Sản phẩm</th>
+                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">Ảnh</th>
+                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">ĐVT</th>
+                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">SL</th>
+                <th className="border border-border px-0.5 py-1.5 text-right sm:px-1 sm:py-1">Đơn giá</th>
+                <th className="border border-border px-0.5 py-1.5 text-right sm:px-1 sm:py-1">Thành tiền</th>
               </tr>
             </thead>
             <tbody>
               {quoteRows.map((row) => (
                 <tr key={row.no} className="border-t border-border align-top">
-                  <td className="px-1 py-1.5 text-center tabular-nums font-semibold">{row.no}</td>
-                  <td className="px-1 py-1.5 font-medium leading-tight">{row.name}</td>
-                  <td className="hidden px-1 py-1.5 sm:table-cell">
-                    <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-none border border-dashed border-border bg-secondary/30 text-[10px] text-muted-foreground">
-                      <ImageOff className="h-3.5 w-3.5" />
+                  <td className="px-0.5 py-1.5 text-center tabular-nums font-semibold sm:px-1">{row.no}</td>
+                  <td className="break-words px-0.5 py-1.5 font-medium leading-tight sm:px-1">{row.name}</td>
+                  <td className="px-0.5 py-1.5 sm:px-1">
+                    <div className="mx-auto flex h-7 w-7 items-center justify-center border border-dashed border-border bg-secondary/30 text-muted-foreground sm:h-9 sm:w-9">
+                      <ImageOff className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </div>
                   </td>
                   <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>
