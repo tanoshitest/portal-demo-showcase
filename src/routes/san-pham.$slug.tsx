@@ -259,7 +259,7 @@ function MobileProductDetail({ product, variant, setVariant, qty, setQty }: {
 }) {
   const brand = brands.find((item) => item.slug === product.brandSlug);
   return (
-    <div className="-mx-[18px] -mt-4 min-w-0 overflow-x-hidden bg-white pb-20 md:hidden">
+    <div className="mobile-product-detail -mx-[18px] -mt-4 min-w-0 overflow-x-hidden bg-white pb-20 md:hidden">
       <header className="flex h-12 items-center justify-between border-b px-4 text-[#071c4c]">
         <Link to="/san-pham" search={{ danh_muc: product.categorySlug, q: "" }} aria-label="Quay lại"><ArrowLeft className="h-5 w-5" /></Link>
         <strong className="text-sm">Chi tiết sản phẩm</strong>

@@ -121,7 +121,7 @@ function MobileProjects({ type, setType, types, list }: {
   list: typeof projects;
 }) {
   return (
-    <div className="min-w-0 overflow-x-hidden bg-[#f8fafc] pb-5 md:hidden">
+    <div className="mobile-project-list min-w-0 overflow-x-hidden bg-[#f8fafc] pb-5 md:hidden">
       <section className="relative overflow-hidden bg-[#063b86] px-4 py-5 text-white">
         <img src={images.project1} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#063b86] via-[#0758c9]/90 to-transparent" />

@@ -211,6 +211,31 @@
   }
 }
 
+@media (max-width: 767px) {
+  .mobile-product-detail > section:first-of-type {
+    grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+  }
+
+  .mobile-product-detail h1,
+  .mobile-project-list h2 {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .mobile-project-list a[href*="/cong-trinh/"] {
+    min-width: 0;
+  }
+
+  .mobile-project-list a[href*="/cong-trinh/"] > div:first-child {
+    width: 132px !important;
+  }
+
+  .mobile-project-list a[href*="/cong-trinh/"] > div:last-child {
+    min-width: 0;
+    overflow: hidden;
+  }
+}
+
 @utility section-space {
   padding-block: 2rem;
   @media (min-width: 768px) {
