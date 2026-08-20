@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { CheckCircle2, Users, Layers } from "lucide-react";
+import { ArrowRight, CheckCircle2, Users, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -156,13 +156,21 @@ function SolutionDetail() {
 
       <section className="container-page pb-12">
         <h2 className="text-[13px] font-black text-[#071c4c] sm:text-2xl">Quy trình triển khai</h2>
-        <ol className="mt-4 grid grid-cols-5 gap-1 sm:mt-5 sm:gap-4">
+        <ol className="mt-4 flex items-start sm:mt-5 sm:grid sm:grid-cols-5 sm:gap-4">
           {solution.process.map((p, i) => (
-            <li key={p.step} className="text-center sm:rounded-xl sm:border sm:border-border sm:bg-card sm:p-4">
-              <span className="mx-auto grid h-8 w-8 place-items-center rounded-full border border-[#cbd8eb] bg-white text-[10px] font-bold text-[#0758c9] sm:bg-gradient-brand sm:text-sm sm:text-brand-foreground">
-                {i + 1}
-              </span>
-              <h3 className="mt-2 text-[7px] font-bold leading-tight sm:mt-3 sm:text-sm">{p.step}</h3>
+            <li key={p.step} className="relative min-w-0 flex-1 px-0.5 text-center sm:rounded-xl sm:border sm:border-border sm:bg-card sm:p-4">
+              <div className="flex items-center">
+                <span className="h-px flex-1 bg-transparent" />
+                <span className="relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#b8cce8] bg-white text-[10px] font-black text-[#0758c9] shadow-[0_2px_8px_rgba(7,88,201,.12)] sm:bg-gradient-brand sm:text-sm sm:text-brand-foreground">
+                  {i + 1}
+                </span>
+                <span className={`relative h-px flex-1 sm:hidden ${i < solution.process.length - 1 ? "bg-[#b8cce8]" : "bg-transparent"}`}>
+                  {i < solution.process.length - 1 && (
+                    <ArrowRight className="absolute right-[-4px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-[#0758c9]" />
+                  )}
+                </span>
+              </div>
+              <h3 className="mx-auto mt-2 min-h-[30px] max-w-[72px] text-[7px] font-bold leading-[1.35] text-[#172d52] sm:mt-3 sm:max-w-none sm:text-sm">{p.step}</h3>
               <p className="mt-1 hidden text-xs text-muted-foreground sm:block">{p.desc}</p>
             </li>
           ))}
