@@ -582,7 +582,30 @@ function ProductLanding() {
 
       <section className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">{[[ShieldCheck,"Sản phẩm chính hãng"],[SunMedium,"Giá tốt nhất"],[BatteryCharging,"Bảo hành uy tín"],[Wifi,"Giao hàng toàn quốc"]].map(([I,text])=>{const Icon=I as typeof ShieldCheck;return <div key={text as string} className="flex items-center gap-2 rounded-lg bg-[#f5f8fe] p-3"><Icon className="h-5 w-5 text-[#0758c9]"/><span className="text-[8px] font-bold text-[#102650] sm:text-[10px]">{text as string}</span></div>})}</section>
 
-      <section className="mt-5 flex items-center justify-between rounded-xl bg-gradient-to-r from-[#063b86] to-[#0758c9] p-4 text-white"><div><h2 className="text-[12px] font-black uppercase">Cần tư vấn chọn sản phẩm phù hợp?</h2><p className="mt-1 text-[8px] text-white/75">Đội ngũ Hoàng Vĩnh IOT luôn sẵn sàng hỗ trợ!</p></div><div className="flex gap-1"><a href="tel:19006868" className="rounded bg-[#ff7a00] px-2 py-1.5 text-[7px] font-bold">Gọi ngay</a><a href="https://zalo.me" className="rounded bg-[#0879e8] px-2 py-1.5 text-[7px] font-bold">Chat Zalo</a></div></section>
+      <section className="mt-5 overflow-hidden rounded-[14px] bg-gradient-to-br from-[#063b86] via-[#0758c9] to-[#0875df] p-4 text-white shadow-[0_8px_22px_rgba(6,59,134,.2)]">
+        <div>
+          <h2 className="max-w-[290px] text-[14px] font-black uppercase leading-[1.25] tracking-[-0.01em]">
+            Cần tư vấn chọn sản phẩm phù hợp?
+          </h2>
+          <p className="mt-1.5 text-[9px] leading-relaxed text-white/80">
+            Đội ngũ Hoàng Vĩnh IOT luôn sẵn sàng hỗ trợ anh lựa chọn đúng sản phẩm.
+          </p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <a
+            href="tel:19006868"
+            className="flex h-10 items-center justify-center rounded-lg bg-[#ff7800] px-3 text-[11px] font-bold shadow-sm transition-colors active:bg-[#e96e00]"
+          >
+            Gọi ngay
+          </a>
+          <a
+            href="https://zalo.me"
+            className="flex h-10 items-center justify-center rounded-lg border border-white/25 bg-[#0786ed] px-3 text-[11px] font-bold shadow-sm transition-colors active:bg-[#0675d1]"
+          >
+            Chat Zalo
+          </a>
+        </div>
+      </section>
     </div>
   </div>;
 }
