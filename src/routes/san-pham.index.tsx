@@ -215,7 +215,7 @@ function ProductListing() {
   }
 
   return (
-    <div className="pb-10">
+    <div className="min-w-0 overflow-x-hidden pb-10">
       <MobileProductCatalog
         activeCategory={activeCategory}
         danhMuc={danh_muc}
@@ -510,7 +510,7 @@ function MobileProductCatalog({
   filters: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#f8fafc] pb-5 md:hidden">
+    <div className="min-w-0 overflow-x-hidden bg-[#f8fafc] pb-5 md:hidden">
       <div className="border-b bg-white px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/san-pham" search={{ danh_muc: "", q: "" }} className="text-lg font-bold text-[#071c4c]">

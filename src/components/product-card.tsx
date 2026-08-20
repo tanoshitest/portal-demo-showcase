@@ -80,14 +80,22 @@ export function ProductCard({
           {product.name}
         </Link>
         <div className="flex items-center gap-1.5">
-          <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-highlight-foreground sm:text-[11px]"><Star className="h-2.5 w-2.5 fill-highlight text-highlight sm:h-3 sm:w-3" />{product.rating}</span>
-          <Badge variant="outline" className={`${stockBadgeClass(product.stock)} h-4 px-1 text-[7px] sm:h-auto sm:text-xs`}>
+          <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-highlight-foreground sm:text-[11px]">
+            <Star className="h-2.5 w-2.5 fill-highlight text-highlight sm:h-3 sm:w-3" />
+            {product.rating}
+          </span>
+          <Badge
+            variant="outline"
+            className={`${stockBadgeClass(product.stock)} h-4 px-1 text-[7px] sm:h-auto sm:text-xs`}
+          >
             {formatStock(product.stock)}
           </Badge>
         </div>
         <div className="mt-auto">
           <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-[12px] font-black text-[#e60012] sm:text-lg">{formatVnd(price)}</span>
+            <span className="text-[12px] font-black text-[#e60012] sm:text-lg">
+              {formatVnd(price)}
+            </span>
             {product.salePrice && (
               <span className="text-xs text-muted-foreground line-through">
                 {formatVnd(product.price)}
@@ -97,7 +105,7 @@ export function ProductCard({
           <Button
             size="sm"
             aria-label={`Thêm ${product.name} vào giỏ`}
-            className="mt-1.5 h-7 w-full gap-1 text-[8px] sm:mt-3 sm:h-9 sm:w-auto sm:text-sm"
+            className="ml-auto mt-1.5 h-7 w-7 rounded-full p-0 text-[8px] sm:ml-0 sm:mt-3 sm:h-9 sm:w-auto sm:rounded-md sm:px-3 sm:text-sm"
             onClick={() => {
               addToCart({
                 productSlug: product.slug,
@@ -109,7 +117,8 @@ export function ProductCard({
               toast.success("Đã thêm vào giỏ hàng", { description: product.name });
             }}
           >
-            <ShoppingCart className="h-4 w-4" /> Thêm vào giỏ
+            <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />{" "}
+            <span className="hidden sm:inline">Thêm vào giỏ</span>
           </Button>
         </div>
       </div>

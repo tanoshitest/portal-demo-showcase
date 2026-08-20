@@ -58,7 +58,7 @@ function ProductDetail() {
   };
 
   return (
-    <div className="container-page py-4 lg:py-10">
+    <div className="container-page min-w-0 overflow-x-hidden py-4 lg:py-10">
       <MobileProductDetail product={product} variant={variant} setVariant={setVariant} qty={qty} setQty={setQty} />
       <div className="hidden md:block">
       <nav className="hidden text-xs text-muted-foreground sm:block">
@@ -237,12 +237,12 @@ function ProductDetail() {
       </div>
 
       {/* Sticky CTA mobile */}
-      <div className="fixed bottom-14 left-0 right-0 z-40 flex items-center gap-2 border-t border-brand/10 bg-background/95 p-2.5 backdrop-blur-xl lg:hidden">
-        <Button variant="ghost" size="icon" asChild className="shrink-0 text-brand"><Link to="/lien-he" aria-label="Chat tư vấn"><MessageCircle className="h-5 w-5" /></Link></Button>
-        <Button variant="outline" className="flex-1" onClick={() => add()}>
+      <div className="fixed bottom-14 left-0 right-0 z-40 grid grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 overflow-hidden border-t border-brand/10 bg-background/95 p-2 backdrop-blur-xl lg:hidden">
+        <Button variant="ghost" size="icon" asChild className="h-9 w-9 shrink-0 text-brand"><Link to="/lien-he" aria-label="Chat tư vấn"><MessageCircle className="h-4 w-4" /></Link></Button>
+        <Button variant="outline" className="h-9 min-w-0 px-1 text-[11px]" onClick={() => add()}>
           <ShoppingCart className="h-4 w-4" /> Thêm vào giỏ
         </Button>
-        <Button asChild className="flex-1" onClick={() => add(true)}>
+        <Button asChild className="h-9 min-w-0 px-2 text-[11px]" onClick={() => add(true)}>
           <Link to="/gio-hang">Mua ngay</Link>
         </Button>
       </div>
@@ -259,7 +259,7 @@ function MobileProductDetail({ product, variant, setVariant, qty, setQty }: {
 }) {
   const brand = brands.find((item) => item.slug === product.brandSlug);
   return (
-    <div className="-mx-[18px] -mt-4 bg-white pb-20 md:hidden">
+    <div className="-mx-[18px] -mt-4 min-w-0 overflow-x-hidden bg-white pb-20 md:hidden">
       <header className="flex h-12 items-center justify-between border-b px-4 text-[#071c4c]">
         <Link to="/san-pham" search={{ danh_muc: product.categorySlug, q: "" }} aria-label="Quay lại"><ArrowLeft className="h-5 w-5" /></Link>
         <strong className="text-sm">Chi tiết sản phẩm</strong>
