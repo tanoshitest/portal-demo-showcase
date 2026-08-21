@@ -1,27 +1,24 @@
-import { useState } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Heart, Minus, Plus, ShieldCheck, Share2, Truck, Phone, Star, ShoppingCart, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product-card";
-import { brands, getProduct, products, type Product } from "@/data/mock";
+import { brands, type Product } from "@/data/mock";
+import { getAdminProduct, loadAdminProducts } from "@/data/products-store";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 
 export const Route = createFileRoute("/san-pham/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData)
+  head: ({ params }) => {
+    const p = typeof window === "undefined" ? undefined : getAdminProduct(params.slug);
+    if (!p) {
       return {
-        meta: [{ title: "Không tìm thấy sản phẩm | Hoàng Vĩnh VKT" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Sản phẩm | Hoàng Vĩnh VKT" }, { name: "robots", content: "noindex" }],
       };
-    const p = loaderData.product;
+    }
     return {
       meta: [
         { title: `${p.name} | Hoàng Vĩnh VKT` },
@@ -31,18 +28,58 @@ export const Route = createFileRoute("/san-pham/$slug")({
       ],
     };
   },
-  component: ProductDetail,
+  component: ProductDetailPage,
 });
 
-function ProductDetail() {
-  const { product } = Route.useLoaderData() as { product: Product };
+function fallbackVariant(product: Product): Product["variants"][number] {
+  return (
+    product.variants[0] ?? {
+      id: `${product.id}-default`,
+      name: "Mặc định",
+      sku: product.sku,
+      price: product.salePrice ?? product.price,
+    }
+  );
+}
+
+function ProductDetailPage() {
+  const { slug } = useParams({ from: "/san-pham/$slug" });
+  const [product, setProduct] = useState<Product | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setProduct(getAdminProduct(slug) ?? null);
+    setReady(true);
+  }, [slug]);
+
+  if (!ready) return <div className="container-page min-h-[40vh] py-10" />;
+
+  if (!product) {
+    return (
+      <div className="container-page py-16 text-center">
+        <h1 className="text-xl font-black">Không tìm thấy sản phẩm</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Sản phẩm có thể đã bị xóa hoặc chưa được lưu.</p>
+        <Button asChild className="mt-6">
+          <Link to="/san-pham" search={{ danh_muc: "", q: "" }}>
+            Về danh sách sản phẩm
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return <ProductDetail product={product} />;
+}
+
+function ProductDetail({ product }: { product: Product }) {
   const { addToCart } = useStore();
   const brand = brands.find((b) => b.slug === product.brandSlug);
-  const [variant, setVariant] = useState(product.variants[0]!);
+  const [variant, setVariant] = useState(() => fallbackVariant(product));
   const [qty, setQty] = useState(1);
-  const related = products.filter(
+  const related = loadAdminProducts().filter(
     (p) => p.categorySlug === product.categorySlug && p.slug !== product.slug,
   );
+  const variants = product.variants.length > 0 ? product.variants : [variant];
 
   const add = (buyNow = false) => {
     addToCart({
@@ -131,7 +168,7 @@ function ProductDetail() {
           <div className="mt-3 sm:mt-5">
             <p className="text-sm font-semibold">Chọn phiên bản</p>
             <div className="mt-2 grid gap-1 sm:flex sm:flex-wrap sm:gap-2">
-              {product.variants.map((v) => (
+              {variants.map((v) => (
                 <button
                   key={v.id}
                   onClick={() => setVariant(v)}
@@ -273,7 +310,7 @@ function MobileProductDetail({ product, variant, setVariant, qty, setQty }: {
 
       <section className="mt-3 border-t px-4 pt-3"><div className="flex items-end justify-between"><div><strong className="text-xl font-black text-[#e60012]">{formatVnd(variant.price)}</strong>{product.salePrice&&<p className="text-[8px] text-muted-foreground line-through">{formatVnd(product.price)}</p>}</div><div className="flex items-center rounded border"><button className="h-7 w-7" onClick={()=>setQty(value=>Math.max(1,value-1))}>-</button><span className="w-7 text-center text-xs">{qty}</span><button className="h-7 w-7" onClick={()=>setQty(value=>value+1)}>+</button></div></div></section>
 
-      <section className="mt-3 border-t px-4 pt-3"><h2 className="text-[11px] font-bold text-[#071c4c]">Chọn phiên bản</h2><div className="mt-2 grid grid-cols-3 gap-2">{product.variants.map(item=><button key={item.id} onClick={()=>setVariant(item)} className={`min-h-12 rounded-lg border px-1 py-2 text-[8px] font-semibold ${variant.id===item.id?"border-[#0758c9] bg-[#f2f7ff] text-[#0758c9]":"border-[#e2e7ee]"}`}><span className="block line-clamp-1">{item.name}</span><span className="mt-1 block">{formatVnd(item.price)}</span></button>)}</div></section>
+      <section className="mt-3 border-t px-4 pt-3"><h2 className="text-[11px] font-bold text-[#071c4c]">Chọn phiên bản</h2><div className="mt-2 grid grid-cols-3 gap-2">{(product.variants.length ? product.variants : [variant]).map(item=><button key={item.id} onClick={()=>setVariant(item)} className={`min-h-12 rounded-lg border px-1 py-2 text-[8px] font-semibold ${variant.id===item.id?"border-[#0758c9] bg-[#f2f7ff] text-[#0758c9]":"border-[#e2e7ee]"}`}><span className="block line-clamp-1">{item.name}</span><span className="mt-1 block">{formatVnd(item.price)}</span></button>)}</div></section>
 
       <section className="mt-4 border-t px-4 pt-3"><h2 className="text-[11px] font-bold text-[#071c4c]">Mô tả sản phẩm</h2><p className="mt-2 text-[9px] leading-relaxed text-[#40516c]">{product.description}</p><button className="mt-1 text-[8px] font-bold text-[#0758c9]">Xem thêm</button></section>
       <section className="mt-4 border-t px-4 pt-3"><div className="flex justify-between"><h2 className="text-[11px] font-bold text-[#071c4c]">Thông số kỹ thuật</h2><span className="text-[8px] font-bold text-[#0758c9]">Xem tất cả ›</span></div><div className="mt-2 grid grid-cols-3 overflow-hidden rounded-lg border">{product.specs.map(spec=><div key={spec.label} className="min-h-14 border-b border-r p-2"><span className="block text-[7px] text-[#66758c]">{spec.label}</span><strong className="mt-1 block text-[8px] leading-tight text-[#172d52]">{spec.value}</strong></div>)}</div></section>

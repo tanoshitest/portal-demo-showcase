@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Camera, CheckCircle2, Gift, Headphones, Phone, Search, ShieldCheck, ShoppingCart, Star, SunMedium, Truck, Wifi, Wrench, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConsultForm } from "@/components/consult-form";
 import { ProductCard } from "@/components/product-card";
-import { brands, images, products, projects } from "@/data/mock";
+import { brands, images, products as seedProducts, projects, type Product } from "@/data/mock";
+import { loadAdminProducts } from "@/data/products-store";
 import cameraSolution from "@/assets/solution-camera-v2.webp";
 import wifiSolution from "@/assets/solution-wifi-v2.webp";
 
@@ -29,6 +31,8 @@ function SectionTitle({ children, to }: { children: string; to?: "/san-pham" | "
 }
 
 function Home() {
+  const [products, setProducts] = useState<Product[]>(seedProducts.slice(0, 4));
+  useEffect(() => setProducts(loadAdminProducts().slice(0, 4)), []);
   const featuredSolutions = [
     { label: "Điện mặt trời", desc: "Giảm hóa đơn điện, tiết kiệm mỗi tháng", image: images.solution2, to: "/giai-phap/dien-mat-troi-ap-mai" as const },
     { label: "Camera an ninh", desc: "Quan sát mọi lúc, bảo vệ toàn diện", image: cameraSolution, to: "/san-pham" as const },

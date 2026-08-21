@@ -111,6 +111,10 @@ export function loadAdminProducts(): Product[] {
   return [...merged, ...extras];
 }
 
+export function getAdminProduct(slug: string): Product | undefined {
+  return loadAdminProducts().find((p) => p.slug === slug);
+}
+
 export function saveAdminProducts(list: Product[]): void {
   if (typeof window === "undefined") return;
   persistLocalAndCloud(PRODUCTS_STORAGE_KEY, list);
