@@ -12,6 +12,7 @@ export type EstimateQuoteRow = {
   priceRowSpan?: number;
   hidePrices?: boolean;
   unitPriceLines?: string[];
+  image?: string;
 };
 
 const PANEL_PRICES: Record<string, number> = {
@@ -102,6 +103,7 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
       qty: calc.panelCount,
       unitPrice: panelUnitPrice,
       total: panelUnitPrice * calc.panelCount,
+      image: calc.panel.image,
     },
     {
       no: "2",
@@ -112,6 +114,7 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
       qty: 1,
       unitPrice: inverterUnitPrice,
       total: inverterUnitPrice,
+      image: selectedInverter?.image,
     },
     {
       no: "3",
@@ -129,6 +132,7 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
       unitPrice: calc.lineTotal,
       total: calc.lineTotal,
       unitPriceLines: batteryPriceLines,
+      image: calc.battery.image,
     },
     {
       no: "5",

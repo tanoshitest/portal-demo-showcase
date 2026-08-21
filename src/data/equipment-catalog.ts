@@ -4,6 +4,7 @@ import { inverterCatalogItems } from "./inverter-catalog";
 export type EquipmentCatalogItem = {
   id?: string;
   code: string;
+  image?: string;
   name: string;
   specification: string;
   unit: string;

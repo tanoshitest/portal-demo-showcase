@@ -28,6 +28,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutoCalcGrid, EstimateCalcTables } from "@/components/estimate-calc-tables";
 import { loadSolarQuotes, makeEstimateQuote, saveSolarQuotes } from "@/data/solar-quotes";
+import { newQuoteLineId, type PackageType, type QuoteLineItem } from "@/data/solar-quotes";
+import { images } from "@/data/mock";
 
 export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" }) {
   const [form, setForm] = useState<EstimateInputs>(() => loadEstimateInputs());
@@ -72,14 +74,74 @@ export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" 
 
   const save = () => {
     saveEstimateInputs(form);
-    const total = buildEstimateQuote(form, mode).total;
+    const estimate = buildEstimateQuote(form, mode);
+    const itemImages = [
+      estimate.rows[0]?.image || images.product1,
+      estimate.rows[1]?.image || images.product2,
+      images.product3,
+      estimate.rows[3]?.image || images.solution2,
+      images.project1,
+      images.product1,
+      images.project2,
+    ];
+    const itemSpecs = [
+      [
+        `Công suất tấm: ${estimate.calc.panel.watt} Wp`,
+        `Tổng công suất: ${estimate.calc.totalKwp} kWp`,
+        "Bảo hành chính hãng, hiệu suất dài hạn",
+      ],
+      [
+        `Công suất hệ thống đề xuất: ${Math.round(estimate.calc.inverterKw)} kW`,
+        `Nguồn điện: ${form.phase}`,
+        "Theo dõi và quản lý qua ứng dụng",
+      ],
+      [
+        `Loại tủ: ${form.cabinetType}`,
+        "Đầy đủ thiết bị bảo vệ và chống sét",
+        "Lắp ráp, kiểm tra trước khi bàn giao",
+      ],
+      [
+        `Dung lượng mỗi bộ: ${estimate.calc.battery.capacity} kWh`,
+        `Tổng dung tích: ${estimate.calc.totalBatt} kWh`,
+        "Pin lưu trữ an toàn, tuổi thọ cao",
+      ],
+      [
+        `Phương án lắp đặt: ${form.roof}`,
+        "Khung, kẹp pin và phụ kiện đấu nối đồng bộ",
+      ],
+      [
+        `Dây AC: ${form.acWireM} m`,
+        `Dây DC: ${form.dcWireM} m`,
+        `Ống bảo vệ D20: ${form.pipeM} m`,
+      ],
+      [
+        "Tư vấn, lắp đặt và đấu nối hoàn chỉnh",
+        "Giám sát thi công, nghiệm thu và bàn giao",
+        "Hướng dẫn vận hành, hỗ trợ kỹ thuật",
+      ],
+    ];
+    const lines: QuoteLineItem[] = estimate.rows.map((row, index) => ({
+      id: newQuoteLineId(),
+      materialId: "",
+      name: row.name,
+      specs: itemSpecs[index] ?? [],
+      image: itemImages[index] ?? "",
+      unit: row.unit,
+      qty: row.qty,
+      unitPrice: row.qty > 0 ? row.total / row.qty : 0,
+    }));
+    const packageType: PackageType = form.roof === "Mái ngói" ? "Mái ngói" : "Mái tôn";
     const quote = makeEstimateQuote({
       customer: form.customer,
       phone: form.phone,
       address: form.address,
-      systemTitle: `${form.phase} · ${mode === "auto" ? form.panelTypeAuto : form.panelTypeManual} · ${form.roof}`,
+      systemTitle: `Hệ thống điện năng lượng mặt trời Hybrid ${form.phase}`,
       summary: `Dự toán ${mode === "auto" ? "Auto" : "thủ công"} · ${form.phase.toLowerCase()}`,
-      total,
+      total: estimate.total,
+      lines,
+      packageType,
+      solution: "Hybrid",
+      capacityKwp: estimate.calc.totalKwp,
     });
     const next = [quote, ...loadSolarQuotes()];
     saveSolarQuotes(next);
@@ -236,8 +298,8 @@ function QuoteEstimatePanel({
                   <td className="px-0.5 py-1.5 text-center tabular-nums font-semibold sm:px-1">{row.no}</td>
                   <td className="break-words px-0.5 py-1.5 font-medium leading-tight sm:px-1">{row.name}</td>
                   <td className="px-0.5 py-1.5 sm:px-1">
-                    <div className="mx-auto flex h-7 w-7 items-center justify-center border border-dashed border-border bg-secondary/30 text-muted-foreground sm:h-9 sm:w-9">
-                      <ImageOff className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <div className="mx-auto flex h-7 w-7 items-center justify-center overflow-hidden border border-dashed border-border bg-secondary/30 text-muted-foreground sm:h-9 sm:w-9">
+                      {row.image ? <img src={row.image} alt={row.name} className="h-full w-full object-contain" /> : <ImageOff className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
                     </div>
                   </td>
                   <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarDays, Camera, ChevronDown, Cpu, MapPin, SlidersHorizontal, SunMedium, Wifi, Zap } from "lucide-react";
-import { projects, solutions, images } from "@/data/mock";
+import { projects as seedProjects, solutions, images, type Project } from "@/data/mock";
+import { loadAdminProjects } from "@/data/projects-store";
 
 export const Route = createFileRoute("/cong-trinh/")({
   head: () => ({
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/cong-trinh/")({
 
 function ProjectListing() {
   const [type, setType] = useState("all");
+  const [projects, setProjects] = useState<Project[]>(seedProjects.slice(0, 1));
+  useEffect(() => setProjects(loadAdminProjects()), []);
   const types = ["all", ...new Set(projects.map((p) => p.type))];
   const list = projects.filter((p) => type === "all" || p.type === type);
 
@@ -118,7 +121,7 @@ function MobileProjects({ type, setType, types, list }: {
   type: string;
   setType: (value: string) => void;
   types: string[];
-  list: typeof projects;
+  list: Project[];
 }) {
   return (
     <div className="mobile-project-list min-w-0 overflow-x-hidden bg-[#f8fafc] pb-5 md:hidden">

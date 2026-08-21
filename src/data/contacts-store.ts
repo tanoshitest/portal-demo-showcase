@@ -74,11 +74,12 @@ function readStored(): SiteContact[] | null {
 }
 
 export function loadSiteContacts(): SiteContact[] {
-  const seed = seedContacts.map((c) => ({ ...c }));
+  const allMock = seedContacts.map((c) => ({ ...c }));
+  const seed = allMock.slice(0, 1);
   const stored = readStored();
   if (!stored) return seed;
   const byId = new Map(stored.map((c) => [c.id, c]));
-  const seedIds = new Set(seed.map((c) => c.id));
+  const seedIds = new Set(allMock.map((c) => c.id));
   const merged = seed.map((c) => byId.get(c.id) ?? c);
   const extras = stored.filter((c) => !seedIds.has(c.id));
   return [...extras, ...merged].sort(

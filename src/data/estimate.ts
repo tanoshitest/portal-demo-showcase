@@ -114,7 +114,8 @@ export function recommendedInverterOptionsForPhase(
 }
 
 export function inverterById(id: string) {
-  return INVERTER_TYPES.find((item) => item.id === id);
+  return getCatalogInverterTypes({ inStockOnly: false }).find((item) => item.id === id) ??
+    INVERTER_TYPES.find((item) => item.id === id);
 }
 
 export function inverterLabel(id: string) {

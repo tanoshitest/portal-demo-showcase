@@ -122,11 +122,12 @@ function readStored(): SiteOrder[] | null {
 }
 
 export function loadSiteOrders(): SiteOrder[] {
-  const seed = seedOrders.map((o) => ({ ...o, items: o.items.map((i) => ({ ...i })) }));
+  const allMock = seedOrders.map((o) => ({ ...o, items: o.items.map((i) => ({ ...i })) }));
+  const seed = allMock.slice(0, 1);
   const stored = readStored();
   if (!stored) return seed;
   const byId = new Map(stored.map((o) => [o.id, o]));
-  const seedIds = new Set(seed.map((o) => o.id));
+  const seedIds = new Set(allMock.map((o) => o.id));
   const merged = seed.map((o) => byId.get(o.id) ?? o);
   const extras = stored.filter((o) => !seedIds.has(o.id));
   return [...extras, ...merged].sort(

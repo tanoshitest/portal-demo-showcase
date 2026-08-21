@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Camera, CheckCircle2, Lightbulb, Search, Send, SunMedium, Wifi } from "lucide-react";
 import solarImage from "@/assets/solution-2.jpg";
 import cameraImage from "@/assets/solution-camera-v2.webp";
 import wifiImage from "@/assets/solution-wifi-v2.webp";
 import applianceImage from "@/assets/solution-appliance-v2.webp";
+import { loadAdminSolutions } from "@/data/solutions-store";
 
 export const Route = createFileRoute("/giai-phap/")({
   head: () => ({
@@ -31,6 +33,15 @@ const solutionCards = [
 ] as const;
 
 function SolutionListing() {
+  const [adminSolutions, setAdminSolutions] = useState(loadAdminSolutions);
+  useEffect(() => setAdminSolutions(loadAdminSolutions()), []);
+  const icons = [SunMedium, Camera, Wifi, Lightbulb, Send];
+  const themes = [
+    { card: "from-[#eaf3ff] via-[#f7faff] to-white", badge: "bg-[#d9ebff] text-[#0758c9]", accent: "text-[#0758c9]", dot: "bg-[#0758c9]" },
+    { card: "from-[#fff3e9] via-[#fffaf6] to-white", badge: "bg-[#ffe5d1] text-[#ed6a12]", accent: "text-[#ed6a12]", dot: "bg-[#ed6a12]" },
+    { card: "from-[#edf8ef] via-[#f8fcf8] to-white", badge: "bg-[#dff3e3] text-[#279447]", accent: "text-[#279447]", dot: "bg-[#279447]" },
+    { card: "from-[#f3efff] via-[#fbfaff] to-white", badge: "bg-[#e9e0ff] text-[#7040c7]", accent: "text-[#7040c7]", dot: "bg-[#7040c7]" },
+  ];
   return (
     <div className="bg-white pb-5 lg:pb-16">
       <div className="mx-auto w-full max-w-[1180px] px-[18px] pt-5 sm:px-6 lg:px-8 lg:pt-10">
@@ -45,12 +56,13 @@ function SolutionListing() {
         </label>
 
         <nav className="hide-scrollbar mt-[17px] flex justify-between gap-1 overflow-x-auto pb-1" aria-label="Danh mục giải pháp">
-          {categories.map((item) => (
-            <button key={item.label} type="button" className={`flex h-[76px] w-[64px] shrink-0 flex-col items-center justify-center gap-2 rounded-[9px] border bg-white px-1 min-[390px]:w-[68px] sm:h-24 sm:w-28 ${item.active ? "border-[#0b61df] shadow-[0_2px_7px_rgba(11,97,223,.12)]" : "border-[#e5e9f0]"}`}>
-              <item.icon className={`h-[25px] w-[25px] ${item.active ? "text-[#ff7a00]" : "text-[#163a72]"}`} strokeWidth={1.6} />
-              <span className="text-center text-[9px] font-bold leading-[1.18] text-[#102650] sm:text-[11px]">{item.label}</span>
+          {adminSolutions.map((item, index) => {
+            const Icon = icons[index % icons.length];
+            return <button key={item.id} type="button" className={`flex h-[76px] w-[64px] shrink-0 flex-col items-center justify-center gap-2 rounded-[9px] border bg-white px-1 min-[390px]:w-[68px] sm:h-24 sm:w-28 ${index === 0 ? "border-[#0b61df] shadow-[0_2px_7px_rgba(11,97,223,.12)]" : "border-[#e5e9f0]"}`}>
+              <Icon className={`h-[25px] w-[25px] ${index === 0 ? "text-[#ff7a00]" : "text-[#163a72]"}`} strokeWidth={1.6} />
+              <span className="text-center text-[9px] font-bold leading-[1.18] text-[#102650] sm:text-[11px]">{item.group || item.name}</span>
             </button>
-          ))}
+          })}
         </nav>
 
         <div className="mt-[21px] flex items-center justify-between">
@@ -59,22 +71,23 @@ function SolutionListing() {
         </div>
 
         <div className="mt-[11px] grid gap-[10px] lg:grid-cols-2 lg:gap-5">
-          {solutionCards.map((solution) => (
-            <article key={solution.eyebrow} className={`relative isolate min-h-[174px] overflow-hidden rounded-[10px] border border-white bg-gradient-to-r ${solution.card} shadow-[0_3px_12px_rgba(16,52,100,.10)] sm:min-h-[220px] sm:rounded-2xl`}>
+          {adminSolutions.map((solution, index) => {
+            const theme = themes[index % themes.length];
+            return <article key={solution.id} className={`relative isolate min-h-[174px] overflow-hidden rounded-[10px] border border-white bg-gradient-to-r ${theme.card} shadow-[0_3px_12px_rgba(16,52,100,.10)] sm:min-h-[220px] sm:rounded-2xl`}>
               <img src={solution.image} alt="" className="absolute inset-y-0 right-0 -z-10 h-full w-[60%] object-cover object-center" />
-              <div className={`absolute inset-0 -z-10 bg-gradient-to-r ${solution.card} opacity-95 [mask-image:linear-gradient(to_right,black_48%,transparent_86%)]`} />
+              <div className={`absolute inset-0 -z-10 bg-gradient-to-r ${theme.card} opacity-95 [mask-image:linear-gradient(to_right,black_48%,transparent_86%)]`} />
               <div className="flex min-h-[174px] w-[64%] flex-col px-[14px] py-[13px] sm:min-h-[220px] sm:px-6 sm:py-5">
-                <span className={`w-fit rounded px-2 py-1 text-[8px] font-black uppercase tracking-wide sm:text-[10px] ${solution.badge}`}>{solution.eyebrow}</span>
-                <h3 className="mt-2 whitespace-pre-line text-[15px] font-black leading-[1.15] tracking-[-0.02em] text-[#071c4c] sm:text-xl">{solution.title}</h3>
+                <span className={`w-fit rounded px-2 py-1 text-[8px] font-black uppercase tracking-wide sm:text-[10px] ${theme.badge}`}>{solution.group || "Giải pháp"}</span>
+                <h3 className="mt-2 whitespace-pre-line text-[15px] font-black leading-[1.15] tracking-[-0.02em] text-[#071c4c] sm:text-xl">{solution.name}</h3>
                 <ul className="mt-2 space-y-[4px]">
-                  {solution.points.map((point) => <li key={point} className="flex items-start gap-1.5 text-[8px] font-medium leading-[1.25] text-[#273b60] sm:text-[11px]"><CheckCircle2 className={`mt-px h-[10px] w-[10px] shrink-0 sm:h-3 sm:w-3 ${solution.accent}`} strokeWidth={3} /><span>{point}</span></li>)}
+                  {(solution.benefits.length ? solution.benefits.map((item) => item.title) : [solution.short]).filter(Boolean).slice(0, 3).map((point) => <li key={point} className="flex items-start gap-1.5 text-[8px] font-medium leading-[1.25] text-[#273b60] sm:text-[11px]"><CheckCircle2 className={`mt-px h-[10px] w-[10px] shrink-0 sm:h-3 sm:w-3 ${theme.accent}`} strokeWidth={3} /><span>{point}</span></li>)}
                 </ul>
-                <Link to={solution.to} className={`mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[9px] font-bold shadow-sm sm:px-3 sm:py-1.5 sm:text-[11px] ${solution.accent}`}>
-                  <span className={`grid h-4 w-4 place-items-center rounded-full text-white ${solution.dot}`}><ArrowRight className="h-2.5 w-2.5" /></span>Xem chi tiết
+                <Link to="/giai-phap/$slug" params={{ slug: solution.slug }} className={`mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[9px] font-bold shadow-sm sm:px-3 sm:py-1.5 sm:text-[11px] ${theme.accent}`}>
+                  <span className={`grid h-4 w-4 place-items-center rounded-full text-white ${theme.dot}`}><ArrowRight className="h-2.5 w-2.5" /></span>Xem chi tiết
                 </Link>
               </div>
             </article>
-          ))}
+          })}
         </div>
       </div>
     </div>

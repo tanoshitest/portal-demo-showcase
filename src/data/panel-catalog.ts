@@ -8,6 +8,7 @@ export type EstimatePanelType = {
   name: string;
   watt: number;
   areaM2: number;
+  image?: string;
 };
 
 export const DEFAULT_PANEL_TYPES: EstimatePanelType[] = [
@@ -73,6 +74,7 @@ function toPanelType(item: EquipmentCatalogItem): EstimatePanelType | null {
     name,
     watt: Math.round(watt),
     areaM2: item.areaM2 && item.areaM2 > 0 ? item.areaM2 : (legacy?.areaM2 ?? 2.8),
+    image: item.image ?? "",
   };
 }
 
@@ -137,6 +139,7 @@ export type CatalogBatteryType = {
   price: number;
   stock: number;
   group: string;
+  image?: string;
 };
 
 function batteryId(item: EquipmentCatalogItem, fallback: string) {
@@ -174,6 +177,7 @@ export function getCatalogBatteryTypes({ inStockOnly = true } = {}): CatalogBatt
           price,
           stock,
           group: item.batteryGroup ?? "",
+          image: item.image ?? "",
         };
       })
       .filter((item) => item.name && item.kwh > 0 && item.price > 0)

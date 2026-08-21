@@ -88,12 +88,13 @@ function saveAdminDocuments(list: PortalDoc[]): void {
 
 /** Seed từ mock, ghi đè / bổ sung bằng bản đã lưu (localStorage). */
 export function loadAdminDocuments(): PortalDoc[] {
-  const seed = cloneDocuments(documents);
+  const allMock = cloneDocuments(documents);
+  const seed = allMock.slice(0, 1);
   const stored = readStored();
   if (!stored) return seed;
 
   const storedById = new Map(stored.map((d) => [d.id, d]));
-  const seedIds = new Set(seed.map((d) => d.id));
+  const seedIds = new Set(allMock.map((d) => d.id));
 
   const merged = seed.map((d) => {
     const override = storedById.get(d.id);

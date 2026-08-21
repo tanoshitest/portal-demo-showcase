@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Trash2 } from "lucide-react";
+import { FolderPlus, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PortalGate } from "@/components/portal-gate";
 import { useStore } from "@/context/store";
-import { brands, categories, products, type Product } from "@/data/mock";
+import { brands, categories, products, type Category, type Product } from "@/data/mock";
+import { loadAdminCategories, saveAdminCategories } from "@/data/categories-store";
 import { loadAdminProducts, upsertAdminProduct } from "@/data/products-store";
 import { formatVnd } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -230,19 +231,55 @@ function StockQtyInput({
 
 function PortalProducts() {
   const { user } = useStore();
-  const [list, setList] = useState<Product[]>(() => products);
+  const [list, setList] = useState<Product[]>(() => products.slice(0, 1));
   const [open, setOpen] = useState(false);
   const [isCreate, setIsCreate] = useState(false);
   const [form, setForm] = useState<FormState>(() => blankForm());
+  const [categoryList, setCategoryList] = useState<Category[]>(categories.slice(0, 1));
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   useEffect(() => {
     setList(loadAdminProducts());
+    setCategoryList(loadAdminCategories());
   }, []);
 
   const openCreate = () => {
     setIsCreate(true);
-    setForm(blankForm());
+    setForm({ ...blankForm(), categorySlug: categoryList[0]?.slug ?? "" });
     setOpen(true);
+  };
+
+  const updateCategories = (next: Category[]) => {
+    setCategoryList(next);
+    saveAdminCategories(next);
+  };
+
+  const addCategory = () => {
+    const name = window.prompt("Tên danh mục mới:")?.trim();
+    if (!name) return;
+    const slug = slugify(name);
+    if (!slug || categoryList.some((item) => item.slug === slug)) {
+      toast.error("Tên hoặc slug danh mục đã tồn tại");
+      return;
+    }
+    const description = window.prompt("Mô tả ngắn cho danh mục:")?.trim() ?? "";
+    updateCategories([...categoryList, { id: newId("category"), slug, name, description, icon: "Cpu" }]);
+    toast.success("Đã thêm danh mục", { description: name });
+  };
+
+  const editCategory = (category: Category) => {
+    const name = window.prompt("Tên danh mục:", category.name)?.trim();
+    if (!name) return;
+    const description = window.prompt("Mô tả ngắn:", category.description)?.trim() ?? "";
+    updateCategories(categoryList.map((item) => item.id === category.id ? { ...item, name, description } : item));
+  };
+
+  const deleteCategory = (category: Category) => {
+    if (list.some((product) => product.categorySlug === category.slug)) {
+      toast.error("Không thể xóa danh mục đang có sản phẩm");
+      return;
+    }
+    if (window.confirm(`Xóa danh mục ${category.name}?`)) updateCategories(categoryList.filter((item) => item.id !== category.id));
   };
 
   const openEdit = (product: Product) => {
@@ -282,10 +319,10 @@ function PortalProducts() {
             trình duyệt (demo).
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus /> Thêm sản phẩm
-        </Button>
+        <div className="flex gap-2"><Button variant="outline" onClick={() => setShowCategoryManager((value) => !value)}><FolderPlus /> Danh mục</Button><Button onClick={openCreate}><Plus /> Thêm sản phẩm</Button></div>
       </div>
+
+      {showCategoryManager ? <section className="mb-4 shrink-0 rounded-xl border border-border bg-card p-4"><div className="flex items-center justify-between"><div><h2 className="font-bold">Danh mục sản phẩm</h2><p className="text-xs text-muted-foreground">Website đang hiển thị {categoryList.length} danh mục.</p></div><Button size="sm" onClick={addCategory}><Plus /> Thêm danh mục</Button></div><div className="mt-3 flex flex-wrap gap-2">{categoryList.map((category) => <div key={category.id} className="flex items-center gap-2 rounded-lg border bg-background px-3 py-2"><div><p className="text-sm font-semibold">{category.name}</p><p className="max-w-52 truncate text-xs text-muted-foreground">{category.description}</p></div><Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={() => editCategory(category)}><Pencil className="h-3.5 w-3" /></Button><Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteCategory(category)}><Trash2 className="h-3.5 w-3" /></Button></div>)}</div></section> : null}
 
       <section className="min-h-0 w-full flex-1 overflow-auto rounded-xl border border-border bg-card shadow-card">
         <table className="w-full caption-bottom text-sm">
@@ -326,7 +363,7 @@ function PortalProducts() {
                 </TableCell>
                 <TableCell className="font-mono text-xs">{p.sku}</TableCell>
                 <TableCell>{brandName(p.brandSlug)}</TableCell>
-                <TableCell>{categoryName(p.categorySlug)}</TableCell>
+                <TableCell>{categoryList.find((category) => category.slug === p.categorySlug)?.name ?? p.categorySlug}</TableCell>
                 <TableCell className="whitespace-nowrap text-right font-semibold">
                   {formatVnd(p.price)}
                 </TableCell>
@@ -457,7 +494,7 @@ function PortalProducts() {
                       <SelectValue placeholder="Chọn danh mục" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((c) => (
+                      {categoryList.map((c) => (
                         <SelectItem key={c.id} value={c.slug}>
                           {c.name}
                         </SelectItem>

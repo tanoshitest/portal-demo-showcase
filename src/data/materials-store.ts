@@ -76,12 +76,13 @@ function readStored(): Material[] | null {
 }
 
 export function loadAdminMaterials(): Material[] {
-  const seed = cloneMaterials(materials);
+  const allMock = cloneMaterials(materials);
+  const seed = allMock.slice(0, 1);
   const stored = readStored();
   if (!stored) return seed;
 
   const storedById = new Map(stored.map((m) => [m.id, m]));
-  const seedIds = new Set(seed.map((m) => m.id));
+  const seedIds = new Set(allMock.map((m) => m.id));
   const merged = seed.map((m) => {
     const override = storedById.get(m.id);
     return override ? hydrate(override, m) : m;

@@ -1,6 +1,7 @@
 ﻿import { Fragment, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus } from "lucide-react";
+import type { ChangeEvent } from "react";
+import { ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PortalGate } from "@/components/portal-gate";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 type CatalogFormValues = {
   code: string;
+  image: string;
   name: string;
   specification: string;
   unit: string;
@@ -70,6 +72,7 @@ function cloneCatalogGroups(groups: EquipmentCatalogGroup[]) {
 function itemToForm(item?: EquipmentCatalogItem, groupId?: string): CatalogFormValues {
   return {
     code: item?.code ?? "",
+    image: item?.image ?? "",
     name: item?.name ?? "",
     specification: item?.specification ?? "",
     unit: item?.unit ?? "",
@@ -160,6 +163,26 @@ function EquipmentCatalogPage() {
     );
   };
 
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Vui lòng chọn đúng tệp hình ảnh");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ảnh không được lớn hơn 2 MB");
+      return;
+    }
+    try {
+      const image = await compressCatalogImage(file);
+      patchEditor("image", image);
+    } catch {
+      toast.error("Không thể xử lý ảnh đã chọn");
+    }
+  };
+
   const handleSave = (event: FormEvent) => {
     event.preventDefault();
     if (!editor) return;
@@ -237,6 +260,7 @@ function EquipmentCatalogPage() {
       id:
         editor.originalItemId ?? `catalog-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       code,
+      image: editor.values.image,
       name,
       specification,
       unit,
@@ -367,6 +391,29 @@ function EquipmentCatalogPage() {
                       placeholder={isPanelEditor ? "Ví dụ: TRINA 630" : "Mã sản phẩm"}
                     />
                   </CatalogField>
+                  {isPanelEditor || isBatteryEditor || isInverterEditor ? (
+                    <CatalogField label="Ảnh sản phẩm" htmlFor="catalog-image" className="sm:col-span-2">
+                      <div className="flex items-center gap-3 rounded-md border border-border p-3">
+                        <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded border border-dashed border-border bg-secondary/30">
+                          {editor.values.image ? (
+                            <img src={editor.values.image} alt="Ảnh sản phẩm" className="h-full w-full object-contain" />
+                          ) : (
+                            <ImagePlus className="h-7 w-7 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button type="button" variant="outline" asChild>
+                            <Label htmlFor="catalog-image" className="cursor-pointer"><ImagePlus className="h-4 w-4" /> Chọn ảnh</Label>
+                          </Button>
+                          {editor.values.image ? (
+                            <Button type="button" variant="outline" className="text-destructive" onClick={() => patchEditor("image", "")}><Trash2 className="h-4 w-4" /> Xóa ảnh</Button>
+                          ) : null}
+                          <Input id="catalog-image" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                          <p className="w-full text-xs text-muted-foreground">JPG, PNG hoặc WebP, tối đa 2 MB.</p>
+                        </div>
+                      </div>
+                    </CatalogField>
+                  ) : null}
                   {!isInverterEditor ? (
                     <CatalogField label="Tên sản phẩm" htmlFor="catalog-name">
                       <Input
@@ -719,6 +766,46 @@ function EditButton({
   );
 }
 
+function compressCatalogImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = reject;
+      image.onload = () => {
+        const maxSide = 720;
+        const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) return reject(new Error("Canvas unavailable"));
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/webp", 0.78));
+      };
+      image.src = String(reader.result ?? "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function CatalogImageCell({ item }: { item: EquipmentCatalogItem }) {
+  return (
+    <td className="border-b border-r border-border p-1 text-center">
+      {item.image ? (
+        <img src={item.image} alt={item.code} className="mx-auto h-14 w-16 object-contain" />
+      ) : (
+        <span className="text-[10px] text-muted-foreground">Chưa có ảnh</span>
+      )}
+    </td>
+  );
+}
+
 function PanelCatalogTable({
   items,
   onEdit,
@@ -732,7 +819,8 @@ function PanelCatalogTable({
         <col className="w-[4%]" />
         <col className="w-[10%]" />
         <col className="w-[8%]" />
-        <col className="w-[26%]" />
+        <col className="w-[8%]" />
+        <col className="w-[20%]" />
         <col className="w-[6%]" />
         <col className="w-[10%]" />
         <col className="w-[10%]" />
@@ -746,6 +834,7 @@ function PanelCatalogTable({
         <tr>
           <th className="border-b border-r border-border px-1.5 py-2 text-center">STT</th>
           <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Mã hàng</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Ảnh</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">Công suất (W)</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">
             Tên hàng, diễn giải sản phẩm
@@ -772,6 +861,7 @@ function PanelCatalogTable({
             <td className="border-r border-border bg-amber-50 px-2 py-1.5 text-center font-bold tabular-nums text-amber-950">
               {item.code}
             </td>
+            <CatalogImageCell item={item} />
             <td className="border-r border-border px-2 py-1.5 text-center tabular-nums">
               {item.capacityKwp?.toFixed(3) ?? ""}
             </td>
@@ -831,8 +921,9 @@ function InverterCatalogTable({
       <colgroup>
         <col className="w-[4%]" />
         <col className="w-[15%]" />
+        <col className="w-[9%]" />
         <col className="w-[7%]" />
-        <col className="w-[34%]" />
+        <col className="w-[27%]" />
         <col className="w-[6%]" />
         <col className="w-[12%]" />
         <col className="w-[10%]" />
@@ -843,6 +934,7 @@ function InverterCatalogTable({
         <tr>
           <th className="border-b border-r border-border px-1.5 py-2 text-center">STT</th>
           <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Mã</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Ảnh</th>
           <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Công suất</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">
             Mã SP / Thông số kỹ thuật
@@ -861,7 +953,7 @@ function InverterCatalogTable({
               {showGroup ? (
                 <tr className="bg-[#c0504d] text-white">
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="border-b border-r border-[#8f3937] px-3 py-2 text-center text-xs font-bold"
                   >
                     {item.inverterGroup || "BẢNG GIÁ BIẾN TẦN"}
@@ -875,6 +967,7 @@ function InverterCatalogTable({
                 <td className="whitespace-pre-line border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold text-amber-950">
                   {item.code}
                 </td>
+                <CatalogImageCell item={item} />
                 <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
                   {item.capacityKw ?? ""}
                 </td>
@@ -914,7 +1007,8 @@ function BatteryCatalogTable({
       <colgroup>
         <col className="w-[18%]" />
         <col className="w-[9%]" />
-        <col className="w-[42%]" />
+        <col className="w-[9%]" />
+        <col className="w-[34%]" />
         <col className="w-[13%]" />
         <col className="w-[7%]" />
         <col className="w-[6%]" />
@@ -924,6 +1018,7 @@ function BatteryCatalogTable({
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
           <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Mã hàng</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Ảnh</th>
           <th className="border-b border-r border-border bg-amber-100 px-2 py-2 text-center text-amber-950">Dung lượng</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">Tên pin</th>
           <th className="border-b border-r border-border bg-amber-200 px-2 py-2 text-right text-amber-950">Giá khách</th>
@@ -951,6 +1046,7 @@ function BatteryCatalogTable({
                 <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
                   {item.code}
                 </td>
+                <CatalogImageCell item={item} />
                 <td className="border-b border-r border-border bg-amber-50 px-2 py-2 text-center font-bold tabular-nums text-amber-950">
                   {item.capacityKwh ?? ""}
                 </td>

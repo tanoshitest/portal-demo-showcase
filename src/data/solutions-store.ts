@@ -91,12 +91,13 @@ function readStored(): Solution[] | null {
 }
 
 export function loadAdminSolutions(): Solution[] {
-  const seed = cloneSolutions(solutions);
+  const allMock = cloneSolutions(solutions);
+  const seed = allMock.slice(0, 1);
   const stored = readStored();
   if (!stored) return seed;
 
   const storedById = new Map(stored.map((s) => [s.id, s]));
-  const seedIds = new Set(seed.map((s) => s.id));
+  const seedIds = new Set(allMock.map((s) => s.id));
   const merged = seed.map((s) => {
     const override = storedById.get(s.id);
     return override ? hydrate(override, s) : s;

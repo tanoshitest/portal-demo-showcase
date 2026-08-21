@@ -353,36 +353,44 @@ export function makeEstimateQuote(input: {
   systemTitle: string;
   summary: string;
   total: number;
+  lines?: QuoteLineItem[];
+  packageType?: PackageType;
+  solution?: SolarSolution;
+  capacityKwp?: number;
   estimateDate?: string;
 }): SolarQuote {
+  const lines = input.lines?.length
+    ? input.lines
+    : [
+        {
+          id: newQuoteLineId(),
+          materialId: "",
+          name: input.summary,
+          specs: [],
+          image: "",
+          unit: "gói",
+          qty: 1,
+          unitPrice: input.total,
+        },
+      ];
+
   return {
     id: newQuoteId(),
     code: `DT-${new Date().getFullYear()}-${Date.now().toString().slice(-5)}`,
     customer: input.customer.trim() || "Quý Khách Hàng",
     address: input.address.trim(),
     phone: input.phone.trim(),
-    packageType: "Mái tôn",
+    packageType: input.packageType ?? "Mái tôn",
     systemTitle: input.systemTitle.trim() || "Báo giá dự toán",
-    solution: "Hòa lưới bám tải",
-    capacityKwp: 0,
+    solution: input.solution ?? "Hòa lưới bám tải",
+    capacityKwp: input.capacityKwp ?? 0,
     monthlyKwh: 0,
     tariff: 0,
-    total: input.total,
+    total: quoteTotal(lines) || input.total,
     paybackYears: 0,
     createdAt: input.estimateDate ?? new Date().toISOString(),
     status: "draft",
-    lines: [
-      {
-        id: newQuoteLineId(),
-        materialId: "",
-        name: input.summary,
-        specs: [],
-        image: "",
-        unit: "gói",
-        qty: 1,
-        unitPrice: input.total,
-      },
-    ],
+    lines,
   };
 }
 
@@ -475,13 +483,15 @@ function parseCatalog(raw: string | null): SolarCatalogItem[] | null {
 }
 
 export function loadSolarQuotes(): SolarQuote[] {
-  if (typeof window === "undefined") return seedSolarQuotes;
+  const sample = seedSolarQuotes.slice(0, 1);
+  if (typeof window === "undefined") return sample;
   const parsed = parseQuotes(localStorage.getItem(QUOTES_KEY));
   if (!parsed) {
-    localStorage.setItem(QUOTES_KEY, JSON.stringify(seedSolarQuotes));
-    return seedSolarQuotes;
+    localStorage.setItem(QUOTES_KEY, JSON.stringify(sample));
+    return sample;
   }
-  return parsed;
+  const mockIds = new Set(seedSolarQuotes.map((quote) => quote.id));
+  return parsed.filter((quote) => quote.id === sample[0]?.id || !mockIds.has(quote.id));
 }
 
 export function saveSolarQuotes(quotes: SolarQuote[]) {

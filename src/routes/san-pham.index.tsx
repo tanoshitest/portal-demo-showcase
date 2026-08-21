@@ -15,7 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProductCard } from "@/components/product-card";
-import { brands, categories, products, images } from "@/data/mock";
+import { brands, categories as seedCategories, products as seedProducts, images, type Category, type Product } from "@/data/mock";
+import { loadAdminCategories } from "@/data/categories-store";
+import { loadAdminProducts } from "@/data/products-store";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -60,6 +62,13 @@ function ProductListing() {
   const [sort, setSort] = useState("default");
   const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
   const [showComparePanel, setShowComparePanel] = useState(true);
+  const [categories, setCategories] = useState<Category[]>(seedCategories.slice(0, 1));
+  const [products, setProducts] = useState<Product[]>(seedProducts.slice(0, 1));
+
+  useEffect(() => {
+    setCategories(loadAdminCategories());
+    setProducts(loadAdminProducts());
+  }, []);
 
   const activeCategory = categories.find((c) => c.slug === danh_muc);
 
@@ -211,12 +220,13 @@ function ProductListing() {
   );
 
   if (!danh_muc && !q && !keyword && selectedBrands.length === 0 && selectedRanges.length === 0) {
-    return <ProductLanding />;
+    return <ProductLanding categories={categories} products={products} />;
   }
 
   return (
     <div className="min-w-0 overflow-x-hidden pb-10">
       <MobileProductCatalog
+        categories={categories}
         activeCategory={activeCategory}
         danhMuc={danh_muc}
         keyword={keyword}
@@ -485,6 +495,7 @@ function ProductListing() {
 }
 
 function MobileProductCatalog({
+  categories,
   activeCategory,
   danhMuc,
   keyword,
@@ -497,13 +508,14 @@ function MobileProductCatalog({
   compareSlugs,
   filters,
 }: {
-  activeCategory: (typeof categories)[number] | undefined;
+  categories: Category[];
+  activeCategory: Category | undefined;
   danhMuc: string;
   keyword: string;
   setKeyword: (value: string) => void;
   sort: string;
   setSort: (value: string) => void;
-  filtered: typeof products;
+  filtered: Product[];
   activeCount: number;
   toggleCompare: (slug: string) => void;
   compareSlugs: string[];
@@ -559,7 +571,7 @@ const landingCategoryCopy = [
   ["Khác", "Dây điện, tủ điện, phụ kiện, vật tư khác", "72 sản phẩm"],
 ] as const;
 
-function ProductLanding() {
+function ProductLanding({ categories, products }: { categories: Category[]; products: Product[] }) {
   return <div className="bg-white pb-8">
     <section className="relative isolate overflow-hidden bg-[#063b86] text-white">
       <img src={images.solution2} alt="Sản phẩm chính hãng" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-65" />

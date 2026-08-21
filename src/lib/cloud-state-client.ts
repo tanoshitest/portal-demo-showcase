@@ -93,8 +93,14 @@ export async function saveCloudState(
 
 export function persistLocalAndCloud(key: CloudStateKey, value: unknown) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(key, JSON.stringify(value));
-  const revision = markPendingWrite(key);
+  const serialized = JSON.stringify(value);
+  let revision: string | undefined;
+  try {
+    localStorage.setItem(key, serialized);
+    revision = markPendingWrite(key);
+  } catch {
+    // Cloud persistence can still succeed when browser storage is full.
+  }
   void saveCloudState(key, value, revision);
 }
 

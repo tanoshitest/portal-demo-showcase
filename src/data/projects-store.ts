@@ -93,12 +93,13 @@ function readStored(): Project[] | null {
 
 /** Seed từ mock, ghi đè bằng bản đã lưu (localStorage). */
 export function loadAdminProjects(): Project[] {
-  const seed = cloneProjects(projects);
+  const allMock = cloneProjects(projects);
+  const seed = allMock.slice(0, 1);
   const stored = readStored();
   if (!stored) return seed;
 
   const storedById = new Map(stored.map((p) => [p.id, p]));
-  const seedIds = new Set(seed.map((p) => p.id));
+  const seedIds = new Set(allMock.map((p) => p.id));
 
   const merged = seed.map((p) => {
     const override = storedById.get(p.id);
