@@ -106,6 +106,10 @@ export function loadAdminSolutions(): Solution[] {
   return [...merged, ...extras];
 }
 
+export function getAdminSolution(slug: string): Solution | undefined {
+  return loadAdminSolutions().find((s) => s.slug === slug);
+}
+
 export function saveAdminSolutions(list: Solution[]): void {
   if (typeof window === "undefined") return;
   persistLocalAndCloud(SOLUTIONS_STORAGE_KEY, list);

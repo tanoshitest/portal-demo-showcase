@@ -68,6 +68,7 @@ export type Product = {
   stock: number;
   warranty: string;
   image: string;
+  gallery?: string[];
   highlights: string[];
   description: string;
   specs: { label: string; value: string }[];

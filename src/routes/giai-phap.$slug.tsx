@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Users, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,23 +10,22 @@ import {
 } from "@/components/ui/accordion";
 import { ProductCard } from "@/components/product-card";
 import { ConsultForm } from "@/components/consult-form";
-import { getSolution, images, products, projects, type Solution } from "@/data/mock";
+import { images, type Solution } from "@/data/mock";
+import { loadAdminProducts } from "@/data/products-store";
+import { loadAdminProjects } from "@/data/projects-store";
+import { getAdminSolution } from "@/data/solutions-store";
 
 export const Route = createFileRoute("/giai-phap/$slug")({
-  loader: ({ params }) => {
-    const solution = getSolution(params.slug);
-    if (!solution) throw notFound();
-    return { solution };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData)
+  head: ({ params }) => {
+    const s = typeof window === "undefined" ? undefined : getAdminSolution(params.slug);
+    if (!s) {
       return {
         meta: [
-          { title: "Không tìm thấy giải pháp | Hoàng Vĩnh VKT" },
+          { title: "Giải pháp | Hoàng Vĩnh VKT" },
           { name: "robots", content: "noindex" },
         ],
       };
-    const s = loaderData.solution;
+    }
     return {
       meta: [
         { title: `${s.name} | Giải pháp Hoàng Vĩnh VKT` },
@@ -35,13 +35,39 @@ export const Route = createFileRoute("/giai-phap/$slug")({
       ],
     };
   },
-  component: SolutionDetail,
+  component: SolutionDetailPage,
 });
 
-function SolutionDetail() {
-  const { solution } = Route.useLoaderData() as { solution: Solution };
-  const solutionProducts = products.filter((p) => solution.productSlugs.includes(p.slug));
-  const relatedProjects = projects.filter((p) => p.solutionSlug === solution.slug);
+function SolutionDetailPage() {
+  const { slug } = useParams({ from: "/giai-phap/$slug" });
+  const [solution, setSolution] = useState<Solution | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setSolution(getAdminSolution(slug) ?? null);
+    setReady(true);
+  }, [slug]);
+
+  if (!ready) return <div className="container-page min-h-[40vh] py-10" />;
+
+  if (!solution) {
+    return (
+      <div className="container-page py-16 text-center">
+        <h1 className="text-xl font-black">Không tìm thấy giải pháp</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Giải pháp có thể đã bị xóa hoặc chưa được lưu.</p>
+        <Button asChild className="mt-6">
+          <Link to="/giai-phap">Về danh sách giải pháp</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return <SolutionDetail solution={solution} />;
+}
+
+function SolutionDetail({ solution }: { solution: Solution }) {
+  const solutionProducts = loadAdminProducts().filter((p) => solution.productSlugs.includes(p.slug));
+  const relatedProjects = loadAdminProjects().filter((p) => p.solutionSlug === solution.slug);
 
   return (
     <div>

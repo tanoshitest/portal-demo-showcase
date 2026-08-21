@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
-import { company, categories, solutions } from "@/data/mock";
+import { company, categories } from "@/data/mock";
+import { loadAdminSolutions } from "@/data/solutions-store";
 
 export function SiteFooter() {
+  const [solutions, setSolutions] = useState(loadAdminSolutions);
+  useEffect(() => setSolutions(loadAdminSolutions()), []);
   return (
     <footer className="border-t border-brand-foreground/10 bg-[#062a68] text-brand-foreground">
       <div className="container-page grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">

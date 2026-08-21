@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Heart, Minus, Plus, ShieldCheck, Share2, Truck, Phone, Star, ShoppingCart, MessageCircle } from "lucide-react";
+import { ArrowLeft, Heart, Minus, Plus, ShieldCheck, Share2, Truck, Phone, ShoppingCart, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product-card";
 import { brands, type Product } from "@/data/mock";
-import { getAdminProduct, loadAdminProducts } from "@/data/products-store";
+import { getAdminProduct, loadAdminProducts, padProductGallery } from "@/data/products-store";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 
@@ -71,11 +71,18 @@ function ProductDetailPage() {
   return <ProductDetail product={product} />;
 }
 
+function productThumbs(product: Product): string[] {
+  const gallery = padProductGallery(product.gallery);
+  return gallery.some(Boolean) ? gallery : padProductGallery([product.image, product.image, product.image, product.image]);
+}
+
 function ProductDetail({ product }: { product: Product }) {
   const { addToCart } = useStore();
   const brand = brands.find((b) => b.slug === product.brandSlug);
   const [variant, setVariant] = useState(() => fallbackVariant(product));
   const [qty, setQty] = useState(1);
+  const thumbs = productThumbs(product);
+  const [hero, setHero] = useState(product.image || thumbs.find(Boolean) || "");
   const related = loadAdminProducts().filter(
     (p) => p.categorySlug === product.categorySlug && p.slug !== product.slug,
   );
@@ -96,7 +103,7 @@ function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="container-page min-w-0 overflow-x-hidden py-4 lg:py-10">
-      <MobileProductDetail product={product} variant={variant} setVariant={setVariant} qty={qty} setQty={setQty} />
+      <MobileProductDetail product={product} variant={variant} setVariant={setVariant} qty={qty} setQty={setQty} thumbs={thumbs} hero={hero} setHero={setHero} />
       <div className="hidden md:block">
       <nav className="hidden text-xs text-muted-foreground sm:block">
         <Link to="/" className="hover:text-brand">
@@ -113,26 +120,42 @@ function ProductDetail({ product }: { product: Product }) {
       <div className="mt-2 grid grid-cols-[43%_minmax(0,1fr)] gap-3 sm:mt-4 sm:gap-6 lg:grid-cols-2 lg:gap-10">
         <div>
           <div className="overflow-hidden rounded-2xl border border-brand/10 bg-card shadow-card">
-            <img
-              src={product.image}
-              alt={product.name}
-              width={900}
-              height={900}
-              className="aspect-square w-full object-cover"
-            />
+            {hero ? (
+              <img
+                src={hero}
+                alt={product.name}
+                width={900}
+                height={900}
+                className="aspect-square w-full object-cover"
+              />
+            ) : (
+              <div className="grid aspect-square w-full place-items-center bg-secondary/40 text-sm text-muted-foreground">
+                Chưa có ảnh
+              </div>
+            )}
           </div>
           <div className="mt-2 grid grid-cols-4 gap-1 sm:mt-3 sm:gap-2">
-            {[product.image, product.image, product.image, product.image].map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt={`${product.name} góc ${i + 1}`}
-                loading="lazy"
-                width={200}
-                height={200}
-                className="aspect-square w-full rounded-lg border border-border object-cover"
-              />
-            ))}
+            {thumbs.map((img, i) =>
+              img ? (
+                <button
+                  key={`${img}-${i}`}
+                  type="button"
+                  onClick={() => setHero(img)}
+                  className={`overflow-hidden rounded-lg border ${hero === img ? "border-brand" : "border-border"}`}
+                >
+                  <img
+                    src={img}
+                    alt={`${product.name} góc ${i + 1}`}
+                    loading="lazy"
+                    width={200}
+                    height={200}
+                    className="aspect-square w-full object-cover"
+                  />
+                </button>
+              ) : (
+                <div key={`empty-${i}`} className="aspect-square rounded-lg border border-dashed border-border bg-secondary/30" />
+              ),
+            )}
           </div>
         </div>
 
@@ -141,7 +164,6 @@ function ProductDetail({ product }: { product: Product }) {
             {brand?.name}
           </span>
           <h1 className="mt-1 text-[15px] font-black leading-tight text-brand-dark sm:text-3xl">{product.name}</h1>
-          <div className="mt-2 flex items-center gap-2 text-xs"><span className="inline-flex items-center gap-1 font-bold"><Star className="h-4 w-4 fill-highlight text-highlight" />{product.rating}</span><span className="text-brand">({product.reviewCount} đánh giá)</span></div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[8px] text-muted-foreground sm:gap-3 sm:text-sm">
             <span>SKU: {variant.sku}</span>
             <Badge variant="outline" className={stockBadgeClass(product.stock)}>
@@ -247,20 +269,6 @@ function ProductDetail({ product }: { product: Product }) {
         </TabsContent>
       </Tabs>
 
-      <section className="mt-8 rounded-2xl bg-secondary/60 p-5 sm:p-7">
-        <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-          <div className="text-center md:border-r md:border-border">
-            <h2 className="text-lg font-black">Đánh giá sản phẩm</h2>
-            <p className="mt-2 text-4xl font-black text-brand-dark">{product.rating}<span className="text-lg">/5</span></p>
-            <div className="mt-2 flex justify-center gap-1 text-highlight">{Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-5 w-5 fill-current" />)}</div>
-            <p className="mt-1 text-xs text-muted-foreground">{product.reviewCount} đánh giá</p>
-          </div>
-          <div className="space-y-3">
-            {product.reviews.map((review) => <article key={`${review.name}-${review.date}`} className="rounded-xl bg-white p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm">{review.name}</strong><span className="text-xs text-muted-foreground">{review.date}</span></div><div className="mt-1 flex text-highlight">{Array.from({ length: review.rating }).map((_, index) => <Star key={index} className="h-3.5 w-3.5 fill-current" />)}</div><p className="mt-2 text-sm text-muted-foreground">{review.content}</p></article>)}
-          </div>
-        </div>
-      </section>
-
       {related.length > 0 && (
         <section className="mt-12">
           <h2 className="text-xl font-black sm:text-2xl">Sản phẩm liên quan</h2>
@@ -287,14 +295,18 @@ function ProductDetail({ product }: { product: Product }) {
   );
 }
 
-function MobileProductDetail({ product, variant, setVariant, qty, setQty }: {
+function MobileProductDetail({ product, variant, setVariant, qty, setQty, thumbs, hero, setHero }: {
   product: Product;
   variant: Product["variants"][number];
   setVariant: (variant: Product["variants"][number]) => void;
   qty: number;
   setQty: React.Dispatch<React.SetStateAction<number>>;
+  thumbs: string[];
+  hero: string;
+  setHero: (src: string) => void;
 }) {
   const brand = brands.find((item) => item.slug === product.brandSlug);
+  const heroIndex = Math.max(0, thumbs.findIndex((src) => src && src === hero));
   return (
     <div className="mobile-product-detail -mx-[18px] -mt-4 min-w-0 overflow-x-hidden bg-white pb-20 md:hidden">
       <header className="flex h-12 items-center justify-between border-b px-4 text-[#071c4c]">
@@ -304,8 +316,29 @@ function MobileProductDetail({ product, variant, setVariant, qty, setQty }: {
       </header>
 
       <section className="grid grid-cols-[43%_1fr] gap-3 px-4 pt-3">
-        <div><div className="relative overflow-hidden rounded-xl bg-[#f6f7f9]"><img src={product.image} alt={product.name} className="aspect-square w-full object-cover" /><span className="absolute bottom-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[7px] text-white">1/4</span></div><div className="mt-2 grid grid-cols-4 gap-1">{Array.from({length:4}).map((_, index)=><img key={index} src={product.image} alt="" className={`aspect-square rounded border object-cover ${index===0?"border-[#0758c9]":"border-[#dfe5ed]"}`} />)}</div></div>
-        <div className="min-w-0"><span className="text-[9px] font-black uppercase text-[#ff7800]">{brand?.name}</span><h1 className="mt-1 text-[14px] font-black leading-snug text-[#071c4c]">{product.name}</h1><div className="mt-1 flex flex-wrap items-center gap-1 text-[8px]"><Star className="h-3 w-3 fill-[#ffc400] text-[#ffc400]" /><b>{product.rating}</b><span className="text-[#0758c9]">({product.reviewCount} đánh giá)</span></div><ul className="mt-2 space-y-1 text-[8px] leading-snug text-[#263b5e]">{product.highlights.slice(0,5).map(item=><li key={item} className="flex gap-1"><ShieldCheck className="h-3 w-3 shrink-0 text-[#0758c9]" />{item}</li>)}</ul><div className="mt-2 rounded-lg bg-[#f3f7ff] p-2 text-[8px] font-semibold text-[#163a72]"><ShieldCheck className="mr-1 inline h-3 w-3" />Bảo hành {product.warranty}</div></div>
+        <div>
+          <div className="relative overflow-hidden rounded-xl bg-[#f6f7f9]">
+            {hero ? <img src={hero} alt={product.name} className="aspect-square w-full object-cover" /> : <div className="grid aspect-square place-items-center text-[8px] text-muted-foreground">Chưa có ảnh</div>}
+            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[7px] text-white">{heroIndex + 1}/4</span>
+          </div>
+          <div className="mt-2 grid grid-cols-4 gap-1">
+            {thumbs.map((src, index) =>
+              src ? (
+                <button key={`${src}-${index}`} type="button" onClick={() => setHero(src)} className={`overflow-hidden rounded border ${hero === src ? "border-[#0758c9]" : "border-[#dfe5ed]"}`}>
+                  <img src={src} alt="" className="aspect-square w-full object-cover" />
+                </button>
+              ) : (
+                <div key={`empty-${index}`} className="aspect-square rounded border border-dashed border-[#dfe5ed] bg-[#f6f7f9]" />
+              ),
+            )}
+          </div>
+        </div>
+        <div className="min-w-0">
+          <span className="text-[9px] font-black uppercase text-[#ff7800]">{brand?.name}</span>
+          <h1 className="mt-1 text-[14px] font-black leading-snug text-[#071c4c]">{product.name}</h1>
+          <ul className="mt-2 space-y-1 text-[8px] leading-snug text-[#263b5e]">{product.highlights.slice(0,5).map(item=><li key={item} className="flex gap-1"><ShieldCheck className="h-3 w-3 shrink-0 text-[#0758c9]" />{item}</li>)}</ul>
+          <div className="mt-2 rounded-lg bg-[#f3f7ff] p-2 text-[8px] font-semibold text-[#163a72]"><ShieldCheck className="mr-1 inline h-3 w-3" />Bảo hành {product.warranty}</div>
+        </div>
       </section>
 
       <section className="mt-3 border-t px-4 pt-3"><div className="flex items-end justify-between"><div><strong className="text-xl font-black text-[#e60012]">{formatVnd(variant.price)}</strong>{product.salePrice&&<p className="text-[8px] text-muted-foreground line-through">{formatVnd(product.price)}</p>}</div><div className="flex items-center rounded border"><button className="h-7 w-7" onClick={()=>setQty(value=>Math.max(1,value-1))}>-</button><span className="w-7 text-center text-xs">{qty}</span><button className="h-7 w-7" onClick={()=>setQty(value=>value+1)}>+</button></div></div></section>
@@ -314,7 +347,6 @@ function MobileProductDetail({ product, variant, setVariant, qty, setQty }: {
 
       <section className="mt-4 border-t px-4 pt-3"><h2 className="text-[11px] font-bold text-[#071c4c]">Mô tả sản phẩm</h2><p className="mt-2 text-[9px] leading-relaxed text-[#40516c]">{product.description}</p><button className="mt-1 text-[8px] font-bold text-[#0758c9]">Xem thêm</button></section>
       <section className="mt-4 border-t px-4 pt-3"><div className="flex justify-between"><h2 className="text-[11px] font-bold text-[#071c4c]">Thông số kỹ thuật</h2><span className="text-[8px] font-bold text-[#0758c9]">Xem tất cả ›</span></div><div className="mt-2 grid grid-cols-3 overflow-hidden rounded-lg border">{product.specs.map(spec=><div key={spec.label} className="min-h-14 border-b border-r p-2"><span className="block text-[7px] text-[#66758c]">{spec.label}</span><strong className="mt-1 block text-[8px] leading-tight text-[#172d52]">{spec.value}</strong></div>)}</div></section>
-      <section className="mx-4 mt-4 rounded-xl bg-[#f7f9fc] p-3"><h2 className="text-[10px] font-bold">Đánh giá sản phẩm</h2><div className="mt-2 flex items-center gap-4"><div className="text-center"><strong className="text-2xl text-[#071c4c]">{product.rating}<small>/5</small></strong><div className="text-[10px] text-[#ffc400]">★★★★★</div><span className="text-[7px] text-muted-foreground">{product.reviewCount} đánh giá</span></div><div className="flex-1 space-y-1">{[5,4,3,2,1].map((star,index)=><div key={star} className="flex items-center gap-1 text-[7px]"><span>{star} ★</span><span className="h-1 flex-1 overflow-hidden rounded bg-[#e2e7ee]"><span className="block h-full bg-[#ffc400]" style={{width:index===0?"86%":`${Math.max(3,22-index*5)}%`}} /></span></div>)}</div></div></section>
     </div>
   );
 }

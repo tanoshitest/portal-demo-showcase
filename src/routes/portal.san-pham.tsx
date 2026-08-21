@@ -1,12 +1,12 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { FolderPlus, Pencil, Plus, Trash2 } from "lucide-react";
+import { FolderPlus, ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PortalGate } from "@/components/portal-gate";
 import { useStore } from "@/context/store";
 import { brands, categories, products, type Category, type Product } from "@/data/mock";
 import { loadAdminCategories, saveAdminCategories } from "@/data/categories-store";
-import { loadAdminProducts, upsertAdminProduct } from "@/data/products-store";
+import { loadAdminProducts, padProductGallery, upsertAdminProduct } from "@/data/products-store";
 import { formatVnd } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ export const Route = createFileRoute("/portal/san-pham")({
 type FormState = {
   id: string;
   image: string;
+  gallery: string[];
   name: string;
   slug: string;
   sku: string;
@@ -92,6 +93,7 @@ function blankForm(): FormState {
   return {
     id: newId("p"),
     image: "",
+    gallery: padProductGallery(),
     name: "",
     slug: "",
     sku: "",
@@ -112,6 +114,7 @@ function fromProduct(product: Product): FormState {
   return {
     id: product.id,
     image: product.image ?? "",
+    gallery: padProductGallery(product.gallery),
     name: product.name,
     slug: product.slug,
     sku: product.sku,
@@ -161,6 +164,7 @@ function toProduct(form: FormState, original?: Product): Product | string {
     rating: original?.rating ?? 0,
     reviewCount: original?.reviewCount ?? 0,
     image: form.image.trim(),
+    gallery: padProductGallery(form.gallery).map((src) => src.trim()),
     description: form.description.trim(),
     highlights: form.highlights.map((h) => h.trim()).filter(Boolean),
     specs: form.specs
@@ -406,27 +410,34 @@ function PortalProducts() {
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2 space-y-2">
-                  <Label htmlFor="product-image">Ảnh (URL)</Label>
-                  <div className="flex gap-3">
-                    {form.image ? (
-                      <img
-                        src={form.image}
-                        alt={form.name || "Ảnh sản phẩm"}
-                        className="h-20 w-20 shrink-0 rounded-md border border-border object-cover"
+                <div className="sm:col-span-2 space-y-3">
+                  <Label>Ảnh sản phẩm</Label>
+                  <ProductImageSlot
+                    id="product-image-main"
+                    label="Ảnh lớn"
+                    value={form.image}
+                    size="lg"
+                    onChange={(next) => patch("image", next)}
+                  />
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {form.gallery.map((src, index) => (
+                      <ProductImageSlot
+                        key={index}
+                        id={`product-image-thumb-${index}`}
+                        label={`Ảnh nhỏ ${index + 1}`}
+                        value={src}
+                        size="sm"
+                        onChange={(next) =>
+                          setForm((prev) => {
+                            const gallery = padProductGallery(prev.gallery);
+                            gallery[index] = next;
+                            return { ...prev, gallery };
+                          })
+                        }
                       />
-                    ) : (
-                      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
-                        Ảnh
-                      </div>
-                    )}
-                    <Input
-                      id="product-image"
-                      value={form.image}
-                      onChange={(e) => patch("image", e.target.value)}
-                      placeholder="https://… hoặc giữ ảnh hiện tại"
-                    />
+                    ))}
                   </div>
+                  <p className="text-xs text-muted-foreground">JPG, PNG hoặc WebP, mỗi ảnh tối đa 2 MB.</p>
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
@@ -732,6 +743,97 @@ function PortalProducts() {
           </form>
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function compressProductImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = reject;
+      image.onload = () => {
+        const maxSide = 900;
+        const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) return reject(new Error("Canvas unavailable"));
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/webp", 0.82));
+      };
+      image.src = String(reader.result ?? "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function ProductImageSlot({
+  id,
+  label,
+  value,
+  size,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  size: "lg" | "sm";
+  onChange: (next: string) => void;
+}) {
+  const pick = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Vui lòng chọn đúng tệp hình ảnh");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ảnh không được lớn hơn 2 MB");
+      return;
+    }
+    try {
+      onChange(await compressProductImage(file));
+    } catch {
+      toast.error("Không thể xử lý ảnh đã chọn");
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <div
+        className={`grid place-items-center overflow-hidden rounded-md border border-dashed border-border bg-secondary/30 ${
+          size === "lg" ? "h-40 w-full" : "aspect-square w-full"
+        }`}
+      >
+        {value ? (
+          <img src={value} alt={label} className="h-full w-full object-cover" />
+        ) : (
+          <ImagePlus className={size === "lg" ? "h-8 w-8 text-muted-foreground" : "h-5 w-5 text-muted-foreground"} />
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <Button type="button" variant="outline" size="sm" asChild>
+          <Label htmlFor={id} className="cursor-pointer">
+            <ImagePlus className="h-3.5 w-3.5" /> Chọn
+          </Label>
+        </Button>
+        {value ? (
+          <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => onChange("")}>
+            <Trash2 className="h-3.5 w-3.5" /> Xóa
+          </Button>
+        ) : null}
+        <Input id={id} type="file" accept="image/*" className="hidden" onChange={pick} />
+      </div>
     </div>
   );
 }

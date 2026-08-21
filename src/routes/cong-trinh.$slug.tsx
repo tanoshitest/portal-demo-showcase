@@ -1,25 +1,25 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { MapPin, Ruler, CalendarDays, TrendingUp } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ConsultForm } from "@/components/consult-form";
 import { Button } from "@/components/ui/button";
-import { getProject, products, solutions, type Project } from "@/data/mock";
+import { type Project } from "@/data/mock";
+import { loadAdminProducts } from "@/data/products-store";
+import { getAdminProject } from "@/data/projects-store";
+import { getAdminSolution } from "@/data/solutions-store";
 
 export const Route = createFileRoute("/cong-trinh/$slug")({
-  loader: ({ params }) => {
-    const project = getProject(params.slug);
-    if (!project) throw notFound();
-    return { project };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData)
+  head: ({ params }) => {
+    const p = typeof window === "undefined" ? undefined : getAdminProject(params.slug);
+    if (!p) {
       return {
         meta: [
-          { title: "Không tìm thấy công trình | Hoàng Vĩnh VKT" },
+          { title: "Công trình | Hoàng Vĩnh VKT" },
           { name: "robots", content: "noindex" },
         ],
       };
-    const p = loaderData.project;
+    }
     return {
       meta: [
         { title: `${p.name} | Công trình Hoàng Vĩnh VKT` },
@@ -29,13 +29,39 @@ export const Route = createFileRoute("/cong-trinh/$slug")({
       ],
     };
   },
-  component: ProjectDetail,
+  component: ProjectDetailPage,
 });
 
-function ProjectDetail() {
-  const { project } = Route.useLoaderData() as { project: Project };
-  const solution = solutions.find((s) => s.slug === project.solutionSlug);
-  const usedProducts = products.filter((p) => project.productSlugs.includes(p.slug));
+function ProjectDetailPage() {
+  const { slug } = useParams({ from: "/cong-trinh/$slug" });
+  const [project, setProject] = useState<Project | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setProject(getAdminProject(slug) ?? null);
+    setReady(true);
+  }, [slug]);
+
+  if (!ready) return <div className="container-page min-h-[40vh] py-10" />;
+
+  if (!project) {
+    return (
+      <div className="container-page py-16 text-center">
+        <h1 className="text-xl font-black">Không tìm thấy công trình</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Công trình có thể đã bị xóa hoặc chưa được lưu.</p>
+        <Button asChild className="mt-6">
+          <Link to="/cong-trinh">Về danh sách công trình</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return <ProjectDetail project={project} />;
+}
+
+function ProjectDetail({ project }: { project: Project }) {
+  const solution = getAdminSolution(project.solutionSlug);
+  const usedProducts = loadAdminProducts().filter((p) => project.productSlugs.includes(p.slug));
   const [hero, ...thumbs] = project.gallery;
   const thumbCols =
     thumbs.length <= 1

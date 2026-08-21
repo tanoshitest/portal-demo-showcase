@@ -110,6 +110,10 @@ export function loadAdminProjects(): Project[] {
   return [...merged, ...extras];
 }
 
+export function getAdminProject(slug: string): Project | undefined {
+  return loadAdminProjects().find((p) => p.slug === slug);
+}
+
 export function saveAdminProjects(list: Project[]): void {
   if (typeof window === "undefined") return;
   persistLocalAndCloud(PROJECTS_STORAGE_KEY, list);

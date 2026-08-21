@@ -3,9 +3,18 @@ import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const PRODUCTS_STORAGE_KEY = "hv_admin_products";
 
+export const PRODUCT_GALLERY_SLOTS = 4;
+
+export function padProductGallery(list?: string[]): string[] {
+  const next = Array.isArray(list) ? list.slice(0, PRODUCT_GALLERY_SLOTS).map((src) => src ?? "") : [];
+  while (next.length < PRODUCT_GALLERY_SLOTS) next.push("");
+  return next;
+}
+
 function cloneProduct(product: Product): Product {
   return {
     ...product,
+    gallery: padProductGallery(product.gallery),
     highlights: [...product.highlights],
     specs: product.specs.map((s) => ({ ...s })),
     variants: product.variants.map((v) => ({ ...v })),
@@ -44,10 +53,14 @@ function parseStock(value: unknown): number {
 
 function hydrate(stored: Product, mock?: Product): Product {
   const image = isRemoteImage(stored.image) ? stored.image : (mock?.image ?? stored.image ?? "");
+  const gallerySource = Array.isArray(stored.gallery) ? stored.gallery : mock?.gallery;
   return {
     ...(mock ? cloneProduct(mock) : emptyProduct(stored.id)),
     ...stored,
     image,
+    gallery: padProductGallery(gallerySource).map((src, i) =>
+      isRemoteImage(src) ? src : src || mock?.gallery?.[i] || "",
+    ),
     stock: parseStock(stored.stock ?? mock?.stock),
     highlights: Array.isArray(stored.highlights) ? stored.highlights : (mock?.highlights ?? []),
     specs: Array.isArray(stored.specs) ? stored.specs : (mock?.specs ?? []),
@@ -70,6 +83,7 @@ function emptyProduct(id: string): Product {
     stock: 0,
     warranty: "",
     image: "",
+    gallery: ["", "", "", ""],
     highlights: [],
     description: "",
     specs: [],
