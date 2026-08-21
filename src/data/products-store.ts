@@ -36,6 +36,20 @@ function isRemoteImage(src: string | undefined): boolean {
   );
 }
 
+export function isUsableProductImage(src: string | undefined): boolean {
+  const value = src?.trim() ?? "";
+  if (!value || /\s/.test(value)) return false;
+  if (isRemoteImage(value)) return true;
+  if (value.startsWith("/assets/") || value.startsWith("assets/")) return true;
+  return /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(value);
+}
+
+function resolveProductImage(stored?: string, fallback?: string): string {
+  if (isUsableProductImage(stored)) return stored!.trim();
+  if (isUsableProductImage(fallback)) return fallback!.trim();
+  return "";
+}
+
 function isProduct(value: unknown): value is Product {
   if (!value || typeof value !== "object") return false;
   const p = value as Partial<Product>;
@@ -52,15 +66,12 @@ function parseStock(value: unknown): number {
 }
 
 function hydrate(stored: Product, mock?: Product): Product {
-  const image = isRemoteImage(stored.image) ? stored.image : (mock?.image ?? stored.image ?? "");
   const gallerySource = Array.isArray(stored.gallery) ? stored.gallery : mock?.gallery;
   return {
     ...(mock ? cloneProduct(mock) : emptyProduct(stored.id)),
     ...stored,
-    image,
-    gallery: padProductGallery(gallerySource).map((src, i) =>
-      isRemoteImage(src) ? src : src || mock?.gallery?.[i] || "",
-    ),
+    image: resolveProductImage(stored.image, mock?.image),
+    gallery: padProductGallery(gallerySource).map((src, i) => resolveProductImage(src, mock?.gallery?.[i])),
     stock: parseStock(stored.stock ?? mock?.stock),
     highlights: Array.isArray(stored.highlights) ? stored.highlights : (mock?.highlights ?? []),
     specs: Array.isArray(stored.specs) ? stored.specs : (mock?.specs ?? []),

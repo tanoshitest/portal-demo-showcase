@@ -3,6 +3,7 @@ import { CheckSquare2, Square, ShoppingCart, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { brands, type Product } from "@/data/mock";
+import { isUsableProductImage } from "@/data/products-store";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 import { toast } from "sonner";
@@ -30,14 +31,20 @@ export function ProductCard({
         params={{ slug: product.slug }}
         className="relative block h-[126px] shrink-0 overflow-hidden bg-white sm:h-auto sm:aspect-square sm:bg-secondary"
       >
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          width={900}
-          height={900}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {isUsableProductImage(product.image) ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            width={900}
+            height={900}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-secondary/40 text-xs text-muted-foreground">
+            Chưa có ảnh
+          </div>
+        )}
         {discount > 0 && (
           <span className="absolute left-2 top-2 rounded-md bg-highlight px-2 py-1 text-xs font-bold text-highlight-foreground">
             -{discount}%

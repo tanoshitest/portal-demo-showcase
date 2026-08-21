@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product-card";
 import { brands, type Product } from "@/data/mock";
-import { getAdminProduct, loadAdminProducts, padProductGallery } from "@/data/products-store";
+import { getAdminProduct, isUsableProductImage, loadAdminProducts, padProductGallery } from "@/data/products-store";
 import { formatStock, formatVnd, stockBadgeClass } from "@/lib/format";
 import { useStore } from "@/context/store";
 
@@ -72,8 +72,10 @@ function ProductDetailPage() {
 }
 
 function productThumbs(product: Product): string[] {
-  const gallery = padProductGallery(product.gallery);
-  return gallery.some(Boolean) ? gallery : padProductGallery([product.image, product.image, product.image, product.image]);
+  const gallery = padProductGallery(product.gallery).map((src) => (isUsableProductImage(src) ? src : ""));
+  if (gallery.some(Boolean)) return gallery;
+  const main = isUsableProductImage(product.image) ? product.image : "";
+  return padProductGallery(main ? [main] : []);
 }
 
 function ProductDetail({ product }: { product: Product }) {
@@ -82,7 +84,7 @@ function ProductDetail({ product }: { product: Product }) {
   const [variant, setVariant] = useState(() => fallbackVariant(product));
   const [qty, setQty] = useState(1);
   const thumbs = productThumbs(product);
-  const [hero, setHero] = useState(product.image || thumbs.find(Boolean) || "");
+  const [hero, setHero] = useState(isUsableProductImage(product.image) ? product.image : thumbs.find(Boolean) || "");
   const related = loadAdminProducts().filter(
     (p) => p.categorySlug === product.categorySlug && p.slug !== product.slug,
   );

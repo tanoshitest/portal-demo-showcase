@@ -6,7 +6,7 @@ import { PortalGate } from "@/components/portal-gate";
 import { useStore } from "@/context/store";
 import { brands, categories, products, type Category, type Product } from "@/data/mock";
 import { loadAdminCategories, saveAdminCategories } from "@/data/categories-store";
-import { loadAdminProducts, padProductGallery, upsertAdminProduct } from "@/data/products-store";
+import { loadAdminProducts, padProductGallery, upsertAdminProduct, isUsableProductImage } from "@/data/products-store";
 import { formatVnd } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,8 +113,8 @@ function blankForm(): FormState {
 function fromProduct(product: Product): FormState {
   return {
     id: product.id,
-    image: product.image ?? "",
-    gallery: padProductGallery(product.gallery),
+    image: isUsableProductImage(product.image) ? product.image : "",
+    gallery: padProductGallery(product.gallery).map((src) => (isUsableProductImage(src) ? src : "")),
     name: product.name,
     slug: product.slug,
     sku: product.sku,
@@ -348,7 +348,7 @@ function PortalProducts() {
             {list.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>
-                  {p.image ? (
+                  {isUsableProductImage(p.image) ? (
                     <img
                       src={p.image}
                       alt={p.name}
@@ -397,9 +397,9 @@ function PortalProducts() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="flex h-full w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl lg:max-w-3xl"
+          className="flex h-full max-h-dvh w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl lg:max-w-3xl"
         >
-          <SheetHeader className="space-y-1 border-b border-border px-6 py-4 pr-12 text-left">
+          <SheetHeader className="shrink-0 space-y-1 border-b border-border px-6 py-4 pr-12 text-left">
             <SheetTitle>{isCreate ? "Thêm sản phẩm" : "Sửa sản phẩm"}</SheetTitle>
             <SheetDescription>
               Các trường giống trang sản phẩm trên website. Lưu vào localStorage (demo, không có máy
@@ -408,7 +408,7 @@ function PortalProducts() {
           </SheetHeader>
 
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 pb-8">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2 space-y-3">
                   <Label>Ảnh sản phẩm</Label>
@@ -734,7 +734,7 @@ function PortalProducts() {
               </fieldset>
             </div>
 
-            <SheetFooter className="border-t border-border px-6 py-4 sm:justify-end">
+            <SheetFooter className="shrink-0 border-t border-border bg-background px-6 py-4 sm:justify-end">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Hủy
               </Button>
@@ -807,6 +807,8 @@ function ProductImageSlot({
     }
   };
 
+  const usable = isUsableProductImage(value);
+
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-muted-foreground">{label}</p>
@@ -815,7 +817,7 @@ function ProductImageSlot({
           size === "lg" ? "h-40 w-full" : "aspect-square w-full"
         }`}
       >
-        {value ? (
+        {usable ? (
           <img src={value} alt={label} className="h-full w-full object-cover" />
         ) : (
           <ImagePlus className={size === "lg" ? "h-8 w-8 text-muted-foreground" : "h-5 w-5 text-muted-foreground"} />
