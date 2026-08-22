@@ -202,6 +202,9 @@ export type CatalogCabinetType = {
   price: number;
   image?: string;
   unit: string;
+  specification?: string;
+  note?: string;
+  warrantyYears?: number;
 };
 
 function cabinetItemsFromStorage(): EquipmentCatalogItem[] {
@@ -234,6 +237,9 @@ export function getCatalogCabinetTypes(): CatalogCabinetType[] {
         price: Math.max(0, item.referencePrice ?? item.customerPrice ?? 0),
         image: item.image ?? "",
         unit: item.unit || "Tủ",
+        specification: item.specification,
+        note: item.note,
+        warrantyYears: item.warrantyYears,
       };
     })
     .filter((item): item is CatalogCabinetType => Boolean(item?.id && item.name));

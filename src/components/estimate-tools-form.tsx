@@ -5,13 +5,17 @@ import {
   autoAcWire,
   autoCabinetType,
   autoInverterType,
+  cabinetById,
   cabinetLabel,
+  equipmentWarranty,
+  inverterById,
   loadEstimateInputs,
   phaseFromCabinet,
+  recommendedInverterOptionsForPhase,
   saveEstimateInputs,
   type EstimateInputs,
 } from "@/data/estimate";
-import { buildEstimateQuote } from "@/data/estimate-quote";
+import { buildEstimateQuote, type EstimateQuoteRow } from "@/data/estimate-quote";
 import { getAvailablePanelTypes } from "@/data/panel-catalog";
 import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -29,6 +33,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AutoCalcGrid, EstimateCalcTables } from "@/components/estimate-calc-tables";
+import {
+  applyCustomerToEstimate,
+  EstimateCustomerSelect,
+} from "@/components/estimate-customer-select";
 import { loadSolarQuotes, makeEstimateQuote, saveSolarQuotes } from "@/data/solar-quotes";
 import { newQuoteLineId, type PackageType, type QuoteLineItem } from "@/data/solar-quotes";
 import { images } from "@/data/mock";
@@ -198,7 +206,7 @@ export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" 
         className="mt-0 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         <section className="grid min-h-0 min-w-0 grid-cols-1 gap-3 xl:h-full xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.68fr)] xl:items-stretch">
-          <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full">
+          <div className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full xl:overflow-y-auto">
             <div className="shrink-0 bg-brand-dark px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-foreground sm:px-4 sm:py-1.5">
               {mode === "auto" ? "Bảng tính AUTO" : "Bảng tính thủ công"}
             </div>
@@ -215,7 +223,12 @@ export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" 
             />
           </div>
 
-          <QuoteEstimatePanel form={form} mode={mode} onPatch={patch} />
+          <QuoteEstimatePanel
+            form={form}
+            mode={mode}
+            onPatch={patch}
+            onApply={(next) => setForm((prev) => ({ ...prev, ...next }))}
+          />
         </section>
       </TabsContent>
 
@@ -239,15 +252,33 @@ function QuoteEstimatePanel({
   form,
   mode,
   onPatch,
+  onApply,
 }: {
   form: EstimateInputs;
   mode: "auto" | "manual";
   onPatch: <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => void;
+  onApply: (next: Partial<EstimateInputs>) => void;
 }) {
-  const { rows: quoteRows, total: quoteTotal } = useMemo(
-    () => buildEstimateQuote(form, mode),
-    [form, mode],
-  );
+  const quote = useMemo(() => buildEstimateQuote(form, mode), [form, mode]);
+  const inverterQuotes = useMemo(() => {
+    if (mode !== "auto") return [];
+    const options = recommendedInverterOptionsForPhase(form.phase, quote.calc.inverterKw);
+    const selected = inverterById(form.inverterTypeAuto);
+    const list = options.length ? options : selected ? [selected] : [];
+    const cabinet = cabinetById(form.cabinetType);
+    return list.map((inverter) => {
+      const next = buildEstimateQuote({ ...form, inverterTypeAuto: inverter.id }, "auto");
+      return {
+        inverter,
+        rows: next.rows.filter((row) => row.no === "1" || row.no === "2" || row.no === "3"),
+        total: next.total,
+        warrantyByNo: {
+          "2": equipmentWarranty(inverter),
+          "3": equipmentWarranty(cabinet),
+        },
+      };
+    });
+  }, [form, mode, quote.calc.inverterKw]);
 
   return (
     <aside className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-none border border-border bg-card xl:h-full">
@@ -261,6 +292,11 @@ function QuoteEstimatePanel({
             <FileText className="h-3.5 w-3.5" />
             Thông tin khách hàng
           </div>
+          <EstimateCustomerSelect
+            className="sm:col-span-3"
+            customerId={form.customerId}
+            onSelect={(customer) => onApply(applyCustomerToEstimate(customer))}
+          />
           <Field label="Tên khách hàng">
             <Input
               className="h-10 min-w-0 px-3 text-sm sm:h-8 sm:px-2 sm:text-xs"
@@ -287,102 +323,139 @@ function QuoteEstimatePanel({
           </Field>
         </section>
 
-        <div className="overflow-x-hidden rounded-none border-2 border-brand-dark">
-          <table className="w-full table-fixed border-collapse text-[6.5px] leading-tight [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 sm:text-[11px] sm:leading-normal">
-            <colgroup>
-              <col className="w-[6%]" />
-              <col className="w-[27%]" />
-              <col className="w-[12%]" />
-              <col className="w-[8%]" />
-              <col className="w-[9%]" />
-              <col className="w-[18%]" />
-              <col className="w-[20%]" />
-            </colgroup>
-            <thead>
-              <tr className="bg-amber-100 text-[6.5px] font-bold uppercase leading-tight text-amber-950 sm:text-[10px]">
-                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">STT</th>
-                <th className="border border-border px-0.5 py-1.5 text-left sm:px-1 sm:py-1">Sản phẩm</th>
-                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">Ảnh</th>
-                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">ĐVT</th>
-                <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">SL</th>
-                <th className="border border-border px-0.5 py-1.5 text-right sm:px-1 sm:py-1">Đơn giá</th>
-                <th className="border border-border px-0.5 py-1.5 text-right sm:px-1 sm:py-1">Thành tiền</th>
-              </tr>
-            </thead>
-            <tbody>
-              {quoteRows.map((row) => (
-                <tr key={row.no} className="border-t border-border align-top">
-                  <td className="px-0.5 py-1.5 text-center tabular-nums font-semibold sm:px-1">{row.no}</td>
-                  <td className="break-words px-0.5 py-1.5 font-medium leading-tight sm:px-1">{row.name}</td>
-                  <td className="px-0.5 py-1.5 sm:px-1">
-                    <div className="mx-auto flex h-7 w-7 items-center justify-center overflow-hidden border border-dashed border-border bg-secondary/30 text-muted-foreground sm:h-9 sm:w-9">
-                      {row.image ? <img src={row.image} alt={row.name} className="h-full w-full object-contain" /> : <ImageOff className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
-                    </div>
-                  </td>
-                  <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>
-                    {row.unit}
-                  </td>
-                  <td className="px-1 py-1.5 text-center tabular-nums">{row.qty}</td>
-                  {row.priceRowSpan ? (
-                    <>
-                      <td
-                        rowSpan={row.priceRowSpan}
-                        className="px-1 py-1.5 text-right align-middle tabular-nums"
-                      >
-                        {formatVnd(row.unitPrice)}
-                      </td>
-                      <td
-                        rowSpan={row.priceRowSpan}
-                        className="px-1 py-1.5 text-right align-middle font-semibold tabular-nums"
-                      >
-                        {formatVnd(row.total)}
-                      </td>
-                    </>
-                  ) : row.unitPriceLines ? (
-                    <>
-                      <td className="px-1 py-1.5 text-right tabular-nums">
-                        <div className="space-y-0.5">
-                          {row.unitPriceLines.map((line) => (
-                            <div key={line} className="whitespace-pre-line">
-                              {line}
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-1 py-1.5 text-right font-semibold tabular-nums">
-                        {formatVnd(row.total)}
-                      </td>
-                    </>
-                  ) : row.hidePrices ? null : (
-                    <>
-                      <td className="px-1 py-1.5 text-right tabular-nums">
-                        {formatVnd(row.unitPrice)}
-                      </td>
-                      <td className="px-1 py-1.5 text-right font-semibold tabular-nums">
-                        {formatVnd(row.total)}
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-brand-dark bg-amber-100 text-[11px] font-bold text-amber-950">
-                <td colSpan={4} className="border-r border-border px-2 py-1.5 text-left uppercase">
-                  Tổng tiền
-                </td>
-                <td
-                  colSpan={3}
-                  className="whitespace-nowrap px-1 py-1.5 text-right tabular-nums text-destructive"
-                >
-                  {formatVnd(quoteTotal)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <QuoteTable rows={quote.rows} total={quote.total} />
+
+        {mode === "auto" && inverterQuotes.length ? (
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-brand-dark">
+              Bảng giá theo biến tần
+            </p>
+            {inverterQuotes.map((item) => (
+              <button
+                key={item.inverter.id}
+                type="button"
+                className={cn(
+                  "block w-full text-left",
+                  form.inverterTypeAuto === item.inverter.id && "ring-2 ring-brand",
+                )}
+                onClick={() => onPatch("inverterTypeAuto", item.inverter.id)}
+              >
+                <QuoteTable
+                  rows={item.rows}
+                  total={item.total}
+                  warrantyByNo={item.warrantyByNo}
+                />
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
     </aside>
+  );
+}
+
+function QuoteTable({
+  rows,
+  total,
+  warrantyByNo,
+}: {
+  rows: EstimateQuoteRow[];
+  total: number;
+  warrantyByNo?: Record<string, string>;
+}) {
+  return (
+    <div className="overflow-x-hidden rounded-none border-2 border-brand-dark">
+      <table className="w-full table-fixed border-collapse text-[6.5px] leading-tight [&_tbody_td]:border-r [&_tbody_td]:border-border [&_tbody_td:last-child]:border-r-0 sm:text-[11px] sm:leading-normal">
+        <colgroup>
+          <col className="w-[6%]" />
+          <col className="w-[27%]" />
+          <col className="w-[12%]" />
+          <col className="w-[8%]" />
+          <col className="w-[9%]" />
+          <col className="w-[18%]" />
+          <col className="w-[20%]" />
+        </colgroup>
+        <thead>
+          <tr className="bg-amber-100 text-[6.5px] font-bold uppercase leading-tight text-amber-950 sm:text-[10px]">
+            <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">STT</th>
+            <th className="border border-border px-0.5 py-1.5 text-left sm:px-1 sm:py-1">Sản phẩm</th>
+            <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">Ảnh</th>
+            <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">ĐVT</th>
+            <th className="border border-border px-0.5 py-1.5 text-center sm:px-1 sm:py-1">SL</th>
+            <th className="border border-border px-0.5 py-1.5 text-right sm:px-1 sm:py-1">Đơn giá</th>
+            <th className="border border-border px-0.5 py-1.5 text-right sm:px-1 sm:py-1">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const warranty = warrantyByNo?.[row.no];
+            return (
+              <tr key={row.no} className="border-t border-border align-top">
+                <td className="px-0.5 py-1.5 text-center tabular-nums font-semibold sm:px-1">{row.no}</td>
+                <td className="break-words px-0.5 py-1.5 font-medium leading-tight sm:px-1">{row.name}</td>
+                <td className="px-0.5 py-1.5 sm:px-1">
+                  <div className="mx-auto flex h-7 w-7 items-center justify-center overflow-hidden border border-dashed border-border bg-secondary/30 text-muted-foreground sm:h-9 sm:w-9">
+                    {row.image ? (
+                      <img src={row.image} alt={row.name} className="h-full w-full object-contain" />
+                    ) : (
+                      <ImageOff className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    )}
+                  </div>
+                </td>
+                <td className={cn("px-1 py-1.5 text-center", row.no === "6" && "!border-r")}>
+                  {row.unit}
+                </td>
+                <td className="px-1 py-1.5 text-center tabular-nums">{row.qty}</td>
+                {warranty ? (
+                  <td colSpan={2} className="px-1 py-1.5 text-center font-semibold">
+                    {/bảo hành/i.test(warranty) ? warranty : `Bảo hành ${warranty}`}
+                  </td>
+                ) : row.priceRowSpan ? (
+                  <>
+                    <td rowSpan={row.priceRowSpan} className="px-1 py-1.5 text-right align-middle tabular-nums">
+                      {formatVnd(row.unitPrice)}
+                    </td>
+                    <td rowSpan={row.priceRowSpan} className="px-1 py-1.5 text-right align-middle font-semibold tabular-nums">
+                      {formatVnd(row.total)}
+                    </td>
+                  </>
+                ) : row.unitPriceLines ? (
+                  <>
+                    <td className="px-1 py-1.5 text-right tabular-nums">
+                      <div className="space-y-0.5">
+                        {row.unitPriceLines.map((line) => (
+                          <div key={line} className="whitespace-pre-line">
+                            {line}
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-1 py-1.5 text-right font-semibold tabular-nums">
+                      {formatVnd(row.total)}
+                    </td>
+                  </>
+                ) : row.hidePrices ? null : (
+                  <>
+                    <td className="px-1 py-1.5 text-right tabular-nums">{formatVnd(row.unitPrice)}</td>
+                    <td className="px-1 py-1.5 text-right font-semibold tabular-nums">{formatVnd(row.total)}</td>
+                  </>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr className="border-t-2 border-brand-dark bg-amber-100 text-[11px] font-bold text-amber-950">
+            <td colSpan={4} className="border-r border-border px-2 py-1.5 text-left uppercase">
+              Tổng tiền
+            </td>
+            <td colSpan={3} className="whitespace-nowrap px-1 py-1.5 text-right tabular-nums text-destructive">
+              {formatVnd(total)}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   );
 }
 

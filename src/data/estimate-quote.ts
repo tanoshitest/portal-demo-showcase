@@ -1,5 +1,7 @@
 import { computeAutoCalc } from "@/data/auto-calc";
 import { cabinetById, cabinetLabel, inverterById, inverterLabel, type EstimateInputs } from "@/data/estimate";
+import { loadEstimateConfig } from "@/data/estimate-config";
+import { buildLaborSheet } from "@/data/estimate-labor";
 import { amountExclVat, kwhFromBill } from "@/data/evn-bill";
 
 export type EstimateQuoteRow = {
@@ -36,15 +38,16 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
   const winterBill = mode === "auto" ? form.winterBillAuto : form.winterBillManual;
   const summerKwh = kwhFromBill(amountExclVat(summerBill)).totalKwh;
   const winterKwh = kwhFromBill(amountExclVat(winterBill)).totalKwh;
+  const config = loadEstimateConfig();
   const calc = computeAutoCalc({
     summerBill: amountExclVat(summerBill),
     winterBill: amountExclVat(winterBill),
     tariff: 2954,
-    pshSummer: 4.6,
-    pshWinter: 2.3,
+    pshSummer: config.pshSummer,
+    pshWinter: config.pshWinter,
     panelName: mode === "auto" ? form.panelTypeAuto : form.panelTypeManual,
     dayRate: form.dayRate,
-    dischargeEff: 80,
+    dischargeEff: config.dischargeEff,
     batteryName: mode === "auto" ? form.batteryTypeAuto : form.batteryTypeManual,
     panelCount: mode === "auto" ? 0 : form.panelCountManual,
     batteryQty: mode === "auto" ? 0 : form.batteryQtyManual,
@@ -80,10 +83,8 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
     Math.max(0, form.pipeM) * 12_000;
   const accessoryAndWireTotal = accessoryTotal + wireTotal;
 
-  const laborTotal =
-    calc.panelCount * (form.phase === "Điện 3 pha" ? 420_000 : 360_000) +
-    (form.crane ? form.cranePrice * Math.max(0, form.craneShifts) : 0) +
-    (form.remote ? form.remotePrice * Math.max(0, form.remoteDays) : 0);
+  const labor = buildLaborSheet(form, calc.panelCount);
+  const laborTotal = labor.total;
 
   const batteryLines = (calc.batteryCombo.items.length ? calc.batteryCombo.items : [calc.battery]).map(
     (item, index) => {

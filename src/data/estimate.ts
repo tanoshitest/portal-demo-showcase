@@ -31,6 +31,7 @@ export const AC_WIRES = [
 export const INVERTER_KW_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 15];
 
 export type EstimateInputs = {
+  customerId: string;
   customer: string;
   phone: string;
   address: string;
@@ -158,6 +159,17 @@ export function cabinetLabel(id: string) {
   const item = cabinetById(id);
   if (!item) return "Chọn tủ điện";
   return item.capacityKw != null ? `${item.name} · ${item.capacityKw} kW` : item.name;
+}
+
+export function equipmentWarranty(
+  item?: { warrantyYears?: number; specification?: string; note?: string } | null,
+) {
+  if (item?.warrantyYears) return `${item.warrantyYears} năm`;
+  const text = `${item?.note ?? ""}\n${item?.specification ?? ""}`;
+  const numbered = text.match(/bảo hành\s*[:\-]?\s*(0?\d+\s*năm[^.\n]*)/i);
+  if (numbered?.[1]) return numbered[1].replace(/^0/, "").trim();
+  const loose = text.match(/bảo hành[^\n.]{0,40}/i);
+  return loose?.[0]?.replace(/^bảo hành\s*[:\-]?\s*/i, "").trim() || "5 năm";
 }
 
 export function autoCabinetType(phase: EstimateInputs["phase"]) {
@@ -290,6 +302,7 @@ export const PRICE_PACKAGES: PackageCoef[] = [
 
 export function defaultEstimateInputs(): EstimateInputs {
   return {
+    customerId: "",
     customer: "Quý Khách Hàng",
     phone: "",
     address: "",

@@ -3,6 +3,8 @@ export const CLOUD_STATE_KEYS = [
   "hv_admin_documents",
   "hv_site_contacts_v1",
   "hv_solar_estimate_v1",
+  "hv_estimate_customers_v1",
+  "hv_estimate_config_v1",
   "hv_admin_materials_v2",
   "hv_admin_products",
   "hv_admin_projects",

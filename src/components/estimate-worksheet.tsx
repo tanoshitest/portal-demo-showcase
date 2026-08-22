@@ -17,6 +17,10 @@ import {
 import { getAvailablePanelTypes } from "@/data/panel-catalog";
 import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import {
+  applyCustomerToEstimate,
+  EstimateCustomerSelect,
+} from "@/components/estimate-customer-select";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -115,6 +119,13 @@ export function EstimateWorksheet() {
             </tr>
           </thead>
           <tbody>
+            <Row label="Chọn khách hàng" auto={form.customer || "Quý Khách Hàng"}>
+              <EstimateCustomerSelect
+                customerId={form.customerId}
+                triggerClassName="h-7 border-emerald-200 bg-emerald-50 px-2 text-xs shadow-none"
+                onSelect={(customer) => setForm((prev) => ({ ...prev, ...applyCustomerToEstimate(customer) }))}
+              />
+            </Row>
             <Row label="Tên khách hàng" auto={form.customer || "Quý Khách Hàng"}>
               <TextInput
                 value={form.customer}

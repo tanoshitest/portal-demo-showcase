@@ -1,5 +1,9 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { computeAutoCalc } from "@/data/auto-calc";
+import {
+  ESTIMATE_CONFIG_CHANGED_EVENT,
+  loadEstimateConfig,
+} from "@/data/estimate-config";
 import {
   allCabinetOptions,
   autoInverterType,
@@ -11,9 +15,11 @@ import {
   recommendedInverterOptionsForPhase,
   type EstimateInputs,
 } from "@/data/estimate";
+import { buildLaborSheet } from "@/data/estimate-labor";
 import { getCatalogBatteryTypes, type EstimatePanelType } from "@/data/panel-catalog";
 import { kwhFromBill, amountExclVat, type EvnBillResult } from "@/data/evn-bill";
 import { formatVnd } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +47,7 @@ function TrioCols() {
 
 const colLine =
   "[&_th]:border-r [&_td]:border-r [&_th]:border-border [&_td]:border-border [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0";
-const tableCls = `w-full table-fixed border-collapse text-[10px] sm:text-[11px] lg:h-full ${colLine}`;
+const tableCls = `w-full table-fixed border-collapse text-[10px] sm:text-[11px] ${colLine}`;
 const mobileSelectCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
 const mobileInputCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
 
@@ -87,6 +93,16 @@ export function AutoCalcGrid({
     const catalog = getCatalogBatteryTypes({ inStockOnly: true });
     return catalog.length ? catalog : BATTERY_TYPES;
   }, []);
+  const [config, setConfig] = useState(loadEstimateConfig);
+  useEffect(() => {
+    const refresh = () => setConfig(loadEstimateConfig());
+    window.addEventListener("focus", refresh);
+    window.addEventListener(ESTIMATE_CONFIG_CHANGED_EVENT, refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener(ESTIMATE_CONFIG_CHANGED_EVENT, refresh);
+    };
+  }, []);
   const summerNet = amountExclVat(summerBill);
   const winterNet = amountExclVat(winterBill);
   const summerEvn = useMemo(() => kwhFromBill(summerNet), [summerNet]);
@@ -97,18 +113,18 @@ export function AutoCalcGrid({
         summerBill: summerNet,
         winterBill: winterNet,
         tariff: 2954,
-        pshSummer: 4.6,
-        pshWinter: 2.3,
+        pshSummer: config.pshSummer,
+        pshWinter: config.pshWinter,
         panelName,
         dayRate: form.dayRate,
-        dischargeEff: 80,
+        dischargeEff: config.dischargeEff,
         batteryName,
         panelCount: manual ? form.panelCountManual : 0,
         batteryQty: manual ? form.batteryQtyManual : 0,
         summerKwh: summerEvn.totalKwh,
         winterKwh: winterEvn.totalKwh,
       }),
-    [form, manual, panelName, batteryName, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh],
+    [form, manual, panelName, batteryName, summerNet, winterNet, summerEvn.totalKwh, winterEvn.totalKwh, config],
   );
   const inverterOptions = useMemo(
     () => manual
@@ -133,8 +149,8 @@ export function AutoCalcGrid({
   };
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-col overflow-x-hidden border-border lg:grid lg:h-full lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)] lg:border-l">
-      <div className="min-w-0 border-b border-border lg:col-span-2 lg:row-start-1 lg:border-b-0">
+    <div className="flex min-w-0 shrink-0 flex-col overflow-x-hidden border-border lg:border-l">
+      <div className="min-w-0 border-b border-border">
         <div className="grid grid-cols-2 gap-x-2 gap-y-2 p-2 text-[11px] sm:gap-y-1.5 lg:grid-cols-2 lg:p-1.5 2xl:grid-cols-12">
           <div className="contents">
             <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-4">
@@ -373,8 +389,9 @@ export function AutoCalcGrid({
         </div>
       </div>
 
-      <div className="min-w-0 border-b border-border lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:border-b-0 lg:border-t">
-        <CalcPane title="2. Tính toán tấm pin">
+      <div className="grid min-w-0 lg:grid-cols-2">
+      <div className="min-w-0 border-b border-border lg:border-b-0 lg:border-t">
+        <CalcPane title="2. Tính toán tấm pin" className="h-auto">
           <table className={tableCls}>
             <TrioCols />
             <thead>
@@ -518,8 +535,8 @@ export function AutoCalcGrid({
         </CalcPane>
       </div>
 
-      <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:min-h-0 lg:border-l lg:border-t">
-        <CalcPane title="4. Pin lưu trữ">
+      <div className="min-w-0 lg:border-l lg:border-t">
+        <CalcPane title="4. Pin lưu trữ" className="h-auto">
           <table className={tableCls}>
             <TrioCols />
             <thead>
@@ -608,11 +625,140 @@ export function AutoCalcGrid({
                   <Calc>{formatVnd(r.lineTotal)}</Calc>
                 </td>
               </tr>
+              <tr className="border-t border-border text-[11px] sm:text-xs">
+                <td className="px-1.5 py-1 sm:px-2.5">Tủ điện đã chọn</td>
+                <td colSpan={2} className="px-1.5 py-1 sm:px-2.5">
+                  <div
+                    className="flex h-7 items-center overflow-hidden rounded-md border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-destructive"
+                    title={cabinetLabel(form.cabinetType)}
+                  >
+                    <span className="truncate">{cabinetLabel(form.cabinetType)}</span>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </CalcPane>
       </div>
+      </div>
+
+      <div className="relative z-10 min-w-0 border-t border-border bg-card">
+        <LaborCalcTable form={form} panelCount={r.panelCount} />
+      </div>
     </div>
+  );
+}
+
+function LaborCalcTable({ form, panelCount }: { form: EstimateInputs; panelCount: number }) {
+  const labor = buildLaborSheet(form, panelCount);
+  const installRows = [
+    ["Công lắp tấm Pin", labor.panelCong],
+    ["Công lắp khung mái ngói", labor.roofCong],
+    ["Công lắp tủ điện", labor.cabinetCong],
+    ["Vận chuyển vật tư", labor.materialCong],
+    ["Khảo sát và phát sinh", labor.surveyCong],
+  ] as const;
+
+  return (
+    <CalcPane title="5. Nhân công và vận chuyển" className="h-auto">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] table-fixed border-collapse text-[10px] sm:text-[11px]">
+          <colgroup>
+            <col className="w-[38%]" />
+            <col className="w-[14%]" />
+            <col className="w-[14%]" />
+            <col className="w-[16%]" />
+            <col className="w-[18%]" />
+          </colgroup>
+          <thead>
+            <tr className="bg-[#4f81bd] text-white">
+              <th className="px-2 py-1.5 text-left font-bold uppercase" colSpan={5}>
+                5 Nhân công và vận chuyển
+              </th>
+            </tr>
+            <tr className="bg-sky-100 text-[10px] font-bold uppercase text-sky-950">
+              <th className="border-b border-r border-border px-2 py-1 text-left">Hạng mục</th>
+              <th className="border-b border-r border-border px-2 py-1 text-center">Công</th>
+              <th className="border-b border-r border-border px-2 py-1 text-center">Tổng</th>
+              <th className="border-b border-r border-border px-2 py-1 text-right">Giá</th>
+              <th className="border-b border-border px-2 py-1 text-right">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="bg-sky-50">
+              <td className="border-b border-r border-border px-2 py-1 font-semibold" colSpan={2}>
+                Nhân công lắp đặt
+              </td>
+              <td className="border-b border-r border-border px-2 py-1" />
+              <td className="border-b border-r border-border px-2 py-1" />
+              <td className="border-b border-border px-2 py-1" />
+            </tr>
+            {installRows.map(([label, qty], index) => (
+              <tr key={label}>
+                <td className="border-b border-r border-border px-2 py-1">{label}</td>
+                <td className="border-b border-r border-border px-2 py-1 text-center tabular-nums">{qty}</td>
+                {index === 0 ? (
+                  <>
+                    <td
+                      rowSpan={installRows.length}
+                      className="border-b border-r border-border px-2 py-1 text-center align-middle font-semibold tabular-nums"
+                    >
+                      {labor.installCong}
+                    </td>
+                    <td
+                      rowSpan={installRows.length}
+                      className="border-b border-r border-border px-2 py-1 text-right align-middle font-semibold tabular-nums"
+                    >
+                      {formatVnd(labor.installRate)}
+                    </td>
+                    <td
+                      rowSpan={installRows.length}
+                      className="border-b border-border px-2 py-1 text-right align-middle font-semibold tabular-nums text-destructive"
+                    >
+                      {formatVnd(labor.installTotal)}
+                    </td>
+                  </>
+                ) : null}
+              </tr>
+            ))}
+            <tr>
+              <td className="border-b border-r border-border px-2 py-1">Chi phí vận chuyển</td>
+              <td className="border-b border-r border-border px-2 py-1 text-center">{labor.transportUnit}</td>
+              <td className="border-b border-r border-border px-2 py-1 text-center tabular-nums">
+                {labor.transportQty}
+              </td>
+              <td className="border-b border-r border-border px-2 py-1 text-right tabular-nums">
+                {formatVnd(labor.transportRate)}
+              </td>
+              <td className="border-b border-border px-2 py-1 text-right tabular-nums text-destructive">
+                {formatVnd(labor.transportTotal)}
+              </td>
+            </tr>
+            <tr>
+              <td className="border-b border-r border-border px-2 py-1">Chi phí thuê cẩu</td>
+              <td className="border-b border-r border-border px-2 py-1 text-center">{labor.craneUnit}</td>
+              <td className="border-b border-r border-border px-2 py-1 text-center tabular-nums">
+                {labor.craneQty}
+              </td>
+              <td className="border-b border-r border-border px-2 py-1 text-right tabular-nums">
+                {formatVnd(labor.craneRate)}
+              </td>
+              <td className="border-b border-border px-2 py-1 text-right tabular-nums text-destructive">
+                {formatVnd(labor.craneTotal)}
+              </td>
+            </tr>
+            <tr className="bg-[#c6efce] font-bold text-[#006100]">
+              <td className="border-border px-2 py-1.5 uppercase" colSpan={4}>
+                Tổng
+              </td>
+              <td className="px-2 py-1.5 text-right tabular-nums">
+                {formatVnd(labor.total)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </CalcPane>
   );
 }
 
@@ -721,7 +867,7 @@ function CalcPane({
   className?: string;
 }) {
   return (
-    <div className={`flex h-full min-h-0 flex-col ${className ?? ""}`}>
+    <div className={cn("flex min-h-0 flex-col", className ?? "h-full")}>
       <SubHead>{title}</SubHead>
       <div className="min-h-0 flex-1">{children}</div>
     </div>
