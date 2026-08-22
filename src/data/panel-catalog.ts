@@ -1,5 +1,12 @@
 import { inverterCatalogItems } from "./inverter-catalog";
-import type { EquipmentCatalogGroup, EquipmentCatalogItem } from "@/data/equipment-catalog";
+import {
+  cabinetCapacityKwOf,
+  cabinetPhaseOf,
+  equipmentCatalogGroups,
+  mergeSeedCabinets,
+  type EquipmentCatalogGroup,
+  type EquipmentCatalogItem,
+} from "@/data/equipment-catalog";
 
 export const EQUIPMENT_CATALOG_STORAGE_KEY = "portal-equipment-catalog-v5";
 
@@ -185,4 +192,49 @@ export function getCatalogBatteryTypes({ inStockOnly = true } = {}): CatalogBatt
   } catch {
     return fallback;
   }
+}
+
+export type CatalogCabinetType = {
+  id: string;
+  name: string;
+  phase: "1 pha" | "3 pha";
+  capacityKw?: number;
+  price: number;
+  image?: string;
+  unit: string;
+};
+
+function cabinetItemsFromStorage(): EquipmentCatalogItem[] {
+  const seed = equipmentCatalogGroups.find((group) => group.id === "tu-dien")?.items ?? [];
+  if (typeof window === "undefined") return seed;
+  try {
+    const saved = localStorage.getItem(EQUIPMENT_CATALOG_STORAGE_KEY);
+    if (!saved) return seed;
+    const groups = mergeSeedCabinets(JSON.parse(saved) as EquipmentCatalogGroup[]);
+    return groups.find((group) => group.id === "tu-dien")?.items ?? seed;
+  } catch {
+    return seed;
+  }
+}
+
+function cabinetId(item: EquipmentCatalogItem) {
+  return item.id ?? item.code;
+}
+
+export function getCatalogCabinetTypes(): CatalogCabinetType[] {
+  return cabinetItemsFromStorage()
+    .map((item) => {
+      const phase = cabinetPhaseOf(item);
+      if (phase !== "1 pha" && phase !== "3 pha") return null;
+      return {
+        id: cabinetId(item),
+        name: item.name.trim() || item.code.trim(),
+        phase,
+        capacityKw: cabinetCapacityKwOf(item),
+        price: Math.max(0, item.referencePrice ?? item.customerPrice ?? 0),
+        image: item.image ?? "",
+        unit: item.unit || "Tủ",
+      };
+    })
+    .filter((item): item is CatalogCabinetType => Boolean(item?.id && item.name));
 }

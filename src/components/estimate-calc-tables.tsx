@@ -1,9 +1,11 @@
 import { useEffect, useMemo, type ReactNode } from "react";
 import { computeAutoCalc } from "@/data/auto-calc";
 import {
+  allCabinetOptions,
   autoInverterType,
   BATTERY_TYPES,
-  CABINET_TYPES,
+  cabinetLabel,
+  cabinetOptionsForPhase,
   inverterLabel,
   inverterOptionsForPhase,
   recommendedInverterOptionsForPhase,
@@ -22,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 
 function money(n: number) {
   return new Intl.NumberFormat("vi-VN").format(Math.round(n));
@@ -41,10 +42,19 @@ function TrioCols() {
 const colLine =
   "[&_th]:border-r [&_td]:border-r [&_th]:border-border [&_td]:border-border [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0";
 const tableCls = `w-full table-fixed border-collapse text-[10px] sm:text-[11px] lg:h-full ${colLine}`;
-const mobileSliderCls =
-  "min-w-0 flex-1 py-2 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 lg:py-0 lg:[&_[role=slider]]:h-4 lg:[&_[role=slider]]:w-4";
 const mobileSelectCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
 const mobileInputCls = "mt-1 h-10 px-2 text-sm sm:h-8 sm:text-xs lg:mt-0.5 lg:h-7";
+
+function parseMoneyInput(value: string) {
+  const normalized = value.replace(/[^\d]/g, "");
+  if (!normalized) return 0;
+  return Number(normalized);
+}
+
+function clampPercent(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
 
 export function AutoCalcGrid({
   mode = "auto",
@@ -55,6 +65,7 @@ export function AutoCalcGrid({
   onBatteryChange,
   onPatch,
   onPhaseChange,
+  onCabinetChange,
 }: {
   mode?: "auto" | "manual";
   form: EstimateInputs;
@@ -64,6 +75,7 @@ export function AutoCalcGrid({
   onBatteryChange: (batteryName: string) => void;
   onPatch: <K extends keyof EstimateInputs>(key: K, value: EstimateInputs[K]) => void;
   onPhaseChange: (phase: EstimateInputs["phase"]) => void;
+  onCabinetChange: (cabinetId: string) => void;
 }) {
   const manual = mode === "manual";
   const summerBill = manual ? form.summerBillManual : form.summerBillAuto;
@@ -129,36 +141,32 @@ export function AutoCalcGrid({
               <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
                 Tiền điện hè
               </Label>
-              <div className="mt-0.5 flex items-end gap-2">
-                <Slider
-                  className={mobileSliderCls}
-                  min={0}
-                  max={100_000_000}
-                  step={50_000}
-                  value={[summerBill]}
-                  onValueChange={([v]) => onPatch(manual ? "summerBillManual" : "summerBillAuto", v ?? 0)}
+              <div className="flex items-center gap-1">
+                <Input
+                  className={`${mobileInputCls} text-right font-semibold tabular-nums`}
+                  inputMode="numeric"
+                  value={summerBill ? money(summerBill) : ""}
+                  onChange={(event) =>
+                    onPatch(manual ? "summerBillManual" : "summerBillAuto", parseMoneyInput(event.target.value))
+                  }
                 />
-                <p className="min-w-[5.5rem] text-right text-[11px] font-semibold tabular-nums text-foreground">
-                  {money(summerBill)} đ
-                </p>
+                <span className="shrink-0 text-[11px] text-muted-foreground">đ</span>
               </div>
             </div>
             <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-4">
               <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
                 Tiền điện đông
               </Label>
-              <div className="mt-0.5 flex items-end gap-2">
-                <Slider
-                  className={mobileSliderCls}
-                  min={0}
-                  max={100_000_000}
-                  step={50_000}
-                  value={[winterBill]}
-                  onValueChange={([v]) => onPatch(manual ? "winterBillManual" : "winterBillAuto", v ?? 0)}
+              <div className="flex items-center gap-1">
+                <Input
+                  className={`${mobileInputCls} text-right font-semibold tabular-nums`}
+                  inputMode="numeric"
+                  value={winterBill ? money(winterBill) : ""}
+                  onChange={(event) =>
+                    onPatch(manual ? "winterBillManual" : "winterBillAuto", parseMoneyInput(event.target.value))
+                  }
                 />
-                <p className="min-w-[5.5rem] text-right text-[11px] font-semibold tabular-nums text-foreground">
-                  {money(winterBill)} đ
-                </p>
+                <span className="shrink-0 text-[11px] text-muted-foreground">đ</span>
               </div>
             </div>
           </div>
@@ -168,39 +176,48 @@ export function AutoCalcGrid({
               <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
                 Ngày / đêm
               </Label>
-              <div className="mt-0.5 flex items-end gap-2">
-                <Slider
-                  className={mobileSliderCls}
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={[form.dayRate]}
-                  onValueChange={([v]) => onPatch("dayRate", v ?? 0)}
-                />
-                <p className="min-w-[4.75rem] text-right text-[11px] tabular-nums text-muted-foreground">
-                  {form.dayRate}% / {Math.max(0, 100 - form.dayRate)}%
-                </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-1">
+                  <Input
+                    className={`${mobileInputCls} text-right tabular-nums`}
+                    inputMode="numeric"
+                    value={form.dayRate}
+                    onChange={(event) => onPatch("dayRate", clampPercent(Number(event.target.value)))}
+                  />
+                  <span className="shrink-0 text-[10px] text-muted-foreground">% ngày</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Input
+                    className={`${mobileInputCls} bg-secondary/50 text-right tabular-nums`}
+                    readOnly
+                    tabIndex={-1}
+                    value={Math.max(0, 100 - form.dayRate)}
+                  />
+                  <span className="shrink-0 text-[10px] text-muted-foreground">% đêm</span>
+                </div>
               </div>
             </div>
-            <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-3">
-              <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
-                Pha điện
-              </Label>
-              <div className="mt-1 flex h-10 items-center gap-3 rounded border border-border bg-card px-3 sm:h-8 lg:mt-0.5 lg:h-7 lg:gap-2 lg:px-2">
-                {(["Điện 1 pha", "Điện 3 pha"] as const).map((option) => (
-                  <label
-                    key={option}
-                    className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-[11px]"
-                  >
-                    <Checkbox
-                      checked={form.phase === option}
-                      onCheckedChange={() => onPhaseChange(option)}
-                    />
-                    {option.replace("Điện ", "")}
-                  </label>
-                ))}
+            {manual ? null : (
+              <div className="col-span-2 min-w-0 sm:col-span-1 2xl:col-span-3">
+                <Label className="text-[10px] font-medium leading-none text-muted-foreground whitespace-nowrap">
+                  Pha điện
+                </Label>
+                <div className="mt-1 flex h-10 items-center gap-3 rounded border border-border bg-card px-3 sm:h-8 lg:mt-0.5 lg:h-7 lg:gap-2 lg:px-2">
+                  {(["Điện 1 pha", "Điện 3 pha"] as const).map((option) => (
+                    <label
+                      key={option}
+                      className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-[11px]"
+                    >
+                      <Checkbox
+                        checked={form.phase === option}
+                        onCheckedChange={() => onPhaseChange(option)}
+                      />
+                      {option.replace("Điện ", "")}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="contents">
@@ -210,15 +227,15 @@ export function AutoCalcGrid({
               </Label>
               <Select
                 value={form.cabinetType}
-                onValueChange={(v) => onPatch("cabinetType", v)}
+                onValueChange={onCabinetChange}
               >
                 <SelectTrigger className={mobileSelectCls}>
-                  <SelectValue />
+                  <SelectValue placeholder="Chọn tủ điện" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CABINET_TYPES.map((cabinet) => (
-                    <SelectItem key={cabinet} value={cabinet}>
-                      {cabinet}
+                  {(manual ? allCabinetOptions() : cabinetOptionsForPhase(form.phase)).map((cabinet) => (
+                    <SelectItem key={cabinet.id} value={cabinet.id}>
+                      {cabinetLabel(cabinet.id)}
                     </SelectItem>
                   ))}
                 </SelectContent>

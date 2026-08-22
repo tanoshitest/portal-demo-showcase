@@ -25,7 +25,38 @@ export type EquipmentCatalogItem = {
   customerPrice?: number | null;
   accessoryGroup?: string;
   quantity?: number;
+  phase?: "1 pha" | "3 pha";
 };
+
+export function cabinetPhaseOf(item: EquipmentCatalogItem): "1 pha" | "3 pha" | "" {
+  if (item.phase === "1 pha" || item.phase === "3 pha") return item.phase;
+  const text = `${item.code} ${item.name} ${item.specification}`;
+  if (/(?:3\s*pha|\b3p\b)/i.test(text)) return "3 pha";
+  if (/(?:1\s*pha|\b1p\b)/i.test(text)) return "1 pha";
+  return "";
+}
+
+export function cabinetCapacityKwOf(item: EquipmentCatalogItem): number | undefined {
+  if (item.capacityKw != null) return item.capacityKw;
+  const match = `${item.name}\n${item.specification}`.match(/(\d+(?:[.,]\d+)?)\s*k\s*w/i);
+  if (!match) return undefined;
+  return Number(match[1].replace(",", "."));
+}
+
+function catalogItemKey(item: EquipmentCatalogItem) {
+  return (item.id ?? item.code).toLowerCase();
+}
+
+export function mergeSeedCabinets(groups: EquipmentCatalogGroup[]): EquipmentCatalogGroup[] {
+  const seed = equipmentCatalogGroups.find((group) => group.id === "tu-dien");
+  if (!seed) return groups;
+  return groups.map((group) => {
+    if (group.id !== "tu-dien") return group;
+    const existing = new Set(group.items.map(catalogItemKey));
+    const extras = seed.items.filter((item) => !existing.has(catalogItemKey(item)));
+    return extras.length ? { ...group, items: [...group.items, ...extras] } : group;
+  });
+}
 
 export type EquipmentCatalogGroup = {
   id: string;
@@ -380,6 +411,8 @@ export const equipmentCatalogGroups: EquipmentCatalogGroup[] = [
         unit: "Tủ",
         referencePrice: 4_300_000,
         note: "",
+        phase: "1 pha",
+        capacityKw: 15,
       },
       {
         id: "tu-dien-3p-thu-cong",
@@ -390,6 +423,56 @@ export const equipmentCatalogGroups: EquipmentCatalogGroup[] = [
         unit: "Tủ",
         referencePrice: 5_500_000,
         note: "",
+        phase: "3 pha",
+        capacityKw: 20,
+      },
+      {
+        id: "tu-dien-1p-8kw",
+        code: "TU-DIEN-1P-8KW",
+        name: "Tủ điện 1P 8 kW",
+        specification:
+          "Tủ điện năng lượng mặt trời 8 Kw 1P\n- Tủ điện chịu tải 8Kw - 1 Pha - 2 MPPT\n- Có đèn báo pha - Hệ thống tiếp địa\n- Bảo hành 05 năm",
+        unit: "Tủ",
+        referencePrice: 3_200_000,
+        note: "",
+        phase: "1 pha",
+        capacityKw: 8,
+      },
+      {
+        id: "tu-dien-1p-10kw-ats",
+        code: "TU-DIEN-1P-10KW-ATS",
+        name: "Tủ điện 1P 10 kW ATS",
+        specification:
+          "Tủ điện năng lượng mặt trời 10 Kw 1P\n- Tủ điện chịu tải 10Kw - 1 Pha - 2 MPPT\n- Chuyển nguồn ATS tự động\n- Có đèn báo pha - Hệ thống tiếp địa\n- Bảo hành 05 năm",
+        unit: "Tủ",
+        referencePrice: 3_800_000,
+        note: "",
+        phase: "1 pha",
+        capacityKw: 10,
+      },
+      {
+        id: "tu-dien-3p-30kw",
+        code: "TU-DIEN-3P-30KW",
+        name: "Tủ điện 3P 30 kW",
+        specification:
+          "Tủ điện năng lượng mặt trời 30 Kw 3P\n- Tủ điện chịu tải 30Kw - 3 Pha - 2 MPPT\n- Có đèn báo pha - Hệ thống tiếp địa\n- Bảo hành 05 năm",
+        unit: "Tủ",
+        referencePrice: 6_800_000,
+        note: "",
+        phase: "3 pha",
+        capacityKw: 30,
+      },
+      {
+        id: "tu-dien-3p-50kw-ats",
+        code: "TU-DIEN-3P-50KW-ATS",
+        name: "Tủ điện 3P 50 kW ATS",
+        specification:
+          "Tủ điện năng lượng mặt trời 50 Kw 3P\n- Tủ điện chịu tải 50Kw - 3 Pha - 4 MPPT\n- Chuyển nguồn ATS tự động\n- Có đèn báo pha - Hệ thống tiếp địa\n- Bảo hành 05 năm",
+        unit: "Tủ",
+        referencePrice: 8_900_000,
+        note: "",
+        phase: "3 pha",
+        capacityKw: 50,
       },
     ],
   },

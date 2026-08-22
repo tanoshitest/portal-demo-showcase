@@ -76,101 +76,48 @@ export type BatteryCombo = {
   primary: CatalogBatteryType | null;
 };
 
-function roundCapacityKey(kwh: number) {
-  return Math.round(kwh * 100);
+function cheapestBattery(batteries: CatalogBatteryType[]) {
+  return batteries
+    .filter((battery) => battery.price > 0 && battery.kwh > 0)
+    .sort((a, b) => a.price / a.kwh - b.price / b.kwh || a.price - b.price)[0];
+}
+
+function qtyForCapacity(targetKwh: number, kwh: number) {
+  return Math.max(1, Math.ceil(Math.max(0, targetKwh) / kwh - 1e-9));
+}
+
+function comboFromBattery(battery: CatalogBatteryType, qty: number): BatteryCombo {
+  return {
+    totalKwh: round2(battery.kwh * qty),
+    totalPrice: battery.price * qty,
+    items: [{ name: battery.name, kwh: battery.kwh, price: battery.price, qty }],
+    label: `${battery.name} x ${qty}`,
+    primary: battery,
+  };
 }
 
 function buildBatteryCombo(targetKwh: number, batteries: CatalogBatteryType[]): BatteryCombo {
-  const usable = batteries
-    .filter((battery) => battery.stock > 0 && battery.price > 0 && battery.kwh > 0)
-    .sort((a, b) => a.price / b.kwh - b.price / b.kwh || a.price - b.price);
-
-  if (!usable.length) {
+  const pick = cheapestBattery(batteries);
+  if (!pick) {
     const fallback = batteryByName("EJOR 16 - BH7");
-    const qty = Math.max(1, Math.ceil(targetKwh / fallback.kwh));
-    return {
-      totalKwh: roundCapacityKey(fallback.kwh * qty) / 100,
-      totalPrice: fallback.price * qty,
-      items: [{ name: fallback.name, kwh: fallback.kwh, price: fallback.price, qty }],
-      label: `${fallback.name} x ${qty}`,
-      primary: { id: fallback.id, name: fallback.name, kwh: fallback.kwh, price: fallback.price, stock: qty, group: "" },
-    };
+    return comboFromBattery(
+      {
+        id: fallback.id,
+        name: fallback.name,
+        kwh: fallback.kwh,
+        price: fallback.price,
+        stock: qtyForCapacity(targetKwh, fallback.kwh),
+        group: "",
+      },
+      qtyForCapacity(targetKwh, fallback.kwh),
+    );
   }
-
-  const target = Math.max(1, roundCapacityKey(targetKwh));
-  const maxCapacity = usable.reduce((sum, item) => sum + roundCapacityKey(item.kwh) * item.stock, 0);
-  const limit = Math.max(target, maxCapacity);
-  const dp = Array.from({ length: limit + 1 }, () => ({
-    cost: Number.POSITIVE_INFINITY,
-    prev: -1,
-    item: -1,
-  }));
-  dp[0] = { cost: 0, prev: -1, item: -1 };
-
-  for (let i = 0; i < usable.length; i += 1) {
-    const battery = usable[i];
-    const cap = roundCapacityKey(battery.kwh);
-    for (let count = 0; count < battery.stock; count += 1) {
-      for (let total = limit - cap; total >= 0; total -= 1) {
-        if (!Number.isFinite(dp[total].cost)) continue;
-        const next = total + cap;
-        const nextCost = dp[total].cost + battery.price;
-        if (
-          nextCost < dp[next].cost ||
-          (nextCost === dp[next].cost && total + cap < dp[next].prev + (dp[next].item >= 0 ? cap : 0))
-        ) {
-          dp[next] = { cost: nextCost, prev: total, item: i };
-        }
-      }
-    }
-  }
-
-  let bestIndex = -1;
-  for (let total = target; total <= limit; total += 1) {
-    if (!Number.isFinite(dp[total].cost)) continue;
-    if (bestIndex === -1 || dp[total].cost < dp[bestIndex].cost) bestIndex = total;
-  }
-
-  if (bestIndex === -1) {
-    const fallback = usable[0];
-    const qty = Math.max(1, Math.ceil(targetKwh / fallback.kwh));
-    return {
-      totalKwh: roundCapacityKey(fallback.kwh * qty) / 100,
-      totalPrice: fallback.price * qty,
-      items: [{ name: fallback.name, kwh: fallback.kwh, price: fallback.price, qty }],
-      label: `${fallback.name} x ${qty}`,
-      primary: fallback,
-    };
-  }
-
-  const counts = new Map<number, number>();
-  let cursor = bestIndex;
-  while (cursor > 0) {
-    const node = dp[cursor];
-    if (node.item < 0 || node.prev < 0) break;
-    counts.set(node.item, (counts.get(node.item) ?? 0) + 1);
-    cursor = node.prev;
-  }
-
-  const items = [...counts.entries()]
-    .map(([index, qty]) => ({ ...usable[index], qty }))
-    .sort((a, b) => a.price / a.kwh - b.price / b.kwh || b.kwh - a.kwh);
-  const totalKwh = items.reduce((sum, item) => sum + item.kwh * item.qty, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const label = items.map((item) => `${item.name} x ${item.qty}`).join(" + ");
-
-  return {
-    totalKwh: roundCapacityKey(totalKwh) / 100,
-    totalPrice,
-    items,
-    label,
-    primary: items[0] ?? null,
-  };
+  return comboFromBattery(pick, qtyForCapacity(targetKwh, pick.kwh));
 }
 
 export function computeAutoCalc(input: AutoCalcInputs) {
   const panel = panelByName(input.panelName);
-  const catalogBatteries = getCatalogBatteryTypes({ inStockOnly: true });
+  const catalogBatteries = getCatalogBatteryTypes({ inStockOnly: false });
   const tariff = Math.max(1, input.tariff || DEFAULT_TARIFF_VND);
   const pshSummer = Math.max(0.1, input.pshSummer || PSH_SUMMER);
   const pshWinter = Math.max(0.1, input.pshWinter || PSH_WINTER);

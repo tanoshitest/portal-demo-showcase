@@ -18,10 +18,20 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  cabinetCapacityKwOf,
+  cabinetPhaseOf,
   equipmentCatalogGroups,
+  mergeSeedCabinets,
   type EquipmentCatalogGroup,
   type EquipmentCatalogItem,
 } from "@/data/equipment-catalog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EQUIPMENT_CATALOG_STORAGE_KEY, panelStockQuantity } from "@/data/panel-catalog";
 import { useStore } from "@/context/store";
 import { formatVnd } from "@/lib/format";
@@ -50,6 +60,7 @@ type CatalogFormValues = {
   customerPrice: string;
   accessoryGroup: string;
   quantity: string;
+  phase: "" | "1 pha" | "3 pha";
 };
 
 type CatalogEditor = {
@@ -70,6 +81,7 @@ function cloneCatalogGroups(groups: EquipmentCatalogGroup[]) {
 }
 
 function itemToForm(item?: EquipmentCatalogItem, groupId?: string): CatalogFormValues {
+  const cabinetCapacity = item ? cabinetCapacityKwOf(item) : undefined;
   return {
     code: item?.code ?? "",
     image: item?.image ?? "",
@@ -93,11 +105,19 @@ function itemToForm(item?: EquipmentCatalogItem, groupId?: string): CatalogFormV
           : String(item.stockQuantity),
     inverterGroup: item?.inverterGroup ?? "",
     catalogStt: item?.catalogStt == null ? "" : String(item.catalogStt),
-    capacityKw: item?.capacityKw == null ? "" : String(item.capacityKw),
+    capacityKw:
+      groupId === "tu-dien"
+        ? cabinetCapacity == null
+          ? ""
+          : String(cabinetCapacity)
+        : item?.capacityKw == null
+          ? ""
+          : String(item.capacityKw),
     profit: item?.profit == null ? "" : String(item.profit),
     customerPrice: item?.customerPrice == null ? "" : String(item.customerPrice),
     accessoryGroup: item?.accessoryGroup ?? "",
     quantity: item?.quantity == null ? "" : String(item.quantity),
+    phase: item && groupId === "tu-dien" ? cabinetPhaseOf(item) : "",
   };
 }
 
@@ -131,7 +151,7 @@ function EquipmentCatalogPage() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(EQUIPMENT_CATALOG_STORAGE_KEY);
-      if (saved) setGroups(JSON.parse(saved) as EquipmentCatalogGroup[]);
+      if (saved) setGroups(mergeSeedCabinets(JSON.parse(saved) as EquipmentCatalogGroup[]));
     } catch {
       localStorage.removeItem(EQUIPMENT_CATALOG_STORAGE_KEY);
     } finally {
@@ -145,9 +165,10 @@ function EquipmentCatalogPage() {
 
   const openCreate = (groupId: string) => {
     const values = itemToForm(undefined, groupId);
-    values.unit = groupId === "pin" ? "Tấm" : "bộ";
+    values.unit = groupId === "pin" ? "Tấm" : groupId === "tu-dien" ? "Tủ" : "bộ";
     if (groupId === "pin") values.stockQuantity = "0";
     if (groupId === "bien-tan") values.stockQuantity = "1";
+    if (groupId === "tu-dien") values.phase = "1 pha";
     setEditor({ groupId, originalItemId: null, values });
   };
 
@@ -300,6 +321,12 @@ function EquipmentCatalogPage() {
             quantity,
           }
         : {}),
+      ...(editor.groupId === "tu-dien"
+        ? {
+            phase: editor.values.phase || undefined,
+            capacityKw,
+          }
+        : {}),
     };
 
     setGroups((current) =>
@@ -327,6 +354,7 @@ function EquipmentCatalogPage() {
   const isBatteryEditor = editor?.groupId === "pin-luu-tru";
   const isInverterEditor = editor?.groupId === "bien-tan";
   const isAccessoryEditor = editor?.groupId === "phu-kien";
+  const isCabinetEditor = editor?.groupId === "tu-dien";
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-3 pt-3 pb-3 lg:px-4">
@@ -391,29 +419,27 @@ function EquipmentCatalogPage() {
                       placeholder={isPanelEditor ? "Ví dụ: TRINA 630" : "Mã sản phẩm"}
                     />
                   </CatalogField>
-                  {isPanelEditor || isBatteryEditor || isInverterEditor ? (
-                    <CatalogField label="Ảnh sản phẩm" htmlFor="catalog-image" className="sm:col-span-2">
-                      <div className="flex items-center gap-3 rounded-md border border-border p-3">
-                        <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded border border-dashed border-border bg-secondary/30">
-                          {editor.values.image ? (
-                            <img src={editor.values.image} alt="Ảnh sản phẩm" className="h-full w-full object-contain" />
-                          ) : (
-                            <ImagePlus className="h-7 w-7 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button type="button" variant="outline" asChild>
-                            <Label htmlFor="catalog-image" className="cursor-pointer"><ImagePlus className="h-4 w-4" /> Chọn ảnh</Label>
-                          </Button>
-                          {editor.values.image ? (
-                            <Button type="button" variant="outline" className="text-destructive" onClick={() => patchEditor("image", "")}><Trash2 className="h-4 w-4" /> Xóa ảnh</Button>
-                          ) : null}
-                          <Input id="catalog-image" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                          <p className="w-full text-xs text-muted-foreground">JPG, PNG hoặc WebP, tối đa 2 MB.</p>
-                        </div>
+                  <CatalogField label="Ảnh sản phẩm" htmlFor="catalog-image" className="sm:col-span-2">
+                    <div className="flex items-center gap-3 rounded-md border border-border p-3">
+                      <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded border border-dashed border-border bg-secondary/30">
+                        {editor.values.image ? (
+                          <img src={editor.values.image} alt="Ảnh sản phẩm" className="h-full w-full object-contain" />
+                        ) : (
+                          <ImagePlus className="h-7 w-7 text-muted-foreground" />
+                        )}
                       </div>
-                    </CatalogField>
-                  ) : null}
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" asChild>
+                          <Label htmlFor="catalog-image" className="cursor-pointer"><ImagePlus className="h-4 w-4" /> Chọn ảnh</Label>
+                        </Button>
+                        {editor.values.image ? (
+                          <Button type="button" variant="outline" className="text-destructive" onClick={() => patchEditor("image", "")}><Trash2 className="h-4 w-4" /> Xóa ảnh</Button>
+                        ) : null}
+                        <Input id="catalog-image" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        <p className="w-full text-xs text-muted-foreground">JPG, PNG hoặc WebP, tối đa 2 MB.</p>
+                      </div>
+                    </div>
+                  </CatalogField>
                   {!isInverterEditor ? (
                     <CatalogField label="Tên sản phẩm" htmlFor="catalog-name">
                       <Input
@@ -597,6 +623,34 @@ function EquipmentCatalogPage() {
                     </>
                   ) : null}
 
+                  {isCabinetEditor ? (
+                    <>
+                      <CatalogField label="Số pha" htmlFor="catalog-phase">
+                        <Select
+                          value={editor.values.phase || undefined}
+                          onValueChange={(value) => patchEditor("phase", value as CatalogFormValues["phase"])}
+                        >
+                          <SelectTrigger id="catalog-phase">
+                            <SelectValue placeholder="Chọn số pha" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1 pha">1 pha</SelectItem>
+                            <SelectItem value="3 pha">3 pha</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </CatalogField>
+                      <CatalogField label="Công suất (kW)" htmlFor="catalog-cabinet-capacity">
+                        <Input
+                          id="catalog-cabinet-capacity"
+                          inputMode="decimal"
+                          value={editor.values.capacityKw}
+                          onChange={(event) => patchEditor("capacityKw", event.target.value)}
+                          placeholder="Ví dụ: 15"
+                        />
+                      </CatalogField>
+                    </>
+                  ) : null}
+
                   {isAccessoryEditor ? (
                     <>
                       <CatalogField
@@ -734,6 +788,8 @@ function CatalogTable({
           <BatteryCatalogTable items={group.items} onEdit={onEdit} />
         ) : group.id === "phu-kien" ? (
           <AccessoryCatalogTable items={group.items} onEdit={onEdit} />
+        ) : group.id === "tu-dien" ? (
+          <CabinetCatalogTable items={group.items} onEdit={onEdit} />
         ) : (
           <GenericCatalogTable items={group.items} onEdit={onEdit} />
         )}
@@ -1093,10 +1149,11 @@ function AccessoryCatalogTable({
   onEdit: (item: EquipmentCatalogItem) => void;
 }) {
   return (
-    <table className="w-full min-w-[900px] table-fixed border-collapse text-[11px]">
+    <table className="w-full min-w-[980px] table-fixed border-collapse text-[11px]">
       <colgroup>
         <col className="w-[6%]" />
-        <col className="w-[43%]" />
+        <col className="w-[9%]" />
+        <col className="w-[34%]" />
         <col className="w-[9%]" />
         <col className="w-[9%]" />
         <col className="w-[14%]" />
@@ -1106,6 +1163,7 @@ function AccessoryCatalogTable({
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
           <th className="border-b border-r border-border px-2 py-2 text-center">STT</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Ảnh</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">Tên phụ kiện</th>
           <th className="border-b border-r border-border px-2 py-2 text-center">ĐVT</th>
           <th className="border-b border-r border-border px-2 py-2 text-right">Số lượng</th>
@@ -1123,7 +1181,7 @@ function AccessoryCatalogTable({
               {showGroup ? (
                 <tr className="bg-[#ffd966] text-[#2b2100]">
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="border-b border-border px-3 py-1.5 text-left text-xs font-bold uppercase"
                   >
                     {item.accessoryGroup || "PHỤ KIỆN"}
@@ -1134,6 +1192,7 @@ function AccessoryCatalogTable({
                 <td className="border-b border-r border-border px-2 py-2 text-center font-semibold tabular-nums">
                   {item.catalogStt ?? ""}
                 </td>
+                <CatalogImageCell item={item} />
                 <td className="border-b border-r border-border px-2 py-2 leading-snug">
                   <p className="font-medium">{item.name}</p>
                   {item.specification ? (
@@ -1168,6 +1227,80 @@ function AccessoryCatalogTable({
   );
 }
 
+function CabinetCatalogTable({
+  items,
+  onEdit,
+}: {
+  items: EquipmentCatalogItem[];
+  onEdit: (item: EquipmentCatalogItem) => void;
+}) {
+  return (
+    <table className="w-full min-w-[1180px] table-fixed border-collapse text-[11px]">
+      <colgroup>
+        <col className="w-[5%]" />
+        <col className="w-[12%]" />
+        <col className="w-[8%]" />
+        <col className="w-[16%]" />
+        <col className="w-[8%]" />
+        <col className="w-[8%]" />
+        <col className="w-[16%]" />
+        <col className="w-[6%]" />
+        <col className="w-[10%]" />
+        <col className="w-[7%]" />
+        <col className="w-[4%]" />
+      </colgroup>
+      <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
+        <tr>
+          <th className="border-b border-r border-border px-2 py-2 text-center">STT</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">Mã</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Ảnh</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">Tên thiết bị / dịch vụ</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Số pha</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Công suất</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">Thông số</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">ĐVT</th>
+          <th className="border-b border-r border-border px-2 py-2 text-right">Đơn giá tham khảo</th>
+          <th className="border-b border-r border-border px-2 py-2 text-left">Bảo hành / ghi chú</th>
+          <th className="border-b border-border px-2 py-2 text-center">Sửa</th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((item, index) => (
+          <tr key={catalogItemId(item)} className="border-b border-border hover:bg-secondary/30">
+            <td className="border-r border-border px-2 py-2.5 text-center font-semibold tabular-nums">
+              {index + 1}
+            </td>
+            <td className="border-r border-border px-2 py-2.5 font-medium text-muted-foreground">
+              {item.code}
+            </td>
+            <CatalogImageCell item={item} />
+            <td className="border-r border-border px-2 py-2.5 font-semibold">{item.name}</td>
+            <td className="border-r border-border px-2 py-2.5 text-center font-semibold">
+              {cabinetPhaseOf(item)}
+            </td>
+            <td className="border-r border-border px-2 py-2.5 text-center font-semibold tabular-nums">
+              {cabinetCapacityKwOf(item) == null ? "" : `${cabinetCapacityKwOf(item)} kW`}
+            </td>
+            <td className="whitespace-pre-line border-r border-border px-2 py-2.5 leading-snug text-muted-foreground">
+              {item.specification}
+            </td>
+            <td className="border-r border-border px-2 py-2.5 text-center">{item.unit}</td>
+            <td className="border-r border-border px-2 py-2.5 text-right font-semibold tabular-nums">
+              {item.referencePrice == null ? "" : formatVnd(item.referencePrice)}
+            </td>
+            <td className="border-r border-border px-2 py-2.5 text-muted-foreground">
+              {item.note}
+            </td>
+            <td className="px-2 py-2.5 text-center">
+              <EditButton item={item} onEdit={onEdit} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function GenericCatalogTable({
   items,
   onEdit,
@@ -1176,21 +1309,23 @@ function GenericCatalogTable({
   onEdit: (item: EquipmentCatalogItem) => void;
 }) {
   return (
-    <table className="w-full min-w-[920px] table-fixed border-collapse text-[11px]">
+    <table className="w-full min-w-[1000px] table-fixed border-collapse text-[11px]">
       <colgroup>
-        <col className="w-[6%]" />
-        <col className="w-[13%]" />
-        <col className="w-[22%]" />
-        <col className="w-[20%]" />
+        <col className="w-[5%]" />
+        <col className="w-[12%]" />
         <col className="w-[8%]" />
-        <col className="w-[12%]" />
-        <col className="w-[12%]" />
+        <col className="w-[20%]" />
+        <col className="w-[18%]" />
         <col className="w-[7%]" />
+        <col className="w-[12%]" />
+        <col className="w-[12%]" />
+        <col className="w-[6%]" />
       </colgroup>
       <thead className="sticky top-0 z-10 bg-amber-100 text-[10px] font-bold uppercase text-amber-950">
         <tr>
           <th className="border-b border-r border-border px-2 py-2 text-center">STT</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">Mã</th>
+          <th className="border-b border-r border-border px-2 py-2 text-center">Ảnh</th>
           <th className="border-b border-r border-border px-2 py-2 text-left">
             Tên thiết bị / dịch vụ
           </th>
@@ -1214,6 +1349,7 @@ function GenericCatalogTable({
             <td className="border-r border-border px-2 py-2.5 font-medium text-muted-foreground">
               {item.code}
             </td>
+            <CatalogImageCell item={item} />
             <td className="border-r border-border px-2 py-2.5 font-semibold">{item.name}</td>
             <td className="whitespace-pre-line border-r border-border px-2 py-2.5 leading-snug text-muted-foreground">
               {item.specification}

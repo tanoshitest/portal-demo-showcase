@@ -1,4 +1,9 @@
-import { DEFAULT_PANEL_TYPES, findPanelTypeByName, getCatalogInverterTypes } from "./panel-catalog";
+import {
+  DEFAULT_PANEL_TYPES,
+  findPanelTypeByName,
+  getCatalogCabinetTypes,
+  getCatalogInverterTypes,
+} from "./panel-catalog";
 import { persistLocalAndCloud } from "@/lib/cloud-state-client";
 
 export const ESTIMATE_STORAGE_KEY = "hv_solar_estimate_v1";
@@ -24,8 +29,6 @@ export const AC_WIRES = [
 ] as const;
 
 export const INVERTER_KW_OPTIONS = [3, 4, 5, 6, 8, 10, 12, 15];
-
-export const CABINET_TYPES = ["Tủ điện AC 1 pha", "Tủ điện AC 3 pha"] as const;
 
 export type EstimateInputs = {
   customer: string;
@@ -128,8 +131,37 @@ export function autoInverterType(phase: EstimateInputs["phase"], recommendedKw: 
   return recommendedInverterOptionsForPhase(phase, recommendedKw)[0]?.id ?? "";
 }
 
+export function allCabinetOptions() {
+  return getCatalogCabinetTypes().sort((a, b) => {
+    if (a.phase !== b.phase) return a.phase.localeCompare(b.phase);
+    return (a.capacityKw ?? 0) - (b.capacityKw ?? 0);
+  });
+}
+
+export function cabinetOptionsForPhase(phase: EstimateInputs["phase"]) {
+  const want = phase === "Điện 1 pha" ? "1 pha" : "3 pha";
+  return allCabinetOptions().filter((item) => item.phase === want);
+}
+
+export function phaseFromCabinet(cabinetId: string): EstimateInputs["phase"] | undefined {
+  const phase = cabinetById(cabinetId)?.phase;
+  if (phase === "1 pha") return "Điện 1 pha";
+  if (phase === "3 pha") return "Điện 3 pha";
+  return undefined;
+}
+
+export function cabinetById(id: string) {
+  return getCatalogCabinetTypes().find((item) => item.id === id);
+}
+
+export function cabinetLabel(id: string) {
+  const item = cabinetById(id);
+  if (!item) return "Chọn tủ điện";
+  return item.capacityKw != null ? `${item.name} · ${item.capacityKw} kW` : item.name;
+}
+
 export function autoCabinetType(phase: EstimateInputs["phase"]) {
-  return phase === "Điện 1 pha" ? "Tủ điện AC 1 pha" : "Tủ điện AC 3 pha";
+  return cabinetOptionsForPhase(phase)[0]?.id ?? "";
 }
 
 export function autoAcWire(phase: EstimateInputs["phase"]) {
@@ -287,7 +319,7 @@ export function defaultEstimateInputs(): EstimateInputs {
     batteryTypeAuto: "EJOR 16 - BH7",
     batteryTypeManual: "SOFAR 16 - BH10",
     batteryQtyManual: 1,
-    cabinetType: "Tủ điện AC 3 pha",
+    cabinetType: autoCabinetType("Điện 3 pha"),
   };
 }
 
@@ -364,15 +396,9 @@ export function loadEstimateInputs(): EstimateInputs {
     if (!ROOF_TYPES.includes(merged.roof as (typeof ROOF_TYPES)[number])) {
       merged.roof = seed.roof;
     }
-    const expectedCabinet = autoCabinetType(merged.phase);
-    if (merged.cabinetType !== "Tủ điện AC 1 pha" && merged.cabinetType !== "Tủ điện AC 3 pha") {
-      merged.cabinetType = expectedCabinet;
-    }
-    if (merged.phase === "Điện 1 pha" && merged.cabinetType !== "Tủ điện AC 1 pha") {
-      merged.cabinetType = "Tủ điện AC 1 pha";
-    }
-    if (merged.phase === "Điện 3 pha" && merged.cabinetType !== "Tủ điện AC 3 pha") {
-      merged.cabinetType = "Tủ điện AC 3 pha";
+    const cabinetOptions = cabinetOptionsForPhase(merged.phase);
+    if (!cabinetOptions.some((item) => item.id === merged.cabinetType)) {
+      merged.cabinetType = cabinetOptions[0]?.id ?? "";
     }
     const inverterMatchesPhase = inverterOptionsForPhase(merged.phase).some(
       (item) => item.id === merged.inverterTypeAuto,

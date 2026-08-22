@@ -1,5 +1,5 @@
 import { computeAutoCalc } from "@/data/auto-calc";
-import { inverterById, inverterLabel, type EstimateInputs } from "@/data/estimate";
+import { cabinetById, cabinetLabel, inverterById, inverterLabel, type EstimateInputs } from "@/data/estimate";
 import { amountExclVat, kwhFromBill } from "@/data/evn-bill";
 
 export type EstimateQuoteRow = {
@@ -62,7 +62,9 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
   );
   const inverterUnitPrice =
     selectedInverter?.customerPrice ?? selectedInverter?.referencePrice ?? fallbackInverterPrice;
-  const cabinetUnitPrice = CABINET_PRICES[form.cabinetType] ?? 8_000_000;
+  const selectedCabinet = cabinetById(form.cabinetType);
+  const cabinetUnitPrice =
+    selectedCabinet?.price || CABINET_PRICES[form.cabinetType] || 8_000_000;
 
   const accessoryPerPanel =
     form.roof === "Mái ngói" ? 650_000 : form.roof === "Khung giàn" ? 750_000 : 450_000;
@@ -118,11 +120,12 @@ export function buildEstimateQuote(form: EstimateInputs, mode: "auto" | "manual"
     },
     {
       no: "3",
-      name: form.cabinetType,
-      unit: "bộ",
+      name: selectedCabinet ? cabinetLabel(selectedCabinet.id) : form.cabinetType,
+      unit: selectedCabinet?.unit || "bộ",
       qty: 1,
       unitPrice: cabinetUnitPrice,
       total: cabinetUnitPrice,
+      image: selectedCabinet?.image,
     },
     {
       no: "4",

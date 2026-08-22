@@ -5,7 +5,9 @@ import {
   autoAcWire,
   autoCabinetType,
   autoInverterType,
+  cabinetLabel,
   loadEstimateInputs,
+  phaseFromCabinet,
   saveEstimateInputs,
   type EstimateInputs,
 } from "@/data/estimate";
@@ -72,6 +74,20 @@ export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" 
     }));
   };
 
+  const setCabinet = (cabinetId: string) => {
+    setForm((prev) => {
+      if (mode !== "manual") return { ...prev, cabinetType: cabinetId };
+      const phase = phaseFromCabinet(cabinetId) ?? prev.phase;
+      return {
+        ...prev,
+        cabinetType: cabinetId,
+        phase,
+        acWire: autoAcWire(phase),
+        inverterTypeManual: phase === prev.phase ? prev.inverterTypeManual : "",
+      };
+    });
+  };
+
   const save = () => {
     saveEstimateInputs(form);
     const estimate = buildEstimateQuote(form, mode);
@@ -96,7 +112,7 @@ export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" 
         "Theo dõi và quản lý qua ứng dụng",
       ],
       [
-        `Loại tủ: ${form.cabinetType}`,
+        `Loại tủ: ${cabinetLabel(form.cabinetType)}`,
         "Đầy đủ thiết bị bảo vệ và chống sét",
         "Lắp ráp, kiểm tra trước khi bàn giao",
       ],
@@ -195,6 +211,7 @@ export function EstimateToolsForm({ mode = "auto" }: { mode?: "auto" | "manual" 
               onBatteryChange={(batteryName) => patch(mode === "auto" ? "batteryTypeAuto" : "batteryTypeManual", batteryName)}
               onPatch={patch}
               onPhaseChange={setPhase}
+              onCabinetChange={setCabinet}
             />
           </div>
 
