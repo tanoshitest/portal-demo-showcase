@@ -4,10 +4,9 @@ import { ArrowRight, Camera, CheckCircle2, Gift, Headphones, Phone, Search, Shie
 import { Button } from "@/components/ui/button";
 import { ConsultForm } from "@/components/consult-form";
 import { ProductCard } from "@/components/product-card";
-import { brands, images, products as seedProducts, projects, type Product } from "@/data/mock";
-import { loadAdminProducts } from "@/data/products-store";
-import cameraSolution from "@/assets/solution-camera-v2.webp";
-import wifiSolution from "@/assets/solution-wifi-v2.webp";
+import { brands, images, products as seedProducts, projects, type Product, type Solution } from "@/data/mock";
+import { loadAdminProducts, isUsableProductImage } from "@/data/products-store";
+import { loadAdminSolutions } from "@/data/solutions-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -32,12 +31,13 @@ function SectionTitle({ children, to }: { children: string; to?: "/san-pham" | "
 
 function Home() {
   const [products, setProducts] = useState<Product[]>(seedProducts.slice(0, 4));
-  useEffect(() => setProducts(loadAdminProducts().slice(0, 4)), []);
-  const featuredSolutions = [
-    { label: "Điện mặt trời", desc: "Giảm hóa đơn điện, tiết kiệm mỗi tháng", image: images.solution2, to: "/giai-phap/dien-mat-troi-ap-mai" as const },
-    { label: "Camera an ninh", desc: "Quan sát mọi lúc, bảo vệ toàn diện", image: cameraSolution, to: "/san-pham" as const },
-    { label: "Thiết bị mạng", desc: "Wi-Fi mạnh, phủ sóng toàn nhà", image: wifiSolution, to: "/giai-phap" as const },
-  ];
+  const [featuredSolutions, setFeaturedSolutions] = useState<Solution[]>(() =>
+    loadAdminSolutions().filter((item) => item.slug).slice(0, 3),
+  );
+  useEffect(() => {
+    setProducts(loadAdminProducts().slice(0, 4));
+    setFeaturedSolutions(loadAdminSolutions().filter((item) => item.slug).slice(0, 3));
+  }, []);
   return <div className="bg-white">
     <section className="relative isolate min-h-[270px] overflow-hidden bg-[#062a68] text-white sm:min-h-[430px]">
       <img src={images.hero} alt="Giải pháp năng lượng và an ninh" className="absolute inset-0 -z-20 h-full w-full object-cover object-center" />
@@ -65,8 +65,28 @@ function Home() {
 
     <section className="mx-auto max-w-[1180px] px-[18px] pb-6 sm:px-6 sm:pb-12 lg:px-8">
       <SectionTitle to="/giai-phap">Giải pháp nổi bật</SectionTitle>
-      <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-4">
-        {featuredSolutions.map(solution => <Link key={solution.label} to={solution.to} className="relative isolate flex min-h-[145px] overflow-hidden rounded-[9px] p-2 text-white shadow-card sm:min-h-[300px] sm:p-5"><img src={solution.image} alt={solution.label} className="absolute inset-0 -z-20 h-full w-full object-cover" /><div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#041c49]/95 via-[#062a68]/25 to-transparent" /><div className="mt-auto"><p className="text-[9px] font-black uppercase sm:text-lg">{solution.label}</p><p className="mt-1 line-clamp-2 text-[7px] text-white/80 sm:text-xs">{solution.desc}</p><span className="mt-2 inline-flex rounded bg-[#ff7a00] px-2 py-1 text-[7px] font-bold sm:text-[10px]">Xem ngay</span></div></Link>)}
+      <div className={`mt-3 grid gap-2 sm:gap-4 ${featuredSolutions.length === 1 ? "grid-cols-1" : featuredSolutions.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+        {featuredSolutions.map((solution) => (
+          <Link
+            key={solution.id}
+            to="/giai-phap/$slug"
+            params={{ slug: solution.slug }}
+            className="relative isolate flex min-h-[145px] overflow-hidden rounded-[9px] p-2 text-white shadow-card sm:min-h-[300px] sm:p-5"
+          >
+            {isUsableProductImage(solution.image) ? (
+              <img src={solution.image} alt={solution.name} className="absolute inset-0 -z-20 h-full w-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 -z-20 bg-[#062a68]" />
+            )}
+            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#041c49]/95 via-[#062a68]/25 to-transparent" />
+            <div className="mt-auto">
+              {solution.group ? <p className="text-[8px] font-bold uppercase text-[#ff9b22] sm:text-[11px]">{solution.group}</p> : null}
+              <p className="text-[9px] font-black uppercase sm:text-lg">{solution.name}</p>
+              <p className="mt-1 line-clamp-2 text-[7px] text-white/80 sm:text-xs">{solution.short || solution.benefits[0]?.title}</p>
+              <span className="mt-2 inline-flex rounded bg-[#ff7a00] px-2 py-1 text-[7px] font-bold sm:text-[10px]">Xem ngay</span>
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
 
